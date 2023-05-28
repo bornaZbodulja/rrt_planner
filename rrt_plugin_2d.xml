@@ -1,0 +1,7 @@
+<library path="lib/librrt_planner_2d">
+  <class name="rrt_planner/RRTPlanner2D" type="rrt_planner::RRTPlanner2D" base_class_type="nav_core::BaseGlobalPlanner">
+    <description>
+      2D RRT*-Connect Planner
+    </description>
+  </class>
+</library>
