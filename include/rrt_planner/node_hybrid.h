@@ -1,62 +1,61 @@
 /**
- * @file node_2d.h
+ * @file node_hybrid.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief Node 2D implementation
+ * @brief Definition of Node Hybrid
  * @version 0.1
- * @date 2023-05-06
+ * @date 2023-05-28
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#ifndef RRT_PLANNER__NODE_2D_H_
-#define RRT_PLANNER__NODE_2D_H_
+#ifndef RRT_PLANNER__NODE_HYBRID_H_
+#define RRT_PLANNER__NODE_HYBRID_H_
 
-#include <cmath>
 #include <limits>
-#include <optional>
 #include <vector>
-
-#include "nav_utils/nav_utils.h"
 
 namespace rrt_planner {
 
 /**
- * @brief Node2D class implementation
+ * @brief NodeHybrid class implementation
  */
-class Node2D {
+class NodeHybrid {
  public:
-  typedef Node2D* NodePtr;
+  typedef NodeHybrid* NodePtr;
   typedef std::vector<NodePtr> NodeVector;
 
   /**
-   * @brief Node2D implementation of coordinate structure
+   * @brief NodeHybrid implementation of coordinate structure
    */
   struct Coordinates {
     Coordinates() {}
-    Coordinates(const int& x_in, const int& y_in) : x(x_in), y(y_in) {}
+    Coordinates(const int& x_in, const int& y_in, const int& theta_in)
+        : x(x_in), y(y_in), theta(theta_in) {}
 
-    int x{0}, y{0};
+    int x{0}, y{0}, theta{0};
   };
   typedef std::vector<Coordinates> CoordinatesVector;
 
   /**
-   * @brief Constructor for Node2D
-   * @param index The map cell index of the node
+   * @brief Constructor for NodeHybrid
+   * @param index Index of the node
    */
-  explicit Node2D(const unsigned int& index);
+  explicit NodeHybrid(const unsigned int& index);
 
   /**
-   * @brief Destructor for Node2D
+   * @brief Destructor for NodeHybrid
    */
-  ~Node2D();
+  ~NodeHybrid();
 
   /**
-   * @brief Comparison operator for Node2D
+   * @brief Comparison operator for NodeHybrid
    * @param rhs Right hand side node reference
-   * @return True if map cell indexes equal, false otherwise
+   * @return True if indexes equal, false otherwise
    */
-  bool operator==(const Node2D& rhs) const { return index_ == rhs.GetIndex(); }
+  bool operator==(const NodeHybrid& rhs) const {
+    return index_ == rhs.GetIndex();
+  }
 
   /**
    * @brief Reset method for new search
@@ -64,7 +63,7 @@ class Node2D {
   void Reset();
 
   /**
-   * @brief Gets map cell index of Node2D
+   * @brief Gets index of NodeHybrid
    * @return unsigned int
    */
   inline unsigned int GetIndex() const { return index_; }
@@ -125,37 +124,6 @@ class Node2D {
   inline Coordinates GetCoordinates() const { return coordinates_; }
 
   /**
-   * @brief Computes traversal cost between this and child node
-   * @param child Child node pointer
-   * @return double Traversal cost
-   */
-  double GetTraversalCost(const NodePtr& child);
-
-  /**
-   * @brief Checks if node is valid
-   * @param collision_checker Collision checker pointer
-   * @param lethal_cost
-   * @param allow_unknown Whether to allow unknown costs
-   * @return True if node is valid, false otherwise
-   */
-  bool IsNodeValid(const CollisionCheckerPtr& collision_checker,
-                   const unsigned char& lethal_cost, const bool& allow_unknown);
-
-  /**
-   * @brief Tries to connect this node with newly expanded one
-   * @param index Given index for tree expansion
-   * @param collision_checker Collision checker pointer
-   * @param lethal_cost Lethal cost for collision checking
-   * @param allow_unknown Whether to allow unknown costs
-   * @param edge_length Length of edge in search tree
-   * @return Index of connected node if connection is valid, nullopt otherwise
-   */
-  std::optional<unsigned int> ConnectNode(
-      const unsigned int& index, const CollisionCheckerPtr& collision_checker,
-      const unsigned char& lethal_cost, const bool& allow_unknown,
-      const int& edge_length = std::numeric_limits<int>::max());
-
-  /**
    * @brief Rewires this node
    * @param parent New parent node pointer
    * @param accumulated_cost New accumulated cost
@@ -172,46 +140,37 @@ class Node2D {
    * @brief Computes index based on coordinates
    * @param x X position in map frame
    * @param y Y position in map frame
+   * @param angle Index of angle bin
    * @return unsigned int
    */
   static inline unsigned int GetIndex(const unsigned int& x,
-                                      const unsigned int& y) {
-    return y * size_x + x;
+                                      const unsigned int& y,
+                                      const unsigned int& angle) {
+    return angle + x * angle_bin_size + y * size_x * angle_bin_size;
   }
 
   /**
-   * @brief Generates coordinates from map cell index
-   * @param index Map cell index
+   * @brief Generates coordinates from index
+   * @param index Node index
    * @return Coordinates
    */
   static inline Coordinates GetCoordinates(const unsigned int& index) {
-    return Coordinates(index % size_x, index / size_x);
+    return Coordinates((index / angle_bin_size) % size_x,
+                       index / (angle_bin_size * size_x),
+                       index % angle_bin_size);
   }
 
-  /**
-   * @brief Computes distance between two coordinates
-   * @param first_coordinates First coordinates
-   * @param second_coordinates Second coordinates
-   * @return double
-   */
-  static inline double CoordinatesDistance(
-      const Coordinates& first_coordinates,
-      const Coordinates& second_coordinates) {
-    return std::hypot(first_coordinates.x - second_coordinates.x,
-                      first_coordinates.y - second_coordinates.y);
-  }
-
-  // Cost penalty
-  inline static double cost_travel_multiplier{0.0};
-  // X size of the costmap
+  // X size of costmap
   inline static unsigned int size_x{0};
+  // Angle bin size
+  inline static unsigned int angle_bin_size{0};
 
  private:
-  // Map cell index of the node
+  // Index of the node
   unsigned int index_;
   // Whether node was visited
   bool visited_;
-  // Map cell coordinates of the node
+  // Coordinates of the node
   Coordinates coordinates_;
   // Parent node
   NodePtr parent_;

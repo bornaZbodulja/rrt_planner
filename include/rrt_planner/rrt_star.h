@@ -127,30 +127,33 @@ class RRTStar {
 
   /**
    * @brief Extends search tree with passed index
-   * @param index
+   * @param index Generated index for tree expansion
    * @param tree Search tree
    * @param new_node Pointer to new node added to tree
-   * @param closest_node
-   * @param near_nodes
-   * @param edge_length
-   * @param lethal_cost
-   * @param allow_unknown
+   * @param closest_node Closest node to newly generated indexed one
+   * @param near_nodes Neighbourhood of newly created node
+   * @param edge_length Length of edges connecting nodes in search tree
+   * @param rewire_tree Whether to rewire tree around newly added node
+   * @param lethal_cost Lethal cost for collision checking
+   * @param allow_unknown Whether to allow expansion in unknown areas
    * @return True if tree was successfully extended, false otherwise
    */
   bool ExtendTree(const unsigned int& index, SearchTree<NodeT>& tree,
                   NodePtr& new_node, NodePtr& closest_node,
                   NodeVector& near_nodes, const int& edge_length,
-                  const unsigned char& lethal_cost, const bool& allow_unknown);
+                  const bool& rewire_tree, const unsigned char& lethal_cost,
+                  const bool& allow_unknown);
 
   /**
-   * @brief
+   * @brief Tries connecting second search tree with newly added node to first
+   * search tree
    * @param new_node New node added to first search tree
    * @param closest_node Closest node to new node in second tree (filled by
    * method)
    * @param second_tree Second search tree
-   * @param path
-   * @param lethal_cost
-   * @param allow_unknown
+   * @param path Path connecting start and goal nodes
+   * @param lethal_cost Lethal cost for collision checking
+   * @param allow_unknown Whether to allow path to go to unknown areas
    * @return True if search trees are connected and path is created, false
    * otherwise
    */
@@ -163,8 +166,8 @@ class RRTStar {
    * @brief Picks best parent for new node from near nodes
    * @param new_node
    * @param near_nodes
-   * @param lethal_cost
-   * @param allow_unknown
+   * @param lethal_cost Lethal cost for collision checking
+   * @param allow_unknown Whether to allow connection to go in unknown areas
    * @return NodePtr
    */
   NodePtr ChooseParent(NodePtr& new_node, NodeVector& near_nodes,

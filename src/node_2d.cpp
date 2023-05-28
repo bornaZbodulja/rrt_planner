@@ -18,9 +18,8 @@ Node2D::Node2D(const unsigned int& index)
       visited_(false),
       parent_(nullptr),
       cell_cost_(std::numeric_limits<double>::quiet_NaN()),
-      accumulated_cost_(std::numeric_limits<double>::max()) {
-  coordinates_ = GetCoordinates(index);
-}
+      accumulated_cost_(std::numeric_limits<double>::max()),
+      coordinates_(GetCoordinates(index)) {}
 
 Node2D::~Node2D() { parent_ = nullptr; }
 

@@ -1,7 +1,7 @@
 /**
  * @file search_tree.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief
+ * @brief Search tree class implementation
  * @version 0.1
  * @date 2023-05-06
  *
@@ -23,7 +23,7 @@
 namespace rrt_planner {
 
 /**
- * @brief
+ * @brief Search tree class implementation
  * @tparam NodeT
  */
 template <typename NodeT>

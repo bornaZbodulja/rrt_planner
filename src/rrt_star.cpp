@@ -99,6 +99,7 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   const double& max_planning_time = search_info_.max_planning_time;
   const double& target_bias = search_info_.target_bias;
   const bool& allow_unknown = search_info_.allow_unknown;
+  const bool& rewire_tree = search_info_.rewire_tree;
   const unsigned char& lethal_cost = search_info_.lethal_cost;
   const int& edge_length = search_info_.edge_length;
   const double& cost_penalty = search_info_.cost_penalty;
@@ -139,9 +140,11 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
     tree_expansion_res =
         expanding_start_tree
             ? ExtendTree(new_index, start_tree_, new_node, closest_node,
-                         near_nodes, edge_length, lethal_cost, allow_unknown)
+                         near_nodes, edge_length, rewire_tree, lethal_cost,
+                         allow_unknown)
             : ExtendTree(new_index, goal_tree_, new_node, closest_node,
-                         near_nodes, edge_length, lethal_cost, allow_unknown);
+                         near_nodes, edge_length, rewire_tree, lethal_cost,
+                         allow_unknown);
 
     // 3) Try connecting searches trees
     tree_connection_res =
@@ -200,7 +203,7 @@ template <typename NodeT>
 bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
                                 SearchTree<NodeT>& tree, NodePtr& new_node,
                                 NodePtr& closest_node, NodeVector& near_nodes,
-                                const int& edge_length,
+                                const int& edge_length, const bool& rewire_tree,
                                 const unsigned char& lethal_cost,
                                 const bool& allow_unknown) {
   new_node = nullptr;
@@ -260,9 +263,11 @@ bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
   new_node->Visited();
   tree.AddVertex(new_node);
 
-  // Rewire tree around new node
-  tree.RewireTree(new_node, near_nodes, collision_checker_, lethal_cost,
-                  allow_unknown);
+  if (rewire_tree) {
+    // Rewire tree around new node
+    tree.RewireTree(new_node, near_nodes, collision_checker_, lethal_cost,
+                    allow_unknown);
+  }
 
   return true;
 }

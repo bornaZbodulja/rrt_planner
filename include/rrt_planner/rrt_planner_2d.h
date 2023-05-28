@@ -1,7 +1,7 @@
 /**
  * @file rrt_planner_2d.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief
+ * @brief RRT planner 2D plugin
  * @version 0.1
  * @date 2023-05-13
  *

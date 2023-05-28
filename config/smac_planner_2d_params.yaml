@@ -3,6 +3,7 @@ RRTPlanner2D:
   target_bias: 0.05 # Defines bias towards target of the search tree when generating random node (between 0.0 and 1.0)
   near_distance: 20.0 # Defines neighborhood of the nodes in the search tree
   cost_penalty: 2.0 # Penalty to apply to high cost areas
+  rewire_tree: true # Whether to rewire tree after every expansion
   allow_unknown: false # Whether to allow expansion in unknown space
   lethal_cost: 230 # Lethal cost for collision checking
   max_expansion_iterations: 100000 # Maximum number of search tree expansions

@@ -137,6 +137,7 @@ void RRTPlanner2D::LoadParams() {
   nh_.param<double>("target_bias", search_info_.target_bias, 0.05);
   nh_.param<double>("near_distance", search_info_.near_distance, 20.0);
   nh_.param<double>("cost_penalty", search_info_.cost_penalty, 2.0);
+  nh_.param<bool>("rewire_tree", search_info_.rewire_tree, false);
   nh_.param<bool>("allow_unknown", search_info_.allow_unknown, false);
   nh_.param<int>("max_expansion_iterations",
                  search_info_.max_expansion_iterations, 100000);

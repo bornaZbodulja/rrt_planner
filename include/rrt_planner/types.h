@@ -27,6 +27,8 @@ struct SearchInfo {
   double near_distance{0.0};
   // Penalty to apply to high cost areas
   double cost_penalty{0.0};
+  // Whether to rewire tree after every expansion
+  bool rewire_tree{false};
   // Whether to allow expansion in unknown space
   bool allow_unknown{false};
   // Lethal cost for collision checking
