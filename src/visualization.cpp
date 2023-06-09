@@ -99,5 +99,32 @@ void Visualization<Node2D>::AddTree(const TreeMsg& tree, const TreeId& id) {
   search_tree_.markers.push_back(marker);
 }
 
+// TODO: For now same visualization for hybrid nodes as for 2D nodes (implement
+// in future)
+template <>
+void Visualization<NodeHybrid>::AddTree(const TreeMsg& tree, const TreeId& id) {
+  visualization_msgs::Marker marker;
+  marker.header = nav_utils::PrepareHeader("map");
+  marker.ns = "RRT_tree_" + std::to_string(id);
+  marker.id = id;
+  marker.type = visualization_msgs::Marker::LINE_LIST;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.orientation.w = 1.0;
+  marker.scale.x = 0.05;
+  marker.color = TreeColorMapper(id);
+
+  auto get_point = [this](const Coordinates& coordinates) {
+    return world_coords_getter_(coordinates).position;
+  };
+
+  for (const auto& edge : tree) {
+    marker.points.push_back(get_point(edge.first));
+    marker.points.push_back(get_point(edge.second));
+  }
+
+  search_tree_.markers.push_back(marker);
+}
+
 // Instantiate algorithm for the supported template types
 template class Visualization<Node2D>;
+template class Visualization<NodeHybrid>;

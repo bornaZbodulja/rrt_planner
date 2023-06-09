@@ -1,39 +1,40 @@
 /**
- * @file rrt_planner_2d.cpp
+ * @file rrt_planner_hybrid.cpp
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
  * @brief
  * @version 0.1
- * @date 2023-05-14
+ * @date 2023-06-09
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#include "rrt_planner/rrt_planner_2d.h"
+#include "rrt_planner/rrt_planner_hybrid.h"
 
 #include <pluginlib/class_list_macros.h>
 
 #include "nav_utils/geometry_utils.h"
 #include "nav_utils/message_utils.h"
 
-PLUGINLIB_EXPORT_CLASS(rrt_planner::RRTPlanner2D, nav_core::BaseGlobalPlanner)
+PLUGINLIB_EXPORT_CLASS(rrt_planner::RRTPlannerHybrid,
+                       nav_core::BaseGlobalPlanner)
 
 using namespace rrt_planner;
 
-RRTPlanner2D::RRTPlanner2D() {
+RRTPlannerHybrid::RRTPlannerHybrid() {
   costmap_ = nullptr;
   initialized_ = false;
 }
 
-RRTPlanner2D::RRTPlanner2D(std::string name,
-                           costmap_2d::Costmap2DROS* costmap_ros) {
+RRTPlannerHybrid::RRTPlannerHybrid(std::string name,
+                                   costmap_2d::Costmap2DROS* costmap_ros) {
   initialize(name, costmap_ros);
 }
 
-RRTPlanner2D::~RRTPlanner2D() { costmap_ = nullptr; }
+RRTPlannerHybrid::~RRTPlannerHybrid() { costmap_ = nullptr; }
 
-void RRTPlanner2D::initialize(std::string name,
-                              costmap_2d::Costmap2DROS* costmap_ros) {
+void RRTPlannerHybrid::initialize(std::string name,
+                                  costmap_2d::Costmap2DROS* costmap_ros) {
   if (initialized_) {
     ROS_WARN(
         "This planner has already been initialized, you can't call it twice, "
@@ -47,12 +48,12 @@ void RRTPlanner2D::initialize(std::string name,
   // Initializing collision checker
   collision_checker_ = std::make_shared<CollisionCheckerT>(costmap_ros);
 
-  // Loading planning parameters from param server
+  // Loading planner parameters from param server
   LoadParams();
 
   // Initializing RRT* core planner
-  rrt_star_ = std::make_unique<RRTStar<Node2D>>(motion_model_, search_info_,
-                                                collision_checker_);
+  rrt_star_ = std::make_unique<RRTStar<NodeHybrid>>(motion_model_, search_info_,
+                                                    collision_checker_);
 
   WorldCoordinatesGetter world_coordinates_getter =
       [&, this](const auto& node_coordinates) -> geometry_msgs::Pose {
@@ -61,17 +62,17 @@ void RRTPlanner2D::initialize(std::string name,
   };
 
   // Initializing visualization handler
-  visualization_handler_ =
-      std::make_shared<Visualization<Node2D>>(&nh_, world_coordinates_getter);
+  visualization_handler_ = std::make_shared<Visualization<NodeHybrid>>(
+      &nh_, world_coordinates_getter);
 
-  ROS_INFO("Created global_planner rrt_planner/RRTPlanner2D.");
+  ROS_INFO("Created global_planner rrt_planner/RRTPlannerHybrid.");
 
   initialized_ = true;
 }
 
-bool RRTPlanner2D::makePlan(const geometry_msgs::PoseStamped& start,
-                            const geometry_msgs::PoseStamped& goal,
-                            PlanT& plan) {
+bool RRTPlannerHybrid::makePlan(const geometry_msgs::PoseStamped& start,
+                                const geometry_msgs::PoseStamped& goal,
+                                PlanT& plan) {
   if (!initialized_) {
     ROS_WARN("Planner has not been initialized!");
     return false;
@@ -79,8 +80,8 @@ bool RRTPlanner2D::makePlan(const geometry_msgs::PoseStamped& start,
 
   ClearVisualization();
 
-  unsigned int start_mx, start_my;
-  unsigned int goal_mx, goal_my;
+  unsigned int start_mx, start_my, start_orientation_bin;
+  unsigned int goal_mx, goal_my, goal_orientation_bin;
 
   if (collision_checker_->PoseInCollision(start)) {
     ROS_WARN(
@@ -97,6 +98,10 @@ bool RRTPlanner2D::makePlan(const geometry_msgs::PoseStamped& start,
     return false;
   }
 
+  double start_angle = tf2::getYaw(start.pose.orientation);
+  nav_utils::NormalizeAngle(start_angle);
+  start_orientation_bin = std::floor(start_angle / angle_bin_);
+
   if (collision_checker_->PoseInCollision(goal)) {
     ROS_WARN("Goal pose: (%f, %f, %f) in collision, returning planning failure",
              goal.pose.position.x, goal.pose.position.y,
@@ -111,30 +116,35 @@ bool RRTPlanner2D::makePlan(const geometry_msgs::PoseStamped& start,
     return false;
   }
 
+  double goal_angle = tf2::getYaw(goal.pose.orientation);
+  nav_utils::NormalizeAngle(goal_angle);
+  goal_orientation_bin = std::floor(goal_angle / angle_bin_);
+
   ROS_INFO("Planning from start pose: (%f, %f, %f) to goal pose: (%f, %f, %f).",
            start.pose.position.x, start.pose.position.y,
            tf2::getYaw(start.pose.orientation), goal.pose.position.x,
            goal.pose.position.y, tf2::getYaw(goal.pose.orientation));
 
-  auto path = CreatePath(start_mx, start_my, goal_mx, goal_my);
+  auto path = CreatePath(start_mx, start_my, start_orientation_bin, goal_mx,
+                         goal_my, goal_orientation_bin);
 
   if (!path.has_value()) {
-    ROS_WARN("RRT planner 2D unable to find plan, returning false.");
+    ROS_WARN("RRT planner hybrid unable to find plan, returning false.");
     return false;
   }
 
-  plan = ProcessPath(path.value(), start, goal);
+  plan = ProcessPath(path.value());
 
   UpdateVisualization(plan, rrt_star_->GetStartTree(),
                       rrt_star_->GetGoalTree());
   PublishVisualization();
 
-  ROS_INFO("RRT planner 2D successfully found a plan!");
+  ROS_INFO("RRT planner hybrid successfully found a plan!");
 
   return true;
 }
 
-void RRTPlanner2D::LoadParams() {
+void RRTPlannerHybrid::LoadParams() {
   nh_.param<int>("edge_length", search_info_.edge_length, 10);
   nh_.param<double>("target_bias", search_info_.target_bias, 0.05);
   nh_.param<double>("near_distance", search_info_.near_distance, 20.0);
@@ -148,20 +158,33 @@ void RRTPlanner2D::LoadParams() {
   int lethal_cost_int;
   nh_.param<int>("lethal_cost", lethal_cost_int, 253);
   search_info_.lethal_cost = static_cast<unsigned char>(lethal_cost_int);
-  motion_model_ = MotionModel::TDM;
+
+  double turning_radius_global;
+  nh_.param<double>("min_turning_radius", turning_radius_global, 1.0);
+  search_info_.min_turning_radius =
+      turning_radius_global / costmap_->getResolution();
+
+  int angle_bin_size_int;
+  nh_.param<int>("angle_bin_size", angle_bin_size_int, 90);
+  angle_bin_size_ = static_cast<unsigned int>(angle_bin_size_int);
+  angle_bin_ = 2.0 * M_PI / angle_bin_size_;
+
+  std::string motion_model_str;
+  nh_.param<std::string>("motion_model", motion_model_str, "DUBINS");
+  motion_model_ = FromString(motion_model_str);
 }
 
-RRTPlanner2D::Plan2DT RRTPlanner2D::CreatePath(const unsigned int& start_mx,
-                                               const unsigned int& start_my,
-                                               const unsigned int& goal_mx,
-                                               const unsigned int& goal_my) {
+RRTPlannerHybrid::PlanHybridT RRTPlannerHybrid::CreatePath(
+    const unsigned int& start_mx, const unsigned int& start_my,
+    const unsigned int& start_orientation_bin, const unsigned int& goal_mx,
+    const unsigned int& goal_my, const unsigned int& goal_orientation_bin) {
   rrt_star_->InitializeStateSpace(costmap_->getSizeInCellsX(),
-                                  costmap_->getSizeInCellsY(), 1);
+                                  costmap_->getSizeInCellsY(), angle_bin_size_);
 
-  rrt_star_->SetStart(start_mx, start_my, 1);
-  rrt_star_->SetGoal(goal_mx, goal_my, 1);
+  rrt_star_->SetStart(start_mx, start_my, start_orientation_bin);
+  rrt_star_->SetGoal(goal_mx, goal_my, goal_orientation_bin);
 
-  Node2D::CoordinatesVector path;
+  NodeHybrid::CoordinatesVector path;
 
   const auto result = rrt_star_->CreatePath(path);
 
@@ -172,9 +195,8 @@ RRTPlanner2D::Plan2DT RRTPlanner2D::CreatePath(const unsigned int& start_mx,
   return std::make_optional(path);
 }
 
-RRTPlanner2D::PlanT RRTPlanner2D::ProcessPath(
-    Node2D::CoordinatesVector& path, const geometry_msgs::PoseStamped& start,
-    const geometry_msgs::PoseStamped& goal) {
+RRTPlannerHybrid::PlanT RRTPlannerHybrid::ProcessPath(
+    NodeHybrid::CoordinatesVector& path) {
   PlanT plan;
   plan.reserve(path.size());
 
@@ -184,20 +206,16 @@ RRTPlanner2D::PlanT RRTPlanner2D::ProcessPath(
 
   std::for_each(path.begin(), path.end(), [&](const auto& coordinates) {
     pose.pose = GetWorldCoordinates(coordinates.x, coordinates.y, costmap_);
+    pose.pose.orientation = GetWorldOrientation(coordinates.theta * angle_bin_);
     plan.push_back(pose);
   });
-
-  plan.front().pose.orientation = start.pose.orientation;
-  plan.back().pose.orientation = goal.pose.orientation;
-
-  nav_utils::AssignPlanOrientation(plan);
 
   return plan;
 }
 
-void RRTPlanner2D::UpdateVisualization(const PlanT& plan,
-                                       const TreeMsg& start_tree,
-                                       const TreeMsg& goal_tree) {
+void RRTPlannerHybrid::UpdateVisualization(const PlanT& plan,
+                                           const TreeMsg& start_tree,
+                                           const TreeMsg& goal_tree) {
   visualization_handler_->SetPathVisualization(plan);
   visualization_handler_->SetSearchTreeVisualization(start_tree, goal_tree);
 }

@@ -60,8 +60,20 @@ add_library(${library_name}_2d SHARED
   src/node_hybrid.cpp
 )
 
+add_library(${library_name}_hybrid SHARED
+src/rrt_planner_hybrid.cpp
+src/rrt_star.cpp
+src/search_tree.cpp
+src/visualization.cpp
+src/analytic_expansion.cpp
+src/node_2d.cpp
+src/node_hybrid.cpp)
+
 # target_link_libraries(${library_name}_2d ${nav_utils_LIBRARIES} ${catkin_LIBRARIES})
 target_link_libraries(${library_name}_2d ${catkin_LIBRARIES})
 
 add_dependencies(${library_name}_2d ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+target_link_libraries(${library_name}_hybrid ${catkin_LIBRARIES})
+
+add_dependencies(${library_name}_hybrid ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
