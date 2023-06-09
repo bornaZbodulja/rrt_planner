@@ -201,6 +201,7 @@ class Node2D {
                       first_coordinates.y - second_coordinates.y);
   }
 
+  // TODO: Create motion table for this params
   // Cost penalty
   inline static double cost_travel_multiplier{0.0};
   // X size of the costmap
@@ -211,10 +212,10 @@ class Node2D {
   unsigned int index_;
   // Whether node was visited
   bool visited_;
-  // Map cell coordinates of the node
-  Coordinates coordinates_;
   // Parent node
   NodePtr parent_;
+  // Map cell coordinates of the node
+  Coordinates coordinates_;
   // Cost of the map cell associated with node
   double cell_cost_;
   // Accumulated cost of the node

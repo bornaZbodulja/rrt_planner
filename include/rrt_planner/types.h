@@ -27,6 +27,8 @@ struct SearchInfo {
   double near_distance{0.0};
   // Penalty to apply to high cost areas
   double cost_penalty{0.0};
+  // Minimal turning radius of the vehicle
+  double min_turning_radius{0.0};
   // Whether to rewire tree after every expansion
   bool rewire_tree{false};
   // Whether to allow expansion in unknown space

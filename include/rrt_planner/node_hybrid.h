@@ -12,10 +12,74 @@
 #ifndef RRT_PLANNER__NODE_HYBRID_H_
 #define RRT_PLANNER__NODE_HYBRID_H_
 
+#include <ompl/base/StateSpace.h>
+
+#include <cmath>
 #include <limits>
+#include <memory>
+#include <optional>
 #include <vector>
 
+#include "analytic_expansion.h"
+#include "constants.h"
+#include "types.h"
+
 namespace rrt_planner {
+
+/**
+ * @brief A table for motion model and
+ */
+struct HybridMotionTable {
+  /**
+   * @brief Constructor for hybrid motion table
+   */
+  HybridMotionTable(){};
+
+  /**
+   * @brief Initializes motion table
+   * @param size_x_in Width of costmap
+   * @param angle_bin_size_in
+   * @param search_info Planner search info
+   * @param motion_model_in Motion model
+   */
+  void Initialize(const unsigned int& size_x_in,
+                  const unsigned int& angle_bin_size_in,
+                  const SearchInfo& search_info,
+                  const MotionModel& motion_model_in);
+
+  /**
+   * @brief Gets angular bin
+   * @param theta Raw orientation
+   * @return int Index of bin
+   */
+  inline int GetClosestAngularBin(const double& theta) {
+    return static_cast<int>(std::floor(theta / angle_bin));
+  }
+
+  /**
+   * @brief Gets raw orientation from bin
+   * @param bin_idx Bin index
+   * @return double Orientation of bin
+   */
+  inline double GetAngleFromBin(const int& bin_idx) {
+    return bin_idx * angle_bin;
+  }
+
+  // Motion model (DUBINS or REEDS-SHEPP)
+  MotionModel motion_model{MotionModel::UNKNOWN};
+  // State space pointer (DUBINS or REEDS-SHEPP)
+  ompl::base::StateSpacePtr state_space;
+  // Minimum turning radius
+  double min_turning_radius{0.0};
+  // Cost penalty
+  double cost_travel_multiplier{0.0};
+  // Width of costmap
+  unsigned int size_x{0};
+  // Angle bin size
+  unsigned int angle_bin_size{0};
+  // Angle bin
+  double angle_bin{0.0};
+};
 
 /**
  * @brief NodeHybrid class implementation
@@ -124,6 +188,30 @@ class NodeHybrid {
   inline Coordinates GetCoordinates() const { return coordinates_; }
 
   /**
+   * @brief Checks if node is valid
+   * @param collision_checker Collision checker pointer
+   * @param lethal_cost Lethal cost for collision checking
+   * @param allow_unknown Whether to allow unknown costs
+   * @return True if node is valid, false otherwise
+   */
+  bool IsNodeValid(const CollisionCheckerPtr& collision_checker,
+                   const unsigned char& lethal_cost, const bool& allow_unknown);
+
+  /**
+   * @brief Tries to connect this nde with newly expanded one
+   * @param index Given index for tree expansion
+   * @param collision_checker Collision checker pointer
+   * @param lethal_cost Lethal cost for collision checker
+   * @param allow_unknown Whether to allow unknown costs
+   * @param edge_length Length of edge in search tree
+   * @return Index of connected node if connection is valid, nullopt otherwise
+   */
+  std::optional<unsigned int> ConnectNode(
+      const unsigned int& index, const CollisionCheckerPtr& collision_checker,
+      const unsigned char& lethal_cost, const bool& allow_unknown,
+      const int& edge_length = std::numeric_limits<int>::max());
+
+  /**
    * @brief Rewires this node
    * @param parent New parent node pointer
    * @param accumulated_cost New accumulated cost
@@ -137,6 +225,18 @@ class NodeHybrid {
   CoordinatesVector BackTracePath();
 
   /**
+   * @brief
+   * @param size_x_in
+   * @param angle_bin_size_in
+   * @param search_info
+   * @param motion_model
+   */
+  static void InitializeMotionModel(const unsigned int& size_x_in,
+                                    const unsigned int& angle_bin_size_in,
+                                    const SearchInfo& search_info,
+                                    const MotionModel& motion_model);
+
+  /**
    * @brief Computes index based on coordinates
    * @param x X position in map frame
    * @param y Y position in map frame
@@ -146,7 +246,8 @@ class NodeHybrid {
   static inline unsigned int GetIndex(const unsigned int& x,
                                       const unsigned int& y,
                                       const unsigned int& angle) {
-    return angle + x * angle_bin_size + y * size_x * angle_bin_size;
+    return angle + x * motion_table.angle_bin_size +
+           y * motion_table.size_x * motion_table.angle_bin_size;
   }
 
   /**
@@ -155,15 +256,16 @@ class NodeHybrid {
    * @return Coordinates
    */
   static inline Coordinates GetCoordinates(const unsigned int& index) {
-    return Coordinates((index / angle_bin_size) % size_x,
-                       index / (angle_bin_size * size_x),
-                       index % angle_bin_size);
+    return Coordinates(
+        (index / motion_table.angle_bin_size) % motion_table.size_x,
+        index / (motion_table.angle_bin_size * motion_table.size_x),
+        index % motion_table.angle_bin_size);
   }
 
-  // X size of costmap
-  inline static unsigned int size_x{0};
-  // Angle bin size
-  inline static unsigned int angle_bin_size{0};
+  // Motion table
+  static HybridMotionTable motion_table;
+  // Analytic expander
+  static std::unique<AnalyticExpansion<NodeHybrid>> expander;
 
  private:
   // Index of the node

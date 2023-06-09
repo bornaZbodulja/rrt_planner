@@ -11,7 +11,30 @@
 
 #include "rrt_planner/node_hybrid.h"
 
+#include <ompl/base/spaces/DubinsStateSpace.h>
+#include <ompl/base/spaces/ReedsSheppStateSpace.h>
+
 using namespace rrt_planner;
+
+void HybridMotionTable::Initialize(const unsigned int& size_x_in,
+                                   const unsigned int& angle_bin_size_in,
+                                   const SearchInfo& search_info,
+                                   const MotionModel& motion_model_in) {
+  size_x = size_x_in;
+  angle_bin_size = angle_bin_size_in;
+  motion_model = motion_model_in;
+  min_turning_radius = search_info.min_turning_radius;
+  cost_travel_multiplier = search_info.cost_penalty;
+  angle_bin = 2.0 * M_PI / angle_bin_size;
+
+  if (motion_model == MotionModel::DUBINS) {
+    state_space =
+        std::make_unique<ompl::base::DubinsStateSpace>(min_turning_radius);
+  } else if (motion_model == MotionModel::REEDS_SHEPP) {
+    state_space =
+        std::make_unique<ompl::base::ReedsSheppStateSpace>(min_turning_radius);
+  }
+}
 
 NodeHybrid::NodeHybrid(const unsigned int& index)
     : index_(index),
@@ -30,6 +53,37 @@ void NodeHybrid::Reset() {
   accumulated_cost_ = std::numeric_limits<double>::max();
 }
 
+bool NodeHybrid::IsNodeValid(const CollisionCheckerPtr& collision_checker,
+                             const unsigned char& lethal_cost,
+                             const bool& allow_unknown) {
+  const double angle = motion_table.GetAngleFromBin(coordinates_.theta);
+  return !collision_checker->PoseInCollision(
+      static_cast<unsigned int>(coordinates_.x),
+      static_cast<unsigned int>(coordinates_.y), angle, lethal_cost,
+      allow_unknown);
+}
+
+std::optional<unsigned int> NodeHybrid::ConnectNode(
+    const unsigned int& index, const CollisionCheckerPtr& collision_checker,
+    const unsigned char& lethal_cost, const bool& allow_unknown,
+    const int& edge_length) {
+  const auto A = GetCoordinates();
+  const auto B = GetCoordinates(index);
+  // TODO: Possibly remove this, update collision checker only when starting
+  // planning
+  expander->UpdateCollisionChecker(collision_checker);
+
+  const auto result = expander->TryAnalyticExpansion(
+      A, B, this, lethal_cost, allow_unknown, edge_length);
+
+  if (!result.has_value()) {
+    return {};
+  }
+
+  return std::make_optional(
+      GetIndex(result.value().x, result.value().y, result.value().theta));
+}
+
 void NodeHybrid::RewireNode(const NodePtr& parent,
                             const double& accumulated_cost) {
   SetParent(parent);
@@ -46,4 +100,14 @@ NodeHybrid::CoordinatesVector NodeHybrid::BackTracePath() {
   }
 
   return path;
+}
+
+void NodeHybrid::InitializeMotionModel(const unsigned int& size_x_in,
+                                       const unsigned int& angle_bin_size_in,
+                                       const SearchInfo& search_info,
+                                       const MotionModel& motion_model) {
+  motion_table.Initialize(size_x_in, angle_bin_size_in, search_info,
+                          motion_model);
+  expander = std::make_unique<AnalyticExpansion<NodeHybrid>>();
+  expander->UpdateMotionModel(motion_model);
 }

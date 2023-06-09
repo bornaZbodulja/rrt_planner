@@ -11,6 +11,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated-declarations")
 
 set(library_name rrt_planner)
 
+find_package(ompl REQUIRED)
+
 find_package(catkin REQUIRED 
   COMPONENTS
   base_local_planner
@@ -44,6 +46,7 @@ catkin_package(
 include_directories(
   include
   # ${nav_utils_INCLUDE_DIRS}
+  ${OMPL_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
