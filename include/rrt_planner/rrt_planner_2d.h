@@ -24,6 +24,7 @@
 #include <memory>
 #include <optional>
 
+#include "rrt_planner/constants.h"
 #include "rrt_planner/rrt_star.h"
 #include "rrt_planner/types.h"
 #include "rrt_planner/utils.h"
@@ -138,6 +139,8 @@ class RRTPlanner2D : public nav_core::BaseGlobalPlanner {
   std::shared_ptr<Visualization<Node2D>> visualization_handler_;
   // Collision checker pointer
   CollisionCheckerPtr collision_checker_;
+  // Motion model
+  MotionModel motion_model_;
   // Search info
   SearchInfo search_info_;
 };

@@ -21,7 +21,7 @@ template <typename NodeT>
 typename AnalyticExpansion<NodeT>::ExpansionResult
 AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
                                                const Coordinates& goal,
-                                               NodePtr& node,
+                                               const NodePtr& node,
                                                const unsigned char& lethal_cost,
                                                const bool& allow_unknown,
                                                const int& max_length) {
@@ -42,7 +42,7 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
 
   const auto d = node->motion_table.state_space->distance(from(), to());
   static const double sqrt_2 = std::sqrt(2.0);
-  unsigned int intervals = std::floor(d / sqrt_2);
+  int intervals = std::floor(d / sqrt_2);
   int iterations = (max_length > intervals) ? intervals : max_length;
   int angle{0};
   Coordinates coordinates{};
@@ -53,7 +53,7 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
     node->motion_table.state_space->interpolate(from(), to(), i / intervals,
                                                 s());
     reals = s.reals();
-    NormalizeAngle(reals[2]);
+    nav_utils::NormalizeAngle(reals[2]);
     angle = node->motion_table.GetAngleFromBin(reals[2]);
     coordinates = {static_cast<int>(reals[0]), static_cast<int>(reals[1]),
                    angle};
@@ -72,19 +72,16 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
 }
 
 template <typename NodeT>
-double AnalyticExpansion<NodeT>::GetAnalyticPathLength(const NodePtr& start,
-                                                       const NodePtr& goal,
-                                                       NodePtr& node) const {
+double AnalyticExpansion<NodeT>::GetAnalyticPathLength(
+    const Coordinates& start, const Coordinates& goal,
+    const NodePtr& node) const {
   if (motion_model_ != MotionModel::DUBINS &&
       motion_model_ != MotionModel::REEDS_SHEPP) {
-    return std::numeric_limits<double>::inf();
+    return std::numeric_limits<double>::max();
   }
 
   static ompl::base::ScopedState<> from(node->motion_table.state_space),
       to(node->motion_table.state_space);
-
-  const auto A = start->GetCoordinates();
-  const auto B = goal->GetCoordinates();
 
   from[0] = start.x;
   from[1] = start.y;
@@ -99,7 +96,7 @@ double AnalyticExpansion<NodeT>::GetAnalyticPathLength(const NodePtr& start,
 template <>
 typename AnalyticExpansion<Node2D>::ExpansionResult
 AnalyticExpansion<Node2D>::TryAnalyticExpansion(
-    const Coordinates& start, const Coordinates& goal, NodePtr& node,
+    const Coordinates& start, const Coordinates& goal, const NodePtr& node,
     const unsigned char& lethal_cost, const bool& allow_unknown,
     const int& max_length) {
   return {};
@@ -107,8 +104,9 @@ AnalyticExpansion<Node2D>::TryAnalyticExpansion(
 
 template <>
 double AnalyticExpansion<Node2D>::GetAnalyticPathLength(
-    const Coordinates& start, const Coordinates& goal, NodePtr& node) const {
-  return std::numeric_limits<double>::inf();
+    const Coordinates& start, const Coordinates& goal,
+    const NodePtr& node) const {
+  return std::numeric_limits<double>::max();
 }
 
 // Instantiate algorithm for the supported template types

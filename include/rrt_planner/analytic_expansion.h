@@ -16,12 +16,12 @@
 #include <optional>
 #include <vector>
 
-#include "constants.h"
 #include "nav_utils/nav_utils.h"
+#include "rrt_planner/constants.h"
 #include "rrt_planner/node_2d.h"
 #include "rrt_planner/node_hybrid.h"
 
-namespace rrt_planer {
+namespace rrt_planner {
 
 /**
  * @brief Analytic expansion class implementation
@@ -35,9 +35,9 @@ class AnalyticExpansion {
   typedef std::optional<Coordinates> ExpansionResult;
 
   /**
-   * @brief Constructor for analytic expander
+   * @brief Empty constructor for analytic expander
    */
-  AnalyticExpansion(){};
+  AnalyticExpansion() {}
 
   /**
    * @brief Updates motion model for the expander
@@ -67,7 +67,7 @@ class AnalyticExpansion {
    * @return ExpansionResult
    */
   ExpansionResult TryAnalyticExpansion(
-      const Coordinates& start, const Coordinates& goal, NodePtr& node,
+      const Coordinates& start, const Coordinates& goal, const NodePtr& node,
       const unsigned char& lethal_cost, const bool& allow_unknown,
       const int& max_length = std::numeric_limits<int>::max());
 
@@ -79,7 +79,8 @@ class AnalyticExpansion {
    * @return double Length of analytic path connecting start and goal
    */
   double GetAnalyticPathLength(const Coordinates& start,
-                               const Coordinates& goal, NodePtr& node) const;
+                               const Coordinates& goal,
+                               const NodePtr& node) const;
 
  private:
   // Motion model
@@ -88,6 +89,6 @@ class AnalyticExpansion {
   CollisionCheckerPtr collision_checker_;
 };
 
-}  // namespace rrt_planer
+}  // namespace rrt_planner
 
 #endif

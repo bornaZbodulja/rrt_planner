@@ -49,8 +49,8 @@ void RRTPlanner2D::initialize(std::string name,
   LoadParams();
 
   // Initializing RRT* core planner
-  rrt_star_ =
-      std::make_unique<RRTStar<Node2D>>(search_info_, collision_checker_);
+  rrt_star_ = std::make_unique<RRTStar<Node2D>>(motion_model_, search_info_,
+                                                collision_checker_);
 
   WorldCoordinatesGetter world_coordinates_getter =
       [&, this](const auto& node_coordinates) -> geometry_msgs::Pose {
@@ -146,6 +146,7 @@ void RRTPlanner2D::LoadParams() {
   int lethal_cost_int;
   nh_.param<int>("lethal_cost", lethal_cost_int, 253);
   search_info_.lethal_cost = static_cast<unsigned char>(lethal_cost_int);
+  motion_model_ = MotionModel::TDM;
 }
 
 RRTPlanner2D::Plan2DT RRTPlanner2D::CreatePath(const unsigned int& start_mx,

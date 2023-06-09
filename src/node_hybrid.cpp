@@ -40,9 +40,9 @@ NodeHybrid::NodeHybrid(const unsigned int& index)
     : index_(index),
       visited_(false),
       parent_(nullptr),
+      coordinates_(GetCoordinates(index)),
       cell_cost_(std::numeric_limits<double>::quiet_NaN()),
-      accumulated_cost_(std::numeric_limits<double>::max()),
-      coordinates_(GetCoordinates(index)) {}
+      accumulated_cost_(std::numeric_limits<double>::max()) {}
 
 NodeHybrid::~NodeHybrid() { parent_ = nullptr; }
 
@@ -51,6 +51,15 @@ void NodeHybrid::Reset() {
   visited_ = false;
   cell_cost_ = std::numeric_limits<double>::quiet_NaN();
   accumulated_cost_ = std::numeric_limits<double>::max();
+}
+
+double NodeHybrid::GetTraversalCost(const NodePtr& child) {
+  const double normalized_cost = child->GetCost() / 253.0;
+  const Coordinates A = GetCoordinates();
+  const Coordinates B = child->GetCoordinates();
+
+  return expander->GetAnalyticPathLength(A, B, this) +
+         motion_table.cost_travel_multiplier * normalized_cost;
 }
 
 bool NodeHybrid::IsNodeValid(const CollisionCheckerPtr& collision_checker,

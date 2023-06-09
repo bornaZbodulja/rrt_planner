@@ -20,20 +20,24 @@
 #include <optional>
 #include <vector>
 
-#include "analytic_expansion.h"
-#include "constants.h"
-#include "types.h"
+#include "rrt_planner/analytic_expansion.h"
+#include "rrt_planner/constants.h"
+#include "rrt_planner/types.h"
 
 namespace rrt_planner {
 
+// Forward declare analytic expansion
+template <typename NodeT>
+class AnalyticExpansion;
+
 /**
- * @brief A table for motion model and
+ * @brief Holder for all relevant motion params
  */
 struct HybridMotionTable {
   /**
    * @brief Constructor for hybrid motion table
    */
-  HybridMotionTable(){};
+  HybridMotionTable() {}
 
   /**
    * @brief Initializes motion table
@@ -52,7 +56,7 @@ struct HybridMotionTable {
    * @param theta Raw orientation
    * @return int Index of bin
    */
-  inline int GetClosestAngularBin(const double& theta) {
+  inline int GetClosestAngularBin(const double& theta) const {
     return static_cast<int>(std::floor(theta / angle_bin));
   }
 
@@ -61,7 +65,7 @@ struct HybridMotionTable {
    * @param bin_idx Bin index
    * @return double Orientation of bin
    */
-  inline double GetAngleFromBin(const int& bin_idx) {
+  inline double GetAngleFromBin(const int& bin_idx) const {
     return bin_idx * angle_bin;
   }
 
@@ -188,6 +192,13 @@ class NodeHybrid {
   inline Coordinates GetCoordinates() const { return coordinates_; }
 
   /**
+   * @brief Computes traversal cost between this and child node
+   * @param child Child node pointer
+   * @return double Traversal cost
+   */
+  double GetTraversalCost(const NodePtr& child);
+
+  /**
    * @brief Checks if node is valid
    * @param collision_checker Collision checker pointer
    * @param lethal_cost Lethal cost for collision checking
@@ -225,11 +236,11 @@ class NodeHybrid {
   CoordinatesVector BackTracePath();
 
   /**
-   * @brief
-   * @param size_x_in
-   * @param angle_bin_size_in
-   * @param search_info
-   * @param motion_model
+   * @brief Initializes motion model for NodeHybrid
+   * @param size_x_in Width of costmap
+   * @param angle_bin_size_in Number of angle bins
+   * @param search_info Planner search info
+   * @param motion_model Motion model
    */
   static void InitializeMotionModel(const unsigned int& size_x_in,
                                     const unsigned int& angle_bin_size_in,
@@ -262,20 +273,33 @@ class NodeHybrid {
         index % motion_table.angle_bin_size);
   }
 
+  /**
+   * @brief Computes Euclidean distance between two coordinates
+   * @param first_coordinates First coordinates
+   * @param second_coordinates Second coordinates
+   * @return double
+   */
+  static inline double CoordinatesDistance(
+      const Coordinates& first_coordinates,
+      const Coordinates& second_coordinates) {
+    return std::hypot(first_coordinates.x - second_coordinates.x,
+                      first_coordinates.y - second_coordinates.y);
+  }
+
   // Motion table
   static HybridMotionTable motion_table;
   // Analytic expander
-  static std::unique<AnalyticExpansion<NodeHybrid>> expander;
+  static std::unique_ptr<AnalyticExpansion<NodeHybrid>> expander;
 
  private:
   // Index of the node
   unsigned int index_;
   // Whether node was visited
   bool visited_;
-  // Coordinates of the node
-  Coordinates coordinates_;
   // Parent node
   NodePtr parent_;
+  // Coordinates of the node
+  Coordinates coordinates_;
   // Cost of the map cell associated with node
   double cell_cost_;
   // Accumulated cost of the node

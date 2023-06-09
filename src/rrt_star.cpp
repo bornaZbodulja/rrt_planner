@@ -15,19 +15,27 @@ using namespace rrt_planner;
 using namespace std::chrono;
 
 template <typename NodeT>
-RRTStar<NodeT>::RRTStar(const SearchInfo& search_info,
+RRTStar<NodeT>::RRTStar(const MotionModel& motion_model,
+                        const SearchInfo& search_info,
                         const CollisionCheckerPtr& collision_checker)
     : start_(nullptr),
       goal_(nullptr),
       graph_(SearchGraph<NodeT>()),
       start_tree_(SearchTree<NodeT>()),
       goal_tree_(SearchTree<NodeT>()) {
+  UpdateMotionModel(motion_model);
   UpdateSearchInfo(search_info);
   UpdateCollisionChecker(collision_checker);
 
   // TODO: Move this to utils
   gen = std::minstd_rand(std::random_device{}());
   dist = std::uniform_real_distribution<double>(0.0, 1.0);
+}
+
+template <typename NodeT>
+RRTStar<NodeT>::~RRTStar() {
+  start_ = nullptr;
+  goal_ = nullptr;
 }
 
 template <typename NodeT>
@@ -41,12 +49,7 @@ void RRTStar<NodeT>::InitializeStateSpace(const unsigned int& size_x,
   const int state_space_size = size_x_ * size_y_ * dim_3_;
   ClearGraph();
   ReserveGraph(state_space_size);
-}
-
-template <typename NodeT>
-RRTStar<NodeT>::~RRTStar() {
-  start_ = nullptr;
-  goal_ = nullptr;
+  NodeT::InitializeMotionModel(size_x_, dim_3_, search_info_, motion_model_);
 }
 
 template <>
@@ -56,17 +59,22 @@ void RRTStar<Node2D>::InitializeStateSpace(const unsigned int& size_x,
   size_x_ = size_x;
   size_y_ = size_y;
   dim_3_ = 1;
-  Node2D::size_x = size_x;
 
   const int state_space_size = size_x_ * size_y_;
   ClearGraph();
   ReserveGraph(state_space_size);
+  Node2D::InitializeMotionModel(size_x_, search_info_, motion_model_);
 }
 
-// TODO: Empty for now, implement in future
 template <typename NodeT>
 void RRTStar<NodeT>::SetStart(const unsigned int& mx, const unsigned int& my,
-                              const unsigned int& dim_3) {}
+                              const unsigned int& dim_3) {
+  const auto start_index = NodeT::GetIndex(mx, my, dim_3);
+  start_ = AddToGraph(start_index);
+  start_->SetAccumulatedCost(0.0);
+  start_->SetCost(collision_checker_->GetCost(start_index));
+  start_->Visited();
+}
 
 template <>
 void RRTStar<Node2D>::SetStart(const unsigned int& mx, const unsigned int& my,
@@ -78,10 +86,15 @@ void RRTStar<Node2D>::SetStart(const unsigned int& mx, const unsigned int& my,
   start_->Visited();
 }
 
-// TODO: Empty for now, implement in future
 template <typename NodeT>
 void RRTStar<NodeT>::SetGoal(const unsigned int& mx, const unsigned int& my,
-                             const unsigned int& dim_3) {}
+                             const unsigned int& dim_3) {
+  const auto goal_index = NodeT::GetIndex(mx, my, dim_3);
+  goal_ = AddToGraph(goal_index);
+  goal_->SetAccumulatedCost(0.0);
+  goal_->SetCost(collision_checker_->GetCost(goal_index));
+  goal_->Visited();
+}
 
 template <>
 void RRTStar<Node2D>::SetGoal(const unsigned int& mx, const unsigned int& my,
@@ -195,7 +208,6 @@ void RRTStar<NodeT>::InitializeSearch(const unsigned int& size,
   goal_tree_.SetRootNode(goal_);
   goal_tree_.SetTargetNode(start_);
 
-  NodeT::cost_travel_multiplier = cost_penalty;
   SearchTree<NodeT>::near_distance = near_distance;
 }
 
@@ -367,3 +379,4 @@ unsigned int RRTStar<NodeT>::GenerateRandomIndex(
 
 // Instantiate algorithm for the supported template types
 template class RRTStar<Node2D>;
+template class RRTStar<NodeHybrid>;

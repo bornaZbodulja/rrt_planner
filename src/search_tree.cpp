@@ -134,3 +134,4 @@ typename SearchTree<NodeT>::TreeMsg SearchTree<NodeT>::TreeToMsg() {
 
 // Instantiate algorithm for the supported template types
 template class SearchTree<Node2D>;
+template class SearchTree<NodeHybrid>;

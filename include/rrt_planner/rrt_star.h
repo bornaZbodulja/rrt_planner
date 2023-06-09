@@ -17,7 +17,9 @@
 #include <vector>
 
 #include "nav_utils/nav_utils.h"
+#include "rrt_planner/constants.h"
 #include "rrt_planner/node_2d.h"
+#include "rrt_planner/node_hybrid.h"
 #include "rrt_planner/search_graph.h"
 #include "rrt_planner/search_tree.h"
 #include "rrt_planner/types.h"
@@ -40,10 +42,12 @@ class RRTStar {
 
   /**
    * @brief Constructor for RRT*
+   * @param motion_model Motion model (2D, Dubins, Reeds-Shepp)
    * @param search_info Search info
    * @param collision_checker Collision checker pointer
    */
-  explicit RRTStar(const SearchInfo& search_info,
+  explicit RRTStar(const MotionModel& motion_model,
+                   const SearchInfo& search_info,
                    const CollisionCheckerPtr& collision_checker);
 
   /**
@@ -60,6 +64,14 @@ class RRTStar {
   void InitializeStateSpace(const unsigned int& size_x,
                             const unsigned int& size_y,
                             const unsigned int& dim_3);
+
+  /**
+   * @brief Updates motion model for the planner
+   * @param motion_model Motion model
+   */
+  inline void UpdateMotionModel(const MotionModel& motion_model) {
+    motion_model_ = motion_model;
+  }
 
   /**
    * @brief Updates search info for the planner
@@ -221,6 +233,8 @@ class RRTStar {
   SearchTree<NodeT> start_tree_;
   // Second search tree (doing bidirectional search)
   SearchTree<NodeT> goal_tree_;
+  // Motion model
+  MotionModel motion_model_;
   // Planning search info
   SearchInfo search_info_;
   // Collision checker pointer

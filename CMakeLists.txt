@@ -55,7 +55,9 @@ add_library(${library_name}_2d SHARED
   src/rrt_star.cpp
   src/search_tree.cpp
   src/visualization.cpp
+  src/analytic_expansion.cpp
   src/node_2d.cpp
+  src/node_hybrid.cpp
 )
 
 # target_link_libraries(${library_name}_2d ${nav_utils_LIBRARIES} ${catkin_LIBRARIES})

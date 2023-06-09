@@ -16,10 +16,12 @@
 
 namespace rrt_planner {
 
-enum class MotionModel { UNKNOWN = 0, DUBINS = 1, REEDS_SHEPP = 2 };
+enum class MotionModel { UNKNOWN = 0, TDM = 1, DUBINS = 2, REEDS_SHEPP = 3 };
 
 inline std::string ToString(const MotionModel& motion_model) {
   switch (motion_model) {
+    case MotionModel::TDM:
+      return "2D";
     case MotionModel::DUBINS:
       return "Dubins";
     case MotionModel::REEDS_SHEPP:
@@ -30,7 +32,9 @@ inline std::string ToString(const MotionModel& motion_model) {
 }
 
 inline MotionModel FromString(const std::string& motion_model) {
-  if (motion_model == "DUBINS") {
+  if (motion_model == "2D") {
+    return MotionModel::TDM;
+  } else if (motion_model == "DUBINS") {
     return MotionModel::DUBINS;
   } else if (motion_model == "REEDS-SHEPP") {
     return MotionModel::REEDS_SHEPP;

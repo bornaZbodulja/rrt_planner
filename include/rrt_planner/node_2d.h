@@ -18,8 +18,36 @@
 #include <vector>
 
 #include "nav_utils/nav_utils.h"
+#include "rrt_planner/constants.h"
+#include "rrt_planner/types.h"
 
 namespace rrt_planner {
+
+/**
+ * @brief Holder for all relevant motion params
+ */
+struct MotionTable2D {
+  /**
+   * @brief Constructor for 2D motion table
+   */
+  MotionTable2D(){};
+
+  /**
+   * @brief Initializes motion table
+   * @param size_x_in Width of costmap
+   * @param search_info Planner search info
+   * @param motion_model_in Motion model
+   */
+  void Initialize(const unsigned int size_x_in, const SearchInfo& search_info,
+                  const MotionModel& motion_model_in);
+
+  // Motion model
+  MotionModel motion_model{MotionModel::UNKNOWN};
+  // Width of costmap
+  unsigned int size_x{0};
+  // Cost penalty
+  double cost_travel_multiplier{0.0};
+};
 
 /**
  * @brief Node2D class implementation
@@ -169,6 +197,16 @@ class Node2D {
   CoordinatesVector BackTracePath();
 
   /**
+   * @brief Initializes motion model for Node2D
+   * @param size_x_in Width of costmap
+   * @param search_info Planner search info
+   * @param motion_model Motion model
+   */
+  static void InitializeMotionModel(const unsigned int& size_x_in,
+                                    const SearchInfo& search_info,
+                                    const MotionModel& motion_model);
+
+  /**
    * @brief Computes index based on coordinates
    * @param x X position in map frame
    * @param y Y position in map frame
@@ -176,7 +214,7 @@ class Node2D {
    */
   static inline unsigned int GetIndex(const unsigned int& x,
                                       const unsigned int& y) {
-    return y * size_x + x;
+    return y * motion_table.size_x + x;
   }
 
   /**
@@ -185,7 +223,8 @@ class Node2D {
    * @return Coordinates
    */
   static inline Coordinates GetCoordinates(const unsigned int& index) {
-    return Coordinates(index % size_x, index / size_x);
+    return Coordinates(index % motion_table.size_x,
+                       index / motion_table.size_x);
   }
 
   /**
@@ -201,11 +240,8 @@ class Node2D {
                       first_coordinates.y - second_coordinates.y);
   }
 
-  // TODO: Create motion table for this params
-  // Cost penalty
-  inline static double cost_travel_multiplier{0.0};
-  // X size of the costmap
-  inline static unsigned int size_x{0};
+  // Motion table
+  static MotionTable2D motion_table;
 
  private:
   // Map cell index of the node

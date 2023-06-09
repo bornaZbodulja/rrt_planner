@@ -42,7 +42,8 @@ double Node2D::GetTraversalCost(const NodePtr& child) {
   const Coordinates A = GetCoordinates();
   const Coordinates B = child->GetCoordinates();
 
-  return CoordinatesDistance(A, B) + cost_travel_multiplier * normalized_cost;
+  return CoordinatesDistance(A, B) +
+         motion_table.cost_travel_multiplier * normalized_cost;
 }
 
 std::optional<unsigned int> Node2D::ConnectNode(
@@ -85,4 +86,10 @@ Node2D::CoordinatesVector Node2D::BackTracePath() {
   }
 
   return path;
+}
+
+void Node2D::InitializeMotionModel(const unsigned int& size_x_in,
+                                   const SearchInfo& search_info,
+                                   const MotionModel& motion_model) {
+  motion_table.Initialize(size_x_in, search_info, motion_model);
 }

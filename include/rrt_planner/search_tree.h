@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "rrt_planner/node_2d.h"
+#include "rrt_planner/node_hybrid.h"
 
 namespace rrt_planner {
 
@@ -114,7 +115,6 @@ class SearchTree {
 
   /**
    * @brief Generates msg form of search tree
-   * @param msg
    */
   TreeMsg TreeToMsg();
 
