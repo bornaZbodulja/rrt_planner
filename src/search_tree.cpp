@@ -42,8 +42,8 @@ typename SearchTree<NodeT>::NodePtr SearchTree<NodeT>::GetClosestNode(
 
   for (auto current_it = tree_.begin(); current_it < tree_.end();
        current_it++) {
-    distance = NodeT::CoordinatesDistance(new_node_coords,
-                                          (*current_it)->GetCoordinates());
+    distance =
+        NodeT::CoordinatesDistance(new_node_coords, (*current_it)->coordinates);
     // If computed distance smaller than smallest, update nearest iterator and
     // smallest distance
     if (distance < smallest_distance) {
@@ -69,8 +69,8 @@ void SearchTree<NodeT>::GetNearNodes(const unsigned int& index,
 
   for (auto current_it = tree_.cbegin(); current_it < tree_.cend();
        current_it++) {
-    distance = NodeT::CoordinatesDistance(new_node_coords,
-                                          (*current_it)->GetCoordinates());
+    distance =
+        NodeT::CoordinatesDistance(new_node_coords, (*current_it)->coordinates);
     // If computed distance smaller than near distance, adding node to near
     // nodes vector
     if (distance <= near_distance) {
@@ -123,9 +123,8 @@ typename SearchTree<NodeT>::TreeMsg SearchTree<NodeT>::TreeToMsg() {
   msg.reserve(tree_.size());
 
   for (const auto& node : tree_) {
-    if (node != nullptr && node->GetParent() != nullptr) {
-      msg.emplace_back(node->GetCoordinates(),
-                       node->GetParent()->GetCoordinates());
+    if (node != nullptr && node->parent != nullptr) {
+      msg.emplace_back(node->coordinates, node->parent->coordinates);
     }
   }
 

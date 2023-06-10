@@ -14,17 +14,17 @@
 using namespace rrt_planner;
 
 Node2D::Node2D(const unsigned int& index)
-    : index_(index),
+    : parent(nullptr),
+      coordinates(GetCoordinates(index)),
+      index_(index),
       visited_(false),
-      parent_(nullptr),
-      coordinates_(GetCoordinates(index)),
       cell_cost_(std::numeric_limits<double>::quiet_NaN()),
       accumulated_cost_(std::numeric_limits<double>::max()) {}
 
-Node2D::~Node2D() { parent_ = nullptr; }
+Node2D::~Node2D() { parent = nullptr; }
 
 void Node2D::Reset() {
-  parent_ = nullptr;
+  parent = nullptr;
   visited_ = false;
   cell_cost_ = std::numeric_limits<double>::quiet_NaN();
   accumulated_cost_ = std::numeric_limits<double>::max();
@@ -33,16 +33,14 @@ void Node2D::Reset() {
 bool Node2D::IsNodeValid(const CollisionCheckerPtr& collision_checker,
                          const unsigned char& lethal_cost,
                          const bool& allow_unknown) {
-  return !collision_checker->PointInCollision(coordinates_.x, coordinates_.y,
+  return !collision_checker->PointInCollision(coordinates.x, coordinates.y,
                                               lethal_cost, allow_unknown);
 }
 
 double Node2D::GetTraversalCost(const NodePtr& child) {
   const double normalized_cost = child->GetCost() / 253.0;
-  const Coordinates A = GetCoordinates();
-  const Coordinates B = child->GetCoordinates();
 
-  return CoordinatesDistance(A, B) +
+  return CoordinatesDistance(this->coordinates, child->coordinates) +
          motion_table.cost_travel_multiplier * normalized_cost;
 }
 
@@ -50,10 +48,11 @@ std::optional<unsigned int> Node2D::ConnectNode(
     const unsigned int& index, const CollisionCheckerPtr& collision_checker,
     const unsigned char& lethal_cost, const bool& allow_unknown,
     const int& edge_length) {
-  const Coordinates A = coordinates_;
-  const Coordinates B = GetCoordinates(index);
+  const Coordinates child_coordinates = GetCoordinates(index);
 
-  auto line = LineIteratorT(A.x, A.y, B.x, B.y, edge_length);
+  auto line =
+      LineIteratorT(this->coordinates.x, this->coordinates.y,
+                    child_coordinates.x, child_coordinates.y, edge_length);
   bool line_point_in_collision{false};
 
   for (; line.IsValid(); line.Advance()) {
@@ -72,7 +71,7 @@ std::optional<unsigned int> Node2D::ConnectNode(
 }
 
 void Node2D::RewireNode(const NodePtr& parent, const double& accumulated_cost) {
-  parent_ = parent;
+  this->parent = parent;
   accumulated_cost_ = accumulated_cost;
 }
 
@@ -81,8 +80,8 @@ Node2D::CoordinatesVector Node2D::BackTracePath() {
   NodePtr current_node = this;
 
   while (current_node != nullptr) {
-    path.push_back(current_node->GetCoordinates());
-    current_node = current_node->GetParent();
+    path.push_back(current_node->coordinates);
+    current_node = current_node->parent;
   }
 
   return path;

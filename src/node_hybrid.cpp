@@ -37,17 +37,17 @@ void HybridMotionTable::Initialize(const unsigned int& size_x_in,
 }
 
 NodeHybrid::NodeHybrid(const unsigned int& index)
-    : index_(index),
+    : parent(nullptr),
+      coordinates(GetCoordinates(index)),
+      index_(index),
       visited_(false),
-      parent_(nullptr),
-      coordinates_(GetCoordinates(index)),
       cell_cost_(std::numeric_limits<double>::quiet_NaN()),
       accumulated_cost_(std::numeric_limits<double>::max()) {}
 
-NodeHybrid::~NodeHybrid() { parent_ = nullptr; }
+NodeHybrid::~NodeHybrid() { parent = nullptr; }
 
 void NodeHybrid::Reset() {
-  parent_ = nullptr;
+  parent = nullptr;
   visited_ = false;
   cell_cost_ = std::numeric_limits<double>::quiet_NaN();
   accumulated_cost_ = std::numeric_limits<double>::max();
@@ -55,20 +55,18 @@ void NodeHybrid::Reset() {
 
 double NodeHybrid::GetTraversalCost(const NodePtr& child) {
   const double normalized_cost = child->GetCost() / 253.0;
-  const Coordinates A = GetCoordinates();
-  const Coordinates B = child->GetCoordinates();
-
-  return expander->GetAnalyticPathLength(A, B, this) +
+  return expander->GetAnalyticPathLength(this->coordinates, child->coordinates,
+                                         this) +
          motion_table.cost_travel_multiplier * normalized_cost;
 }
 
 bool NodeHybrid::IsNodeValid(const CollisionCheckerPtr& collision_checker,
                              const unsigned char& lethal_cost,
                              const bool& allow_unknown) {
-  const double angle = motion_table.GetAngleFromBin(coordinates_.theta);
+  const double angle = motion_table.GetAngleFromBin(coordinates.theta);
   return !collision_checker->PoseInCollision(
-      static_cast<unsigned int>(coordinates_.x),
-      static_cast<unsigned int>(coordinates_.y), angle, lethal_cost,
+      static_cast<unsigned int>(coordinates.x),
+      static_cast<unsigned int>(coordinates.y), angle, lethal_cost,
       allow_unknown);
 }
 
@@ -76,14 +74,13 @@ std::optional<unsigned int> NodeHybrid::ConnectNode(
     const unsigned int& index, const CollisionCheckerPtr& collision_checker,
     const unsigned char& lethal_cost, const bool& allow_unknown,
     const int& edge_length) {
-  const auto A = GetCoordinates();
-  const auto B = GetCoordinates(index);
   // TODO: Possibly remove this, update collision checker only when starting
   // planning
   expander->UpdateCollisionChecker(collision_checker);
 
-  const auto result = expander->TryAnalyticExpansion(
-      A, B, this, lethal_cost, allow_unknown, edge_length);
+  const auto result =
+      expander->TryAnalyticExpansion(coordinates, GetCoordinates(index), this,
+                                     lethal_cost, allow_unknown, edge_length);
 
   if (!result.has_value()) {
     return {};
@@ -95,7 +92,7 @@ std::optional<unsigned int> NodeHybrid::ConnectNode(
 
 void NodeHybrid::RewireNode(const NodePtr& parent,
                             const double& accumulated_cost) {
-  SetParent(parent);
+  this->parent = parent;
   SetAccumulatedCost(accumulated_cost);
 }
 
@@ -104,8 +101,8 @@ NodeHybrid::CoordinatesVector NodeHybrid::BackTracePath() {
   NodePtr current_node = this;
 
   while (current_node != nullptr) {
-    path.push_back(current_node->GetCoordinates());
-    current_node = current_node->GetParent();
+    path.push_back(current_node->coordinates);
+    current_node = current_node->parent;
   }
 
   return path;

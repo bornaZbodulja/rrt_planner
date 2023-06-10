@@ -109,18 +109,6 @@ class Node2D {
   inline void Visited() { visited_ = true; }
 
   /**
-   * @brief Gets pointer to parent of the node
-   * @return NodePtr
-   */
-  inline NodePtr GetParent() const { return parent_; }
-
-  /**
-   * @brief Sets pointer to parent of the node
-   * @param parent
-   */
-  inline void SetParent(const NodePtr& parent) { parent_ = parent; }
-
-  /**
    * @brief Gets costmap cost reference
    * @return double
    */
@@ -145,12 +133,6 @@ class Node2D {
   inline void SetAccumulatedCost(const double& cost) {
     accumulated_cost_ = cost;
   }
-
-  /**
-   * @brief Gets coordinates of this node
-   * @return Coordinates
-   */
-  inline Coordinates GetCoordinates() const { return coordinates_; }
 
   /**
    * @brief Computes traversal cost between this and child node
@@ -243,15 +225,16 @@ class Node2D {
   // Motion table
   inline static MotionTable2D motion_table{};
 
+  // Parent node
+  NodePtr parent;
+  // Map cell coordinates of the node
+  Coordinates coordinates;
+
  private:
   // Map cell index of the node
   unsigned int index_;
   // Whether node was visited
   bool visited_;
-  // Parent node
-  NodePtr parent_;
-  // Map cell coordinates of the node
-  Coordinates coordinates_;
   // Cost of the map cell associated with node
   double cell_cost_;
   // Accumulated cost of the node

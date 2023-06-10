@@ -249,13 +249,9 @@ bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
     return false;
   }
 
-  // New node coordinates
-  // TODO: Remove this in future if possible
-  const auto new_node_coordinates = new_node->GetCoordinates();
-
   // Set costmap cost for new node
   new_node->SetCost(static_cast<double>(collision_checker_->GetCost(
-      new_node_coordinates.x, new_node_coordinates.y)));
+      new_node->coordinates.x, new_node->coordinates.y)));
 
   tree.GetNearNodes(new_node_index, near_nodes);
 
@@ -265,12 +261,12 @@ bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
   double accumulated_cost;
 
   if (best_parent == nullptr) {
-    new_node->SetParent(closest_node);
+    new_node->parent = closest_node;
     accumulated_cost = closest_node->GetAccumulatedCost() +
                        closest_node->GetTraversalCost(new_node);
     new_node->SetAccumulatedCost(accumulated_cost);
   } else {
-    new_node->SetParent(best_parent);
+    new_node->parent = best_parent;
     accumulated_cost = best_parent->GetAccumulatedCost() +
                        best_parent->GetTraversalCost(new_node);
     new_node->SetAccumulatedCost(accumulated_cost);
