@@ -287,9 +287,9 @@ class NodeHybrid {
   }
 
   // Motion table
-  static HybridMotionTable motion_table;
+  inline static HybridMotionTable motion_table{};
   // Analytic expander
-  static std::unique_ptr<AnalyticExpansion<NodeHybrid>> expander;
+  inline static std::unique_ptr<AnalyticExpansion<NodeHybrid>> expander{};
 
  private:
   // Index of the node

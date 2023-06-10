@@ -241,7 +241,7 @@ class Node2D {
   }
 
   // Motion table
-  static MotionTable2D motion_table;
+  inline static MotionTable2D motion_table{};
 
  private:
   // Map cell index of the node

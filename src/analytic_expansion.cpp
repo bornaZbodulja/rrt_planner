@@ -54,10 +54,9 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
                                                 s());
     reals = s.reals();
     nav_utils::NormalizeAngle(reals[2]);
-    angle = node->motion_table.GetAngleFromBin(reals[2]);
+    angle = node->motion_table.GetClosestAngularBin(reals[2]);
     coordinates = {static_cast<int>(reals[0]), static_cast<int>(reals[1]),
                    angle};
-    // TODO: Remove static cast to unsigned int
     pose_in_collision = collision_checker_->PoseInCollision(
         static_cast<unsigned int>(coordinates.x),
         static_cast<unsigned int>(coordinates.y), reals[2], lethal_cost,

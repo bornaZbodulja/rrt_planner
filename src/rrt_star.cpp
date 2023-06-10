@@ -72,7 +72,7 @@ void RRTStar<NodeT>::SetStart(const unsigned int& mx, const unsigned int& my,
   const auto start_index = NodeT::GetIndex(mx, my, dim_3);
   start_ = AddToGraph(start_index);
   start_->SetAccumulatedCost(0.0);
-  start_->SetCost(collision_checker_->GetCost(start_index));
+  start_->SetCost(collision_checker_->GetCost(mx, my));
   start_->Visited();
 }
 
@@ -82,7 +82,7 @@ void RRTStar<Node2D>::SetStart(const unsigned int& mx, const unsigned int& my,
   const auto start_index = Node2D::GetIndex(mx, my);
   start_ = AddToGraph(start_index);
   start_->SetAccumulatedCost(0.0);
-  start_->SetCost(collision_checker_->GetCost(start_index));
+  start_->SetCost(collision_checker_->GetCost(mx, my));
   start_->Visited();
 }
 
@@ -92,7 +92,7 @@ void RRTStar<NodeT>::SetGoal(const unsigned int& mx, const unsigned int& my,
   const auto goal_index = NodeT::GetIndex(mx, my, dim_3);
   goal_ = AddToGraph(goal_index);
   goal_->SetAccumulatedCost(0.0);
-  goal_->SetCost(collision_checker_->GetCost(goal_index));
+  goal_->SetCost(collision_checker_->GetCost(mx, my));
   goal_->Visited();
 }
 
@@ -102,7 +102,7 @@ void RRTStar<Node2D>::SetGoal(const unsigned int& mx, const unsigned int& my,
   const auto goal_index = Node2D::GetIndex(mx, my);
   goal_ = AddToGraph(goal_index);
   goal_->SetAccumulatedCost(0.0);
-  goal_->SetCost(collision_checker_->GetCost(goal_index));
+  goal_->SetCost(collision_checker_->GetCost(mx, my));
   goal_->Visited();
 }
 
@@ -249,9 +249,13 @@ bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
     return false;
   }
 
+  // New node coordinates
+  // TODO: Remove this in future if possible
+  const auto new_node_coordinates = new_node->GetCoordinates();
+
   // Set costmap cost for new node
-  new_node->SetCost(
-      static_cast<double>(collision_checker_->GetCost(new_node_index)));
+  new_node->SetCost(static_cast<double>(collision_checker_->GetCost(
+      new_node_coordinates.x, new_node_coordinates.y)));
 
   tree.GetNearNodes(new_node_index, near_nodes);
 
