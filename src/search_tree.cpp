@@ -33,17 +33,17 @@ typename SearchTree<NodeT>::NodePtr SearchTree<NodeT>::GetClosestNode(
     return nullptr;
   }
 
-  auto smallest_distance = std::numeric_limits<double>::max();
-  double distance;
+  auto smallest_distance{std::numeric_limits<double>::max()};
+  double distance{0.0};
 
   NodeIterator nearest_it;
 
-  const Coordinates new_node_coords = NodeT::GetCoordinates(index);
+  const Coordinates new_node_coordinates = NodeT::GetCoordinates(index);
 
   for (auto current_it = tree_.begin(); current_it < tree_.end();
        current_it++) {
-    distance =
-        NodeT::CoordinatesDistance(new_node_coords, (*current_it)->coordinates);
+    distance = NodeT::CoordinatesDistance(new_node_coordinates,
+                                          (*current_it)->coordinates);
     // If computed distance smaller than smallest, update nearest iterator and
     // smallest distance
     if (distance < smallest_distance) {
@@ -64,13 +64,13 @@ void SearchTree<NodeT>::GetNearNodes(const unsigned int& index,
     return;
   }
 
-  const Coordinates new_node_coords = NodeT::GetCoordinates(index);
+  const Coordinates new_node_coordinates = NodeT::GetCoordinates(index);
   double distance{0.0};
 
   for (auto current_it = tree_.cbegin(); current_it < tree_.cend();
        current_it++) {
-    distance =
-        NodeT::CoordinatesDistance(new_node_coords, (*current_it)->coordinates);
+    distance = NodeT::CoordinatesDistance(new_node_coordinates,
+                                          (*current_it)->coordinates);
     // If computed distance smaller than near distance, adding node to near
     // nodes vector
     if (distance <= near_distance) {

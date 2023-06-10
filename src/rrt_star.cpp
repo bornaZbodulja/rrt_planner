@@ -140,8 +140,6 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
 
   path.clear();
 
-  ROS_INFO("Start index: %d, goal index: %d", start_index, goal_index);
-
   while (iterations < max_iterations &&
          elapsed_time.count() < max_planning_time) {
     // 1) Get new index in state space
