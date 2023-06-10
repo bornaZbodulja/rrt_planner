@@ -133,7 +133,7 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   NodePtr new_node{nullptr};
   NodePtr closest_node{nullptr};
   NodeVector near_nodes{};
-  auto& current_target_index = goal_index;
+  auto& current_target_index{goal_index};
   bool expanding_start_tree{true};
   bool tree_expansion_res{false};
   bool tree_connection_res{false};

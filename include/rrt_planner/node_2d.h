@@ -46,7 +46,7 @@ struct MotionTable2D {
   // Width of costmap
   unsigned int size_x{0};
   // Cost penalty
-  double cost_travel_multiplier{0.0};
+  double cell_cost_multiplier{0.0};
 };
 
 /**

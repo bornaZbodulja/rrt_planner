@@ -24,7 +24,7 @@ void HybridMotionTable::Initialize(const unsigned int& size_x_in,
   angle_bin_size = angle_bin_size_in;
   motion_model = motion_model_in;
   min_turning_radius = search_info.min_turning_radius;
-  cost_travel_multiplier = search_info.cost_penalty;
+  cell_cost_multiplier = search_info.cost_penalty;
   angle_bin = 2.0 * M_PI / angle_bin_size;
 
   if (motion_model == MotionModel::DUBINS) {
@@ -57,7 +57,7 @@ double NodeHybrid::GetTraversalCost(const NodePtr& child) {
   const double normalized_cost = child->GetCost() / 253.0;
   return expander->GetAnalyticPathLength(this->coordinates, child->coordinates,
                                          this) +
-         motion_table.cost_travel_multiplier * normalized_cost;
+         motion_table.cell_cost_multiplier * normalized_cost;
 }
 
 bool NodeHybrid::IsNodeValid(const CollisionCheckerPtr& collision_checker,

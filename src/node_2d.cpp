@@ -13,6 +13,14 @@
 
 using namespace rrt_planner;
 
+void MotionTable2D::Initialize(const unsigned int size_x_in,
+                               const SearchInfo& search_info,
+                               const MotionModel& motion_model_in) {
+  size_x = size_x_in;
+  cell_cost_multiplier = search_info.cost_penalty;
+  motion_model = motion_model_in;
+}
+
 Node2D::Node2D(const unsigned int& index)
     : parent(nullptr),
       coordinates(GetCoordinates(index)),
@@ -41,7 +49,7 @@ double Node2D::GetTraversalCost(const NodePtr& child) {
   const double normalized_cost = child->GetCost() / 253.0;
 
   return CoordinatesDistance(this->coordinates, child->coordinates) +
-         motion_table.cost_travel_multiplier * normalized_cost;
+         motion_table.cell_cost_multiplier * normalized_cost;
 }
 
 std::optional<unsigned int> Node2D::ConnectNode(
