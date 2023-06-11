@@ -77,6 +77,7 @@ bool RRTPlanner2D::makePlan(const geometry_msgs::PoseStamped& start,
     return false;
   }
 
+  plan.clear();
   ClearVisualization();
 
   unsigned int start_mx, start_my;
@@ -117,21 +118,23 @@ bool RRTPlanner2D::makePlan(const geometry_msgs::PoseStamped& start,
            goal.pose.position.y, tf2::getYaw(goal.pose.orientation));
 
   auto path = CreatePath(start_mx, start_my, goal_mx, goal_my);
+  const auto found_path = path.has_value();
 
-  if (!path.has_value()) {
-    ROS_WARN("RRT planner 2D unable to find plan, returning false.");
-    return false;
+  if (found_path) {
+    plan = ProcessPath(path.value(), start, goal);
   }
-
-  plan = ProcessPath(path.value(), start, goal);
 
   UpdateVisualization(plan, rrt_star_->GetStartTree(),
                       rrt_star_->GetGoalTree());
   PublishVisualization();
 
-  ROS_INFO("RRT planner 2D successfully found a plan!");
-
-  return true;
+  if (!found_path) {
+    ROS_WARN("RRT planner 2D unable to find plan, returning false.");
+    return false;
+  } else {
+    ROS_INFO("RRT planner 2D successfully found a plan!");
+    return true;
+  }
 }
 
 void RRTPlanner2D::LoadParams() {

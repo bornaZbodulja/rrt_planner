@@ -127,24 +127,23 @@ bool RRTPlannerHybrid::makePlan(const geometry_msgs::PoseStamped& start,
 
   auto path = CreatePath(start_mx, start_my, start_orientation_bin, goal_mx,
                          goal_my, goal_orientation_bin);
+  const auto found_path = path.has_value();
 
-  if (!path.has_value()) {
-    ROS_WARN("RRT planner hybrid unable to find plan, returning false.");
-    UpdateVisualization({}, rrt_star_->GetStartTree(),
-                        rrt_star_->GetGoalTree());
-    PublishVisualization();
-    return false;
+  if (found_path) {
+    plan = ProcessPath(path.value());
   }
-
-  plan = ProcessPath(path.value());
 
   UpdateVisualization(plan, rrt_star_->GetStartTree(),
                       rrt_star_->GetGoalTree());
   PublishVisualization();
 
-  ROS_INFO("RRT planner hybrid successfully found a plan!");
-
-  return true;
+  if (!found_path) {
+    ROS_WARN("RRT planner hybrid unable to find plan, returning false.");
+    return false;
+  } else {
+    ROS_INFO("RRT planner hybrid successfully found a plan!");
+    return true;
+  }
 }
 
 void RRTPlannerHybrid::LoadParams() {
