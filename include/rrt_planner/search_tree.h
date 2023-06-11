@@ -51,7 +51,7 @@ class SearchTree {
    * @brief Initializes search tree
    * @param root_node Root node for search tree
    * @param target_node Target node for search tree
-   * @param near_distance Defines neighbourhood of the nodes in tree
+   * @param near_distance Defines neighborhood of the nodes in tree
    */
   void InitializeSearchTree(const NodePtr& root_node,
                             const NodePtr& target_node,
@@ -135,7 +135,7 @@ class SearchTree {
   NodePtr target_node_;
   // Holder for nodes in tree
   NodeVector tree_;
-  // Defines neighbourhood of the nodes in tree
+  // Defines neighborhood of the nodes in tree
   double near_distance_{0.0};
 };
 

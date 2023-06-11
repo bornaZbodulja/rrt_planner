@@ -142,7 +142,7 @@ class RRTStar {
    * @param tree Search tree
    * @param new_node Pointer to new node added to tree
    * @param closest_node Closest node to newly generated indexed one
-   * @param near_nodes Neighbourhood of newly created node
+   * @param near_nodes Neighborhood of newly created node
    * @param edge_length Length of edges connecting nodes in search tree
    * @param rewire_tree Whether to rewire tree around newly added node
    * @param lethal_cost Lethal cost for collision checking
