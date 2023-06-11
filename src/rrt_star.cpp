@@ -115,7 +115,6 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   const bool& rewire_tree = search_info_.rewire_tree;
   const unsigned char& lethal_cost = search_info_.lethal_cost;
   const int& edge_length = search_info_.edge_length;
-  const double& cost_penalty = search_info_.cost_penalty;
   const double& near_distance = search_info_.near_distance;
   const unsigned int& state_space_size = size_x_ * size_y_ * dim_3_;
 
@@ -125,7 +124,7 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   auto start_index = start_->GetIndex();
   auto goal_index = goal_->GetIndex();
 
-  InitializeSearch(max_iterations, cost_penalty, near_distance);
+  InitializeSearch(max_iterations, near_distance);
 
   // Preallocating variables
   int iterations{0};
@@ -194,19 +193,14 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
 
 template <typename NodeT>
 void RRTStar<NodeT>::InitializeSearch(const unsigned int& size,
-                                      const double& cost_penalty,
                                       const double& near_distance) {
   start_tree_.Clear();
   start_tree_.Reserve(size);
-  start_tree_.SetRootNode(start_);
-  start_tree_.SetTargetNode(goal_);
+  start_tree_.InitializeSearchTree(start_, goal_, near_distance);
 
   goal_tree_.Clear();
   goal_tree_.Reserve(size);
-  goal_tree_.SetRootNode(goal_);
-  goal_tree_.SetTargetNode(start_);
-
-  SearchTree<NodeT>::near_distance = near_distance;
+  goal_tree_.InitializeSearchTree(goal_, start_, near_distance);
 }
 
 template <typename NodeT>
@@ -228,8 +222,9 @@ bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
   }
 
   // Try connecting closest node with the indexed node
-  const auto connection_res = closest_node->ConnectNode(
-      index, collision_checker_, lethal_cost, allow_unknown, edge_length);
+  const auto connection_res =
+      closest_node->ExpandNode(NodeT::GetCoordinates(index), collision_checker_,
+                               lethal_cost, allow_unknown, edge_length);
 
   if (!connection_res.has_value()) {
     new_node = nullptr;
@@ -299,8 +294,9 @@ bool RRTStar<NodeT>::ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
     return false;
   }
 
-  auto connection_res = new_node->ConnectNode(
-      closest_node->GetIndex(), collision_checker_, lethal_cost, allow_unknown);
+  auto connection_res =
+      new_node->ExpandNode(closest_node->coordinates, collision_checker_,
+                           lethal_cost, allow_unknown);
 
   if (!connection_res.has_value()) {
     return false;
@@ -308,12 +304,15 @@ bool RRTStar<NodeT>::ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
 
   auto first_segment = new_node->BackTracePath();
   auto second_segment = closest_node->BackTracePath();
+  NodeVector node_path;
 
   std::reverse(first_segment.begin(), first_segment.end());
   std::move(first_segment.begin(), first_segment.end(),
-            std::back_inserter(path));
+            std::back_inserter(node_path));
   std::move(second_segment.begin(), second_segment.end(),
-            std::back_inserter(path));
+            std::back_inserter(node_path));
+
+  path = PreparePath(node_path);
 
   return true;
 }
@@ -341,8 +340,8 @@ typename RRTStar<NodeT>::NodePtr RRTStar<NodeT>::ChooseParent(
     if (smaller_cost_parent_found) {
       connection_valid =
           near_node
-              ->ConnectNode(new_node->GetIndex(), collision_checker_,
-                            lethal_cost, allow_unknown)
+              ->ExpandNode(new_node->coordinates, collision_checker_,
+                           lethal_cost, allow_unknown)
               .has_value();
     }
 
@@ -353,6 +352,22 @@ typename RRTStar<NodeT>::NodePtr RRTStar<NodeT>::ChooseParent(
   }
 
   return best_parent;
+}
+
+template <typename NodeT>
+typename RRTStar<NodeT>::CoordinatesVector RRTStar<NodeT>::PreparePath(
+    const NodeVector& path) {
+  CoordinatesVector coordinates_path, segment;
+  NodePtr current_node, next_node;
+
+  for (size_t i = 0; i < path.size() - 1; i++) {
+    current_node = path.at(i);
+    next_node = path.at(i + 1);
+    segment = current_node->ConnectNode(next_node);
+    std::move(segment.begin(), segment.end(),
+              std::back_inserter(coordinates_path));
+  }
+  return coordinates_path;
 }
 
 template <typename NodeT>

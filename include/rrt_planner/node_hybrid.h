@@ -191,18 +191,26 @@ class NodeHybrid {
                    const unsigned char& lethal_cost, const bool& allow_unknown);
 
   /**
-   * @brief Tries to connect this nde with newly expanded one
-   * @param index Given index for tree expansion
+   * @brief Tries to expand this node towards given coordinates
+   * @param coordinates Given coordinates for expansion
    * @param collision_checker Collision checker pointer
    * @param lethal_cost Lethal cost for collision checker
    * @param allow_unknown Whether to allow unknown costs
    * @param edge_length Length of edge in search tree
-   * @return Index of connected node if connection is valid, nullopt otherwise
+   * @return Index of expanded node if connection is valid, nullopt otherwise
    */
-  std::optional<unsigned int> ConnectNode(
-      const unsigned int& index, const CollisionCheckerPtr& collision_checker,
+  std::optional<unsigned int> ExpandNode(
+      const Coordinates& coordinates,
+      const CollisionCheckerPtr& collision_checker,
       const unsigned char& lethal_cost, const bool& allow_unknown,
       const int& edge_length = std::numeric_limits<int>::max());
+
+  /**
+   * @brief Returns path connecting this and given node
+   * @param node Node pointer
+   * @return CoordinatesVector
+   */
+  CoordinatesVector ConnectNode(const NodePtr& node);
 
   /**
    * @brief Rewires this node
@@ -213,9 +221,9 @@ class NodeHybrid {
 
   /**
    * @brief Backtrace path to root node
-   * @return CoordinatesVector Path from this node to root
+   * @return NodeVector Path from this node to root
    */
-  CoordinatesVector BackTracePath();
+  NodeVector BackTracePath();
 
   /**
    * @brief Initializes motion model for NodeHybrid

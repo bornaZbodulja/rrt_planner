@@ -24,7 +24,7 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
                                                const NodePtr& node,
                                                const unsigned char& lethal_cost,
                                                const bool& allow_unknown,
-                                               const int& max_length) {
+                                               const int& max_length) const {
   if (motion_model_ != MotionModel::DUBINS &&
       motion_model_ != MotionModel::REEDS_SHEPP) {
     return {};
@@ -33,6 +33,7 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
   static ompl::base::ScopedState<> from(node->motion_table.state_space),
       to(node->motion_table.state_space), s(node->motion_table.state_space);
 
+  // TODO: Create separate method for this (Coordinates to state space)
   from[0] = start.x;
   from[1] = start.y;
   from[2] = node->motion_table.GetAngleFromBin(start.theta);
@@ -71,6 +72,51 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
 }
 
 template <typename NodeT>
+typename AnalyticExpansion<NodeT>::CoordinatesVector
+AnalyticExpansion<NodeT>::GetAnalyticPath(const Coordinates& start,
+                                          const Coordinates& goal,
+                                          const NodePtr& node) const {
+  if (motion_model_ != MotionModel::DUBINS &&
+      motion_model_ != MotionModel::REEDS_SHEPP) {
+    return {};
+  }
+
+  static ompl::base::ScopedState<> from(node->motion_table.state_space),
+      to(node->motion_table.state_space), s(node->motion_table.state_space);
+
+  from[0] = start.x;
+  from[1] = start.y;
+  from[2] = node->motion_table.GetAngleFromBin(start.theta);
+  to[0] = goal.x;
+  to[1] = goal.y;
+  to[2] = node->motion_table.GetAngleFromBin(goal.theta);
+
+  const auto d = node->motion_table.state_space->distance(from(), to());
+  static const double sqrt_2 = std::sqrt(2.0);
+  int intervals = std::floor(d / sqrt_2);
+  int angle{0};
+  Coordinates coordinates{};
+  CoordinatesVector analytic_path{};
+  std::vector<double> reals;
+
+  analytic_path.reserve(intervals + 2);
+  analytic_path.push_back(start);
+
+  for (double i = 1.0; i < intervals; i++) {
+    node->motion_table.state_space->interpolate(from(), to(), i / intervals,
+                                                s());
+    reals = s.reals();
+    nav_utils::NormalizeAngle(reals[2]);
+    angle = node->motion_table.GetClosestAngularBin(reals[2]);
+    analytic_path.emplace_back(static_cast<int>(reals[0]),
+                               static_cast<int>(reals[1]), angle);
+  }
+
+  analytic_path.push_back(goal);
+  return analytic_path;
+}
+
+template <typename NodeT>
 double AnalyticExpansion<NodeT>::GetAnalyticPathLength(
     const Coordinates& start, const Coordinates& goal,
     const NodePtr& node) const {
@@ -97,7 +143,15 @@ typename AnalyticExpansion<Node2D>::ExpansionResult
 AnalyticExpansion<Node2D>::TryAnalyticExpansion(
     const Coordinates& start, const Coordinates& goal, const NodePtr& node,
     const unsigned char& lethal_cost, const bool& allow_unknown,
-    const int& max_length) {
+    const int& max_length) const {
+  return {};
+}
+
+template <>
+typename AnalyticExpansion<Node2D>::CoordinatesVector
+AnalyticExpansion<Node2D>::GetAnalyticPath(const Coordinates& start,
+                                           const Coordinates& goal,
+                                           const NodePtr& node) const {
   return {};
 }
 

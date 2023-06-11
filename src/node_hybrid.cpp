@@ -70,8 +70,9 @@ bool NodeHybrid::IsNodeValid(const CollisionCheckerPtr& collision_checker,
       allow_unknown);
 }
 
-std::optional<unsigned int> NodeHybrid::ConnectNode(
-    const unsigned int& index, const CollisionCheckerPtr& collision_checker,
+std::optional<unsigned int> NodeHybrid::ExpandNode(
+    const Coordinates& coordinates,
+    const CollisionCheckerPtr& collision_checker,
     const unsigned char& lethal_cost, const bool& allow_unknown,
     const int& edge_length) {
   // TODO: Possibly remove this, update collision checker only when starting
@@ -79,7 +80,7 @@ std::optional<unsigned int> NodeHybrid::ConnectNode(
   expander->UpdateCollisionChecker(collision_checker);
 
   const auto result =
-      expander->TryAnalyticExpansion(coordinates, GetCoordinates(index), this,
+      expander->TryAnalyticExpansion(this->coordinates, coordinates, this,
                                      lethal_cost, allow_unknown, edge_length);
 
   if (!result.has_value()) {
@@ -90,18 +91,22 @@ std::optional<unsigned int> NodeHybrid::ConnectNode(
       GetIndex(result.value().x, result.value().y, result.value().theta));
 }
 
+NodeHybrid::CoordinatesVector NodeHybrid::ConnectNode(const NodePtr& node) {
+  return expander->GetAnalyticPath(this->coordinates, node->coordinates, this);
+}
+
 void NodeHybrid::RewireNode(const NodePtr& parent,
                             const double& accumulated_cost) {
   this->parent = parent;
   SetAccumulatedCost(accumulated_cost);
 }
 
-NodeHybrid::CoordinatesVector NodeHybrid::BackTracePath() {
-  CoordinatesVector path;
+NodeHybrid::NodeVector NodeHybrid::BackTracePath() {
+  NodeVector path;
   NodePtr current_node = this;
 
   while (current_node != nullptr) {
-    path.push_back(current_node->coordinates);
+    path.push_back(current_node);
     current_node = current_node->parent;
   }
 

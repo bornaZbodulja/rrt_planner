@@ -32,6 +32,7 @@ class AnalyticExpansion {
  public:
   typedef NodeT* NodePtr;
   typedef typename NodeT::Coordinates Coordinates;
+  typedef std::vector<Coordinates> CoordinatesVector;
   typedef std::optional<Coordinates> ExpansionResult;
 
   /**
@@ -69,13 +70,24 @@ class AnalyticExpansion {
   ExpansionResult TryAnalyticExpansion(
       const Coordinates& start, const Coordinates& goal, const NodePtr& node,
       const unsigned char& lethal_cost, const bool& allow_unknown,
-      const int& max_length = std::numeric_limits<int>::max());
+      const int& max_length = std::numeric_limits<int>::max()) const;
+
+  /**
+   * @brief Gets analytic path connecting two poses
+   * @param start Start coordinates
+   * @param goal Goal coordinates
+   * @param node Node pointer
+   * @return CoordinatesVector Analytic path connecting two poses
+   */
+  CoordinatesVector GetAnalyticPath(const Coordinates& start,
+                                    const Coordinates& goal,
+                                    const NodePtr& node) const;
 
   /**
    * @brief Gets length of analytic path connecting two poses
    * @param start Start coordinates
    * @param goal Goal coordinates
-   * @param node
+   * @param node Node pointer
    * @return double Length of analytic path connecting start and goal
    */
   double GetAnalyticPathLength(const Coordinates& start,

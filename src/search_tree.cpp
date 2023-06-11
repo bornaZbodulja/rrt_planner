@@ -20,6 +20,15 @@ SearchTree<NodeT>::~SearchTree() {
 }
 
 template <typename NodeT>
+void SearchTree<NodeT>::InitializeSearchTree(const NodePtr& root_node,
+                                             const NodePtr& target_node,
+                                             const double& near_distance) {
+  SetRootNode(root_node);
+  SetTargetNode(target_node);
+  near_distance_ = near_distance;
+}
+
+template <typename NodeT>
 bool SearchTree<NodeT>::IsNodeInTree(const NodePtr& node) {
   const auto node_in_tree =
       std::find(tree_.begin(), tree_.end(), node) != tree_.end();
@@ -73,7 +82,7 @@ void SearchTree<NodeT>::GetNearNodes(const unsigned int& index,
                                           (*current_it)->coordinates);
     // If computed distance smaller than near distance, adding node to near
     // nodes vector
-    if (distance <= near_distance) {
+    if (distance <= near_distance_) {
       near_nodes.push_back(*current_it);
     }
   }
@@ -84,7 +93,7 @@ void SearchTree<NodeT>::RewireTree(NodePtr& new_node, NodeVector& near_nodes,
                                    const CollisionCheckerPtr& collision_checker,
                                    const unsigned char& lethal_cost,
                                    const bool& allow_unknown) {
-  if (near_nodes.empty()) {
+  if (near_nodes.empty() && new_node == nullptr) {
     return;
   }
 
@@ -104,8 +113,8 @@ void SearchTree<NodeT>::RewireTree(NodePtr& new_node, NodeVector& near_nodes,
     if (smaller_cost_approach_found) {
       connection_valid =
           new_node
-              ->ConnectNode(near_node->GetIndex(), collision_checker,
-                            lethal_cost, allow_unknown)
+              ->ExpandNode(near_node->coordinates, collision_checker,
+                           lethal_cost, allow_unknown)
               .has_value();
     }
 

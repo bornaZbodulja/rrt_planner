@@ -48,6 +48,16 @@ class SearchTree {
   ~SearchTree();
 
   /**
+   * @brief Initializes search tree
+   * @param root_node Root node for search tree
+   * @param target_node Target node for search tree
+   * @param near_distance Defines neighbourhood of the nodes in tree
+   */
+  void InitializeSearchTree(const NodePtr& root_node,
+                            const NodePtr& target_node,
+                            const double& near_distance);
+
+  /**
    * @brief Reserves memory
    * @param size
    */
@@ -57,21 +67,6 @@ class SearchTree {
    * @brief Clears memory
    */
   inline void Clear() { tree_.clear(); }
-
-  /**
-   * @brief Sets root node for the search tree
-   * @param node Pointer to root node
-   */
-  inline void SetRootNode(const NodePtr& node) {
-    root_node_ = node;
-    AddVertex(root_node_);
-  }
-
-  /**
-   * @brief Sets target node for the search tree
-   * @param node Pointer to target node
-   */
-  inline void SetTargetNode(const NodePtr& node) { target_node_ = node; }
 
   /**
    * @brief Adds node to the search tree
@@ -118,12 +113,30 @@ class SearchTree {
    */
   TreeMsg TreeToMsg();
 
-  // Defines neighborhood of the node
-  inline static double near_distance{0.0};
-
  private:
-  NodePtr root_node_, target_node_;
+  /**
+   * @brief Sets root node for the search tree
+   * @param node Pointer to root node
+   */
+  inline void SetRootNode(const NodePtr& node) {
+    root_node_ = node;
+    AddVertex(root_node_);
+  }
+
+  /**
+   * @brief Sets target node for the search tree
+   * @param node Pointer to target node
+   */
+  inline void SetTargetNode(const NodePtr& node) { target_node_ = node; }
+
+  // Root node pointer
+  NodePtr root_node_;
+  // Target node pointer
+  NodePtr target_node_;
+  // Holder for nodes in tree
   NodeVector tree_;
+  // Defines neighbourhood of the nodes in tree
+  double near_distance_{0.0};
 };
 
 }  // namespace rrt_planner

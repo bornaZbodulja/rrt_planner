@@ -152,16 +152,17 @@ class Node2D {
                    const unsigned char& lethal_cost, const bool& allow_unknown);
 
   /**
-   * @brief Tries to connect this node with newly expanded one
-   * @param index Given index for tree expansion
+   * @brief Tries to expand this node towards given coordinates
+   * @param coordinates Given coordinates for expansion
    * @param collision_checker Collision checker pointer
    * @param lethal_cost Lethal cost for collision checking
    * @param allow_unknown Whether to allow unknown costs
    * @param edge_length Length of edge in search tree
-   * @return Index of connected node if connection is valid, nullopt otherwise
+   * @return Index of expanded node if connection is valid, nullopt otherwise
    */
-  std::optional<unsigned int> ConnectNode(
-      const unsigned int& index, const CollisionCheckerPtr& collision_checker,
+  std::optional<unsigned int> ExpandNode(
+      const Coordinates& coordinates,
+      const CollisionCheckerPtr& collision_checker,
       const unsigned char& lethal_cost, const bool& allow_unknown,
       const int& edge_length = std::numeric_limits<int>::max());
 
@@ -173,10 +174,17 @@ class Node2D {
   void RewireNode(const NodePtr& parent, const double& accumulated_cost);
 
   /**
-   * @brief Backtrace path to root node
-   * @return CoordinatesVector Path from this node to root
+   * @brief Returns path connecting this and given node
+   * @param node Node pointer
+   * @return CoordinatesVector
    */
-  CoordinatesVector BackTracePath();
+  CoordinatesVector ConnectNode(const NodePtr& node);
+
+  /**
+   * @brief Backtrace path to root node
+   * @return NodeVector Path from this node to root
+   */
+  NodeVector BackTracePath();
 
   /**
    * @brief Initializes motion model for Node2D

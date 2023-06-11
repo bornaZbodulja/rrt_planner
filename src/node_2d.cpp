@@ -52,15 +52,13 @@ double Node2D::GetTraversalCost(const NodePtr& child) {
          motion_table.cell_cost_multiplier * normalized_cost;
 }
 
-std::optional<unsigned int> Node2D::ConnectNode(
-    const unsigned int& index, const CollisionCheckerPtr& collision_checker,
+std::optional<unsigned int> Node2D::ExpandNode(
+    const Coordinates& coordinates,
+    const CollisionCheckerPtr& collision_checker,
     const unsigned char& lethal_cost, const bool& allow_unknown,
     const int& edge_length) {
-  const Coordinates child_coordinates = GetCoordinates(index);
-
-  auto line =
-      LineIteratorT(this->coordinates.x, this->coordinates.y,
-                    child_coordinates.x, child_coordinates.y, edge_length);
+  auto line = LineIteratorT(this->coordinates.x, this->coordinates.y,
+                            coordinates.x, coordinates.y, edge_length);
   bool line_point_in_collision{false};
 
   for (; line.IsValid(); line.Advance()) {
@@ -78,17 +76,29 @@ std::optional<unsigned int> Node2D::ConnectNode(
   return std::make_optional(connected_node_index);
 }
 
+Node2D::CoordinatesVector Node2D::ConnectNode(const NodePtr& node) {
+  auto line = LineIteratorT(this->coordinates.x, this->coordinates.y,
+                            node->coordinates.x, node->coordinates.y);
+  CoordinatesVector connection;
+
+  for (; line.IsValid(); line.Advance()) {
+    connection.emplace_back(line.GetCurrentX(), line.GetCurrentY());
+  }
+
+  return connection;
+}
+
 void Node2D::RewireNode(const NodePtr& parent, const double& accumulated_cost) {
   this->parent = parent;
   accumulated_cost_ = accumulated_cost;
 }
 
-Node2D::CoordinatesVector Node2D::BackTracePath() {
-  CoordinatesVector path;
+Node2D::NodeVector Node2D::BackTracePath() {
+  NodeVector path;
   NodePtr current_node = this;
 
   while (current_node != nullptr) {
-    path.push_back(current_node->coordinates);
+    path.push_back(current_node);
     current_node = current_node->parent;
   }
 

@@ -134,8 +134,7 @@ class RRTStar {
    * @param cost_penalty
    * @param near_distance
    */
-  void InitializeSearch(const unsigned int& size, const double& cost_penalty,
-                        const double& near_distance);
+  void InitializeSearch(const unsigned int& size, const double& near_distance);
 
   /**
    * @brief Extends search tree with passed index
@@ -185,6 +184,13 @@ class RRTStar {
   NodePtr ChooseParent(NodePtr& new_node, NodeVector& near_nodes,
                        const unsigned char& lethal_cost,
                        const bool& allow_unknown);
+
+  /**
+   * @brief Prepares path by iterating through node vector and connecting nodes
+   * @param path Node vector path from start to goal
+   * @return CoordinatesVector
+   */
+  CoordinatesVector PreparePath(const NodeVector& path);
 
   /**
    * @brief Gets new index for tree expansion
