@@ -51,7 +51,7 @@ typename SearchTree<NodeT>::NodePtr SearchTree<NodeT>::GetClosestNode(
 
   for (auto current_it = tree_.begin(); current_it < tree_.end();
        current_it++) {
-    distance = NodeT::CoordinatesDistance(new_node_coordinates,
+    distance = CoordinatesDistanceSquared(new_node_coordinates,
                                           (*current_it)->coordinates);
     // If computed distance smaller than smallest, update nearest iterator and
     // smallest distance
@@ -75,14 +75,15 @@ void SearchTree<NodeT>::GetNearNodes(const unsigned int& index,
 
   const Coordinates new_node_coordinates = NodeT::GetCoordinates(index);
   double distance{0.0};
+  double near_distance_squared = std::pow(near_distance_, 2);
 
   for (auto current_it = tree_.cbegin(); current_it < tree_.cend();
        current_it++) {
-    distance = NodeT::CoordinatesDistance(new_node_coordinates,
+    distance = CoordinatesDistanceSquared(new_node_coordinates,
                                           (*current_it)->coordinates);
     // If computed distance smaller than near distance, adding node to near
     // nodes vector
-    if (distance <= near_distance_) {
+    if (distance <= near_distance_squared) {
       near_nodes.push_back(*current_it);
     }
   }
@@ -138,6 +139,14 @@ typename SearchTree<NodeT>::TreeMsg SearchTree<NodeT>::TreeToMsg() {
   }
 
   return msg;
+}
+
+template <typename NodeT>
+double SearchTree<NodeT>::CoordinatesDistanceSquared(
+    const Coordinates& first_coordinates,
+    const Coordinates& second_coordinates) const {
+  return std::pow(first_coordinates.x - second_coordinates.x, 2) +
+         std::pow(first_coordinates.y - second_coordinates.y, 2);
 }
 
 // Instantiate algorithm for the supported template types
