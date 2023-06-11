@@ -98,10 +98,10 @@ class NodeHybrid {
    */
   struct Coordinates {
     Coordinates() {}
-    Coordinates(const int& x_in, const int& y_in, const int& theta_in)
+    Coordinates(const double& x_in, const double& y_in, const double& theta_in)
         : x(x_in), y(y_in), theta(theta_in) {}
 
-    int x{0}, y{0}, theta{0};
+    double x{0}, y{0}, theta{0};
   };
   typedef std::vector<Coordinates> CoordinatesVector;
 

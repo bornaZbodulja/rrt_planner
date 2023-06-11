@@ -26,11 +26,11 @@ namespace rrt_planner {
  * @param costmap Costmap 2D pointer
  * @return geometry_msgs::Pose
  */
-geometry_msgs::Pose GetWorldCoordinates(const unsigned int& mx,
-                                        const unsigned int& my,
+geometry_msgs::Pose GetWorldCoordinates(const double& mx, const double& my,
                                         costmap_2d::Costmap2D* costmap) {
   geometry_msgs::Pose pose;
-  costmap->mapToWorld(mx, my, pose.position.x, pose.position.y);
+  pose.position.x = costmap->getOriginX() + mx * costmap->getResolution();
+  pose.position.y = costmap->getOriginY() + my * costmap->getResolution();
   return pose;
 }
 

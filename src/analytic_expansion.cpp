@@ -45,7 +45,7 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
   static const double sqrt_2 = std::sqrt(2.0);
   int intervals = std::floor(d / sqrt_2);
   int iterations = (max_length > intervals) ? intervals : max_length;
-  int angle{0};
+  double angle{0.0};
   Coordinates coordinates{};
   bool pose_in_collision{false};
   std::vector<double> reals;
@@ -56,8 +56,7 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
     reals = s.reals();
     nav_utils::NormalizeAngle(reals[2]);
     angle = node->motion_table.GetClosestAngularBin(reals[2]);
-    coordinates = {static_cast<int>(reals[0]), static_cast<int>(reals[1]),
-                   angle};
+    coordinates = {reals[0], reals[1], angle};
     pose_in_collision = collision_checker_->PoseInCollision(
         static_cast<unsigned int>(coordinates.x),
         static_cast<unsigned int>(coordinates.y), reals[2], lethal_cost,
@@ -94,7 +93,7 @@ AnalyticExpansion<NodeT>::GetAnalyticPath(const Coordinates& start,
   const auto d = node->motion_table.state_space->distance(from(), to());
   static const double sqrt_2 = std::sqrt(2.0);
   int intervals = std::floor(d / sqrt_2);
-  int angle{0};
+  double angle{0.0};
   Coordinates coordinates{};
   CoordinatesVector analytic_path{};
   std::vector<double> reals;
@@ -108,8 +107,7 @@ AnalyticExpansion<NodeT>::GetAnalyticPath(const Coordinates& start,
     reals = s.reals();
     nav_utils::NormalizeAngle(reals[2]);
     angle = node->motion_table.GetClosestAngularBin(reals[2]);
-    analytic_path.emplace_back(static_cast<int>(reals[0]),
-                               static_cast<int>(reals[1]), angle);
+    analytic_path.emplace_back(reals[0], reals[1], angle);
   }
 
   analytic_path.push_back(goal);
