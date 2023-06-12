@@ -52,7 +52,7 @@ double Node2D::GetTraversalCost(const NodePtr& child) {
          motion_table.cell_cost_multiplier * normalized_cost;
 }
 
-std::optional<unsigned int> Node2D::ExpandNode(
+std::optional<unsigned int> Node2D::ExtendNode(
     const Coordinates& coordinates,
     const CollisionCheckerPtr& collision_checker,
     const unsigned char& lethal_cost, const bool& allow_unknown,

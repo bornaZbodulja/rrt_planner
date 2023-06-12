@@ -191,15 +191,15 @@ class NodeHybrid {
                    const unsigned char& lethal_cost, const bool& allow_unknown);
 
   /**
-   * @brief Tries to expand this node towards given coordinates
+   * @brief Tries to extend this node towards given coordinates
    * @param coordinates Given coordinates for expansion
    * @param collision_checker Collision checker pointer
    * @param lethal_cost Lethal cost for collision checker
    * @param allow_unknown Whether to allow unknown costs
    * @param edge_length Length of edge in search tree
-   * @return Index of expanded node if connection is valid, nullopt otherwise
+   * @return Index of extended node if connection is valid, nullopt otherwise
    */
-  std::optional<unsigned int> ExpandNode(
+  std::optional<unsigned int> ExtendNode(
       const Coordinates& coordinates,
       const CollisionCheckerPtr& collision_checker,
       const unsigned char& lethal_cost, const bool& allow_unknown,

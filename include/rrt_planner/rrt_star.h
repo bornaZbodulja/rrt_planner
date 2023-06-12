@@ -163,6 +163,7 @@ class RRTStar {
    * method)
    * @param second_tree Second search tree
    * @param path Path connecting start and goal nodes
+   * @param connect_trees_max_length Max length of connection between trees
    * @param lethal_cost Lethal cost for collision checking
    * @param allow_unknown Whether to allow path to go to unknown areas
    * @return True if search trees are connected and path is created, false
@@ -170,6 +171,7 @@ class RRTStar {
    */
   bool ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
                     SearchTree<NodeT>& second_tree, CoordinatesVector& path,
+                    const double& connect_trees_max_length,
                     const unsigned char& lethal_cost,
                     const bool& allow_unknown);
 

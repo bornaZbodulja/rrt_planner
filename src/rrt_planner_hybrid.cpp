@@ -147,7 +147,11 @@ bool RRTPlannerHybrid::makePlan(const geometry_msgs::PoseStamped& start,
 }
 
 void RRTPlannerHybrid::LoadParams() {
-  nh_.param<int>("edge_length", search_info_.edge_length, 5);
+  double edge_length_double;
+  nh_.param<double>("edge_length", edge_length_double, 0.2);
+  // Scaling with costmap resolution
+  search_info_.edge_length =
+      std::ceil(edge_length_double / costmap_->getResolution());
   nh_.param<double>("target_bias", search_info_.target_bias, 0.05);
   nh_.param<double>("near_distance", search_info_.near_distance, 20.0);
   nh_.param<double>("cost_penalty", search_info_.cost_penalty, 2.0);
@@ -156,15 +160,18 @@ void RRTPlannerHybrid::LoadParams() {
   nh_.param<int>("max_expansion_iterations",
                  search_info_.max_expansion_iterations, 100000);
   nh_.param<double>("max_planning_time", search_info_.max_planning_time, 5.0);
+  nh_.param<double>("connect_trees_max_length",
+                    search_info_.connect_trees_max_length, 10.0);
+  // Scaling with costmap resolution
+  search_info_.connect_trees_max_length /= costmap_->getResolution();
 
   int lethal_cost_int;
   nh_.param<int>("lethal_cost", lethal_cost_int, 253);
   search_info_.lethal_cost = static_cast<unsigned char>(lethal_cost_int);
 
-  double turning_radius_global;
-  nh_.param<double>("min_turning_radius", turning_radius_global, 1.0);
-  search_info_.min_turning_radius =
-      turning_radius_global / costmap_->getResolution();
+  nh_.param<double>("min_turning_radius", search_info_.min_turning_radius, 1.0);
+  // Scaling with costmap resolution
+  search_info_.min_turning_radius /= costmap_->getResolution();
 
   int angle_bin_size_int;
   nh_.param<int>("angle_bin_size", angle_bin_size_int, 90);

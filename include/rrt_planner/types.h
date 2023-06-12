@@ -18,7 +18,7 @@ namespace rrt_planner {
  * @brief Holds search properties and penalties for planning
  */
 struct SearchInfo {
-  // Defines length of the edges connecting nodes in search tree
+  // Defines length of the edges connecting nodes in search tree in map cells
   int edge_length{0};
   // Defines bias towards target of the search tree when generating random node
   // (between 0.0 and 1.0)
@@ -31,6 +31,8 @@ struct SearchInfo {
   double min_turning_radius{0.0};
   // Whether to rewire tree after every expansion
   bool rewire_tree{false};
+  // Max length of connection between trees
+  double connect_trees_max_length{0.0};
   // Whether to allow expansion in unknown space
   bool allow_unknown{false};
   // Lethal cost for collision checking

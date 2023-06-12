@@ -114,7 +114,7 @@ void SearchTree<NodeT>::RewireTree(NodePtr& new_node, NodeVector& near_nodes,
     if (smaller_cost_approach_found) {
       connection_valid =
           new_node
-              ->ExpandNode(near_node->coordinates, collision_checker,
+              ->ExtendNode(near_node->coordinates, collision_checker,
                            lethal_cost, allow_unknown)
               .has_value();
     }

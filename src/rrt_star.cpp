@@ -116,6 +116,8 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   const unsigned char& lethal_cost = search_info_.lethal_cost;
   const int& edge_length = search_info_.edge_length;
   const double& near_distance = search_info_.near_distance;
+  const double& connect_trees_max_length =
+      search_info_.connect_trees_max_length;
   const unsigned int& state_space_size = size_x_ * size_y_ * dim_3_;
 
   const auto start_time = steady_clock::now();
@@ -158,10 +160,12 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
 
     // 3) Try connecting searches trees
     tree_connection_res =
-        expanding_start_tree ? ConnectTrees(new_node, closest_node, goal_tree_,
-                                            path, lethal_cost, allow_unknown)
-                             : ConnectTrees(new_node, closest_node, start_tree_,
-                                            path, lethal_cost, allow_unknown);
+        expanding_start_tree
+            ? ConnectTrees(new_node, closest_node, goal_tree_, path,
+                           connect_trees_max_length, lethal_cost, allow_unknown)
+            : ConnectTrees(new_node, closest_node, start_tree_, path,
+                           connect_trees_max_length, lethal_cost,
+                           allow_unknown);
 
     if (tree_expansion_res && tree_connection_res) {
       ROS_INFO(
@@ -223,7 +227,7 @@ bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
 
   // Try connecting closest node with the indexed node
   const auto connection_res =
-      closest_node->ExpandNode(NodeT::GetCoordinates(index), collision_checker_,
+      closest_node->ExtendNode(NodeT::GetCoordinates(index), collision_checker_,
                                lethal_cost, allow_unknown, edge_length);
 
   if (!connection_res.has_value()) {
@@ -281,6 +285,7 @@ template <typename NodeT>
 bool RRTStar<NodeT>::ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
                                   SearchTree<NodeT>& second_tree,
                                   CoordinatesVector& path,
+                                  const double& connect_trees_max_length,
                                   const unsigned char& lethal_cost,
                                   const bool& allow_unknown) {
   if (new_node == nullptr) {
@@ -294,8 +299,14 @@ bool RRTStar<NodeT>::ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
     return false;
   }
 
+  if (NodeT::CoordinatesDistance(new_node->coordinates,
+                                 closest_node->coordinates) >
+      connect_trees_max_length) {
+    return false;
+  }
+
   auto connection_res =
-      new_node->ExpandNode(closest_node->coordinates, collision_checker_,
+      new_node->ExtendNode(closest_node->coordinates, collision_checker_,
                            lethal_cost, allow_unknown);
 
   if (!connection_res.has_value()) {
@@ -340,7 +351,7 @@ typename RRTStar<NodeT>::NodePtr RRTStar<NodeT>::ChooseParent(
     if (smaller_cost_parent_found) {
       connection_valid =
           near_node
-              ->ExpandNode(new_node->coordinates, collision_checker_,
+              ->ExtendNode(new_node->coordinates, collision_checker_,
                            lethal_cost, allow_unknown)
               .has_value();
     }
@@ -358,12 +369,13 @@ template <typename NodeT>
 typename RRTStar<NodeT>::CoordinatesVector RRTStar<NodeT>::PreparePath(
     const NodeVector& path) {
   CoordinatesVector coordinates_path, segment;
-  NodePtr current_node, next_node;
+  NodePtr current_node, parent_node;
 
   for (size_t i = 0; i < path.size() - 1; i++) {
     current_node = path.at(i);
-    next_node = path.at(i + 1);
-    segment = current_node->ConnectNode(next_node);
+    parent_node = path.at(i + 1);
+    segment = parent_node->ConnectNode(current_node);
+    std::reverse(segment.begin(), segment.end());
     std::move(segment.begin(), segment.end(),
               std::back_inserter(coordinates_path));
   }

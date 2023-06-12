@@ -70,7 +70,7 @@ bool NodeHybrid::IsNodeValid(const CollisionCheckerPtr& collision_checker,
       allow_unknown);
 }
 
-std::optional<unsigned int> NodeHybrid::ExpandNode(
+std::optional<unsigned int> NodeHybrid::ExtendNode(
     const Coordinates& coordinates,
     const CollisionCheckerPtr& collision_checker,
     const unsigned char& lethal_cost, const bool& allow_unknown,
