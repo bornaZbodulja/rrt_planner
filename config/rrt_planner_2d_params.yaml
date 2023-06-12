@@ -1,7 +1,7 @@
 RRTPlanner2D:
   edge_length: 0.1 # [m] Defines length of the edges connecting nodes in search tree
   target_bias: 0.05 # Defines bias towards target of the search tree when generating random node (between 0.0 and 1.0)
-  near_distance: 20.0 # [m] Defines neighborhood of the nodes in the search tree
+  near_distance: 0.5 # [m] Defines neighborhood of the nodes in the search tree
   cost_penalty: 2.0 # Penalty to apply to high cost areas
   rewire_tree: true # Whether to rewire tree after every expansion
   connect_trees_max_length: 10 # [m] Maximal Euclidean distance between two trees to try connecting them
