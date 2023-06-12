@@ -153,7 +153,9 @@ void RRTPlannerHybrid::LoadParams() {
   search_info_.edge_length =
       std::ceil(edge_length_double / costmap_->getResolution());
   nh_.param<double>("target_bias", search_info_.target_bias, 0.05);
-  nh_.param<double>("near_distance", search_info_.near_distance, 20.0);
+  nh_.param<double>("near_distance", search_info_.near_distance, 0.5);
+  // Scaling with costmap resolution
+  search_info_.near_distance /= costmap_->getResolution();
   nh_.param<double>("cost_penalty", search_info_.cost_penalty, 2.0);
   nh_.param<bool>("rewire_tree", search_info_.rewire_tree, true);
   nh_.param<bool>("allow_unknown", search_info_.allow_unknown, false);
