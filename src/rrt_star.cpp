@@ -46,9 +46,8 @@ void RRTStar<NodeT>::InitializeStateSpace(const unsigned int& size_x,
   size_y_ = size_y;
   dim_3_ = dim_3;
 
-  const int state_space_size = size_x_ * size_y_ * dim_3_;
   ClearGraph();
-  ReserveGraph(state_space_size);
+  ReserveGraph(search_info_.max_expansion_iterations);
   NodeT::InitializeMotionModel(size_x_, dim_3_, search_info_, motion_model_);
 }
 
@@ -60,9 +59,8 @@ void RRTStar<Node2D>::InitializeStateSpace(const unsigned int& size_x,
   size_y_ = size_y;
   dim_3_ = 1;
 
-  const int state_space_size = size_x_ * size_y_;
   ClearGraph();
-  ReserveGraph(state_space_size);
+  ReserveGraph(search_info_.max_expansion_iterations);
   Node2D::InitializeMotionModel(size_x_, search_info_, motion_model_);
 }
 
