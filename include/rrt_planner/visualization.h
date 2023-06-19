@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "rrt_planner/node_2d.h"
-
+#include "rrt_planner/node_hybrid.h"
 namespace rrt_planner {
 
 /**

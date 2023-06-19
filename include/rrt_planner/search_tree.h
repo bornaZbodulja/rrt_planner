@@ -1,7 +1,7 @@
 /**
  * @file search_tree.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief
+ * @brief Search tree class implementation
  * @version 0.1
  * @date 2023-05-06
  *
@@ -15,15 +15,17 @@
 #include <geometry_msgs/Pose.h>
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 #include <vector>
 
 #include "rrt_planner/node_2d.h"
+#include "rrt_planner/node_hybrid.h"
 
 namespace rrt_planner {
 
 /**
- * @brief
+ * @brief Search tree class implementation
  * @tparam NodeT
  */
 template <typename NodeT>
@@ -47,6 +49,16 @@ class SearchTree {
   ~SearchTree();
 
   /**
+   * @brief Initializes search tree
+   * @param root_node Root node for search tree
+   * @param target_node Target node for search tree
+   * @param near_distance Defines neighborhood of the nodes in tree
+   */
+  void InitializeSearchTree(const NodePtr& root_node,
+                            const NodePtr& target_node,
+                            const double& near_distance);
+
+  /**
    * @brief Reserves memory
    * @param size
    */
@@ -56,21 +68,6 @@ class SearchTree {
    * @brief Clears memory
    */
   inline void Clear() { tree_.clear(); }
-
-  /**
-   * @brief Sets root node for the search tree
-   * @param node Pointer to root node
-   */
-  inline void SetRootNode(const NodePtr& node) {
-    root_node_ = node;
-    AddVertex(root_node_);
-  }
-
-  /**
-   * @brief Sets target node for the search tree
-   * @param node Pointer to target node
-   */
-  inline void SetTargetNode(const NodePtr& node) { target_node_ = node; }
 
   /**
    * @brief Adds node to the search tree
@@ -114,16 +111,43 @@ class SearchTree {
 
   /**
    * @brief Generates msg form of search tree
-   * @param msg
    */
   TreeMsg TreeToMsg();
 
-  // Defines neighborhood of the node
-  inline static double near_distance{0.0};
-
  private:
-  NodePtr root_node_, target_node_;
+  /**
+   * @brief Sets root node for the search tree
+   * @param node Pointer to root node
+   */
+  inline void SetRootNode(const NodePtr& node) {
+    root_node_ = node;
+    AddVertex(root_node_);
+  }
+
+  /**
+   * @brief Sets target node for the search tree
+   * @param node Pointer to target node
+   */
+  inline void SetTargetNode(const NodePtr& node) { target_node_ = node; }
+
+  /**
+   * @brief Computes squared distance between two node coordinates
+   * @param first_coordinates
+   * @param second_coordinates
+   * @return double
+   */
+  double CoordinatesDistanceSquared(
+      const Coordinates& first_coordinates,
+      const Coordinates& second_coordinates) const;
+
+  // Root node pointer
+  NodePtr root_node_;
+  // Target node pointer
+  NodePtr target_node_;
+  // Holder for nodes in tree
   NodeVector tree_;
+  // Defines neighborhood of the nodes in tree
+  double near_distance_{0.0};
 };
 
 }  // namespace rrt_planner

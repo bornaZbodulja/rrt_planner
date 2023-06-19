@@ -39,5 +39,6 @@
 
   <export>
     <nav_core plugin="${prefix}/rrt_plugin_2d.xml" />
+    <nav_core plugin="${prefix}/rrt_plugin_hybrid.xml" />
   </export>
 </package>

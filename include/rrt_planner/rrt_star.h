@@ -17,7 +17,9 @@
 #include <vector>
 
 #include "nav_utils/nav_utils.h"
+#include "rrt_planner/constants.h"
 #include "rrt_planner/node_2d.h"
+#include "rrt_planner/node_hybrid.h"
 #include "rrt_planner/search_graph.h"
 #include "rrt_planner/search_tree.h"
 #include "rrt_planner/types.h"
@@ -40,10 +42,12 @@ class RRTStar {
 
   /**
    * @brief Constructor for RRT*
+   * @param motion_model Motion model (2D, Dubins, Reeds-Shepp)
    * @param search_info Search info
    * @param collision_checker Collision checker pointer
    */
-  explicit RRTStar(const SearchInfo& search_info,
+  explicit RRTStar(const MotionModel& motion_model,
+                   const SearchInfo& search_info,
                    const CollisionCheckerPtr& collision_checker);
 
   /**
@@ -60,6 +64,14 @@ class RRTStar {
   void InitializeStateSpace(const unsigned int& size_x,
                             const unsigned int& size_y,
                             const unsigned int& dim_3);
+
+  /**
+   * @brief Updates motion model for the planner
+   * @param motion_model Motion model
+   */
+  inline void UpdateMotionModel(const MotionModel& motion_model) {
+    motion_model_ = motion_model;
+  }
 
   /**
    * @brief Updates search info for the planner
@@ -122,40 +134,44 @@ class RRTStar {
    * @param cost_penalty
    * @param near_distance
    */
-  void InitializeSearch(const unsigned int& size, const double& cost_penalty,
-                        const double& near_distance);
+  void InitializeSearch(const unsigned int& size, const double& near_distance);
 
   /**
    * @brief Extends search tree with passed index
-   * @param index
+   * @param index Generated index for tree expansion
    * @param tree Search tree
    * @param new_node Pointer to new node added to tree
-   * @param closest_node
-   * @param near_nodes
-   * @param edge_length
-   * @param lethal_cost
-   * @param allow_unknown
+   * @param closest_node Closest node to newly generated indexed one
+   * @param near_nodes Neighborhood of newly created node
+   * @param edge_length Length of edges connecting nodes in search tree
+   * @param rewire_tree Whether to rewire tree around newly added node
+   * @param lethal_cost Lethal cost for collision checking
+   * @param allow_unknown Whether to allow expansion in unknown areas
    * @return True if tree was successfully extended, false otherwise
    */
   bool ExtendTree(const unsigned int& index, SearchTree<NodeT>& tree,
                   NodePtr& new_node, NodePtr& closest_node,
                   NodeVector& near_nodes, const int& edge_length,
-                  const unsigned char& lethal_cost, const bool& allow_unknown);
+                  const bool& rewire_tree, const unsigned char& lethal_cost,
+                  const bool& allow_unknown);
 
   /**
-   * @brief
+   * @brief Tries connecting second search tree with newly added node to first
+   * search tree
    * @param new_node New node added to first search tree
    * @param closest_node Closest node to new node in second tree (filled by
    * method)
    * @param second_tree Second search tree
-   * @param path
-   * @param lethal_cost
-   * @param allow_unknown
+   * @param path Path connecting start and goal nodes
+   * @param connect_trees_max_length Max length of connection between trees
+   * @param lethal_cost Lethal cost for collision checking
+   * @param allow_unknown Whether to allow path to go to unknown areas
    * @return True if search trees are connected and path is created, false
    * otherwise
    */
   bool ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
                     SearchTree<NodeT>& second_tree, CoordinatesVector& path,
+                    const double& connect_trees_max_length,
                     const unsigned char& lethal_cost,
                     const bool& allow_unknown);
 
@@ -163,13 +179,20 @@ class RRTStar {
    * @brief Picks best parent for new node from near nodes
    * @param new_node
    * @param near_nodes
-   * @param lethal_cost
-   * @param allow_unknown
+   * @param lethal_cost Lethal cost for collision checking
+   * @param allow_unknown Whether to allow connection to go in unknown areas
    * @return NodePtr
    */
   NodePtr ChooseParent(NodePtr& new_node, NodeVector& near_nodes,
                        const unsigned char& lethal_cost,
                        const bool& allow_unknown);
+
+  /**
+   * @brief Prepares path by iterating through node vector and connecting nodes
+   * @param path Node vector path from start to goal
+   * @return CoordinatesVector
+   */
+  CoordinatesVector PreparePath(const NodeVector& path);
 
   /**
    * @brief Gets new index for tree expansion
@@ -218,6 +241,8 @@ class RRTStar {
   SearchTree<NodeT> start_tree_;
   // Second search tree (doing bidirectional search)
   SearchTree<NodeT> goal_tree_;
+  // Motion model
+  MotionModel motion_model_;
   // Planning search info
   SearchInfo search_info_;
   // Collision checker pointer
