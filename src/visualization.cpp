@@ -49,9 +49,8 @@ void Visualization<NodeT>::SetPathVisualization(
 
 template <typename NodeT>
 void Visualization<NodeT>::SetSearchTreeVisualization(
-    const TreeMsg& start_tree, const TreeMsg& goal_tree) {
-  AddTree(start_tree, START_TREE);
-  AddTree(goal_tree, GOAL_TREE);
+    const TreeMsg& tree) {
+  AddTree(tree, START_TREE);
 }
 
 template <typename NodeT>

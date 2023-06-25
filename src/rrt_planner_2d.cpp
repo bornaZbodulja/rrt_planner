@@ -124,8 +124,7 @@ bool RRTPlanner2D::makePlan(const geometry_msgs::PoseStamped& start,
     plan = ProcessPath(path.value(), start, goal);
   }
 
-  UpdateVisualization(plan, rrt_star_->GetStartTree(),
-                      rrt_star_->GetGoalTree());
+  UpdateVisualization(plan, rrt_star_->GetSearchTree());
   PublishVisualization();
 
   if (!found_path) {
@@ -208,9 +207,7 @@ RRTPlanner2D::PlanT RRTPlanner2D::ProcessPath(
   return plan;
 }
 
-void RRTPlanner2D::UpdateVisualization(const PlanT& plan,
-                                       const TreeMsg& start_tree,
-                                       const TreeMsg& goal_tree) {
+void RRTPlanner2D::UpdateVisualization(const PlanT& plan, const TreeMsg& tree) {
   visualization_handler_->SetPathVisualization(plan);
-  visualization_handler_->SetSearchTreeVisualization(start_tree, goal_tree);
+  visualization_handler_->SetSearchTreeVisualization(tree);
 }

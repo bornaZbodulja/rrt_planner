@@ -109,16 +109,10 @@ class RRTStar {
                const unsigned int& dim_3);
 
   /**
-   * @brief Gets reference to start tree
+   * @brief Gets reference to search tree
    * @return TreeMsg&
    */
-  inline TreeMsg GetStartTree() { return start_tree_.TreeToMsg(); }
-
-  /**
-   * @brief Gets reference to goal tree
-   * @return TreeMsg&
-   */
-  inline TreeMsg GetGoalTree() { return goal_tree_.TreeToMsg(); }
+  inline TreeMsg GetSearchTree() { return tree_.TreeToMsg(); }
 
   /**
    * @brief Creates path from given start and goal
@@ -156,12 +150,9 @@ class RRTStar {
                   const bool& allow_unknown);
 
   /**
-   * @brief Tries connecting second search tree with newly added node to first
-   * search tree
-   * @param new_node New node added to first search tree
-   * @param closest_node Closest node to new node in second tree (filled by
-   * method)
-   * @param second_tree Second search tree
+   * @brief Tries connecting newly added node with goal
+   * @param new_node New node added to search tree
+   * @param tree Search tree
    * @param path Path connecting start and goal nodes
    * @param connect_trees_max_length Max length of connection between trees
    * @param lethal_cost Lethal cost for collision checking
@@ -169,11 +160,10 @@ class RRTStar {
    * @return True if search trees are connected and path is created, false
    * otherwise
    */
-  bool ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
-                    SearchTree<NodeT>& second_tree, CoordinatesVector& path,
-                    const double& connect_trees_max_length,
-                    const unsigned char& lethal_cost,
-                    const bool& allow_unknown);
+  bool ConnectTree(NodePtr& new_node, NodePtr& target,
+                   CoordinatesVector& path,
+                   const double& connect_trees_max_length,
+                   const unsigned char& lethal_cost, const bool& allow_unknown);
 
   /**
    * @brief Picks best parent for new node from near nodes
@@ -237,10 +227,8 @@ class RRTStar {
   NodePtr goal_;
   // Search graph
   SearchGraph<NodeT> graph_;
-  // First search tree
-  SearchTree<NodeT> start_tree_;
-  // Second search tree (doing bidirectional search)
-  SearchTree<NodeT> goal_tree_;
+  // Search tree
+  SearchTree<NodeT> tree_;
   // Motion model
   MotionModel motion_model_;
   // Planning search info

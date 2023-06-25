@@ -21,8 +21,7 @@ RRTStar<NodeT>::RRTStar(const MotionModel& motion_model,
     : start_(nullptr),
       goal_(nullptr),
       graph_(SearchGraph<NodeT>()),
-      start_tree_(SearchTree<NodeT>()),
-      goal_tree_(SearchTree<NodeT>()) {
+      tree_(SearchTree<NodeT>()) {
   UpdateMotionModel(motion_model);
   UpdateSearchInfo(search_info);
   UpdateCollisionChecker(collision_checker);
@@ -121,7 +120,6 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   const auto start_time = steady_clock::now();
   duration<double> elapsed_time = milliseconds(0);
 
-  auto start_index = start_->GetIndex();
   auto goal_index = goal_->GetIndex();
 
   InitializeSearch(max_iterations, near_distance);
@@ -132,8 +130,6 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   NodePtr new_node{nullptr};
   NodePtr closest_node{nullptr};
   NodeVector near_nodes{};
-  auto& current_target_index{goal_index};
-  bool expanding_start_tree{true};
   bool tree_expansion_res{false};
   bool tree_connection_res{false};
 
@@ -142,28 +138,18 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   while (iterations < max_iterations &&
          elapsed_time.count() < max_planning_time) {
     // 1) Get new index in state space
-    new_index =
-        GetNewIndex(target_bias, current_target_index, state_space_size);
+    new_index = GetNewIndex(target_bias, goal_index, state_space_size);
     iterations++;
 
     // 2) Extend search tree with new index
     tree_expansion_res =
-        expanding_start_tree
-            ? ExtendTree(new_index, start_tree_, new_node, closest_node,
-                         near_nodes, edge_length, rewire_tree, lethal_cost,
-                         allow_unknown)
-            : ExtendTree(new_index, goal_tree_, new_node, closest_node,
-                         near_nodes, edge_length, rewire_tree, lethal_cost,
-                         allow_unknown);
+        ExtendTree(new_index, tree_, new_node, closest_node, near_nodes,
+                   edge_length, rewire_tree, lethal_cost, allow_unknown);
 
-    // 3) Try connecting searches trees
+    // 3) Try connecting new node with goal
     tree_connection_res =
-        expanding_start_tree
-            ? ConnectTrees(new_node, closest_node, goal_tree_, path,
-                           connect_trees_max_length, lethal_cost, allow_unknown)
-            : ConnectTrees(new_node, closest_node, start_tree_, path,
-                           connect_trees_max_length, lethal_cost,
-                           allow_unknown);
+        ConnectTree(new_node, goal_, path, connect_trees_max_length,
+                    lethal_cost, allow_unknown);
 
     if (tree_expansion_res && tree_connection_res) {
       ROS_INFO(
@@ -171,16 +157,8 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
           "planning time: %.3f.",
           iterations, max_iterations, elapsed_time.count());
 
-      if (!expanding_start_tree) {
-        std::reverse(path.begin(), path.end());
-      }
-
       return true;
     }
-
-    // 4) Switching to other tree
-    expanding_start_tree = !expanding_start_tree;
-    current_target_index = expanding_start_tree ? goal_index : start_index;
 
     elapsed_time = steady_clock::now() - start_time;
   }
@@ -196,13 +174,9 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
 template <typename NodeT>
 void RRTStar<NodeT>::InitializeSearch(const unsigned int& size,
                                       const double& near_distance) {
-  start_tree_.Clear();
-  start_tree_.Reserve(size);
-  start_tree_.InitializeSearchTree(start_, goal_, near_distance);
-
-  goal_tree_.Clear();
-  goal_tree_.Reserve(size);
-  goal_tree_.InitializeSearchTree(goal_, start_, near_distance);
+  tree_.Clear();
+  tree_.Reserve(size);
+  tree_.InitializeSearchTree(start_, goal_, near_distance);
 }
 
 template <typename NodeT>
@@ -280,45 +254,31 @@ bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
 }
 
 template <typename NodeT>
-bool RRTStar<NodeT>::ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
-                                  SearchTree<NodeT>& second_tree,
-                                  CoordinatesVector& path,
-                                  const double& connect_trees_max_length,
-                                  const unsigned char& lethal_cost,
-                                  const bool& allow_unknown) {
+bool RRTStar<NodeT>::ConnectTree(NodePtr& new_node, NodePtr& target,
+                                 CoordinatesVector& path,
+                                 const double& connect_trees_max_length,
+                                 const unsigned char& lethal_cost,
+                                 const bool& allow_unknown) {
   if (new_node == nullptr) {
     return false;
   }
 
-  closest_node = nullptr;
-  closest_node = second_tree.GetClosestNode(new_node->GetIndex());
-
-  if (closest_node == nullptr) {
-    return false;
-  }
-
-  if (NodeT::CoordinatesDistance(new_node->coordinates,
-                                 closest_node->coordinates) >
+  if (NodeT::CoordinatesDistance(new_node->coordinates, target->coordinates) >
       connect_trees_max_length) {
     return false;
   }
 
-  auto connection_res =
-      new_node->ExtendNode(closest_node->coordinates, collision_checker_,
-                           lethal_cost, allow_unknown);
+  auto connection_res = new_node->ExtendNode(
+      target->coordinates, collision_checker_, lethal_cost, allow_unknown);
 
   if (!connection_res.has_value()) {
     return false;
   }
 
-  auto first_segment = new_node->BackTracePath();
-  auto second_segment = closest_node->BackTracePath();
   NodeVector node_path;
-
-  std::reverse(first_segment.begin(), first_segment.end());
-  std::move(first_segment.begin(), first_segment.end(),
-            std::back_inserter(node_path));
-  std::move(second_segment.begin(), second_segment.end(),
+  node_path.push_back(target);
+  auto search_segment = new_node->BackTracePath();
+  std::move(search_segment.begin(), search_segment.end(),
             std::back_inserter(node_path));
 
   path = PreparePath(node_path);
@@ -336,7 +296,7 @@ typename RRTStar<NodeT>::NodePtr RRTStar<NodeT>::ChooseParent(
 
   NodePtr best_parent{nullptr};
   double min_cost{std::numeric_limits<double>::max()};
-  double current_cost{0};
+  double current_cost{0.0};
   bool smaller_cost_parent_found{false};
   bool connection_valid{false};
 
@@ -369,11 +329,10 @@ typename RRTStar<NodeT>::CoordinatesVector RRTStar<NodeT>::PreparePath(
   CoordinatesVector coordinates_path, segment;
   NodePtr current_node, parent_node;
 
-  for (size_t i = 0; i < path.size() - 1; i++) {
-    current_node = path.at(i);
-    parent_node = path.at(i + 1);
+  for (size_t i = path.size() - 1; i > 0; i--) {
+    current_node = path.at(i - 1);
+    parent_node = path.at(i);
     segment = parent_node->ConnectNode(current_node);
-    std::reverse(segment.begin(), segment.end());
     std::move(segment.begin(), segment.end(),
               std::back_inserter(coordinates_path));
   }

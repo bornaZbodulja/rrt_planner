@@ -124,11 +124,9 @@ class RRTPlannerHybrid : public nav_core::BaseGlobalPlanner {
   /**
    * @brief Updates plan and search tree visualization
    * @param plan
-   * @param start_tree
-   * @param goal_tree
+   * @param tree
    */
-  void UpdateVisualization(const PlanT& plan, const TreeMsg& start_tree,
-                           const TreeMsg& goal_tree);
+  void UpdateVisualization(const PlanT& plan, const TreeMsg& tree);
 
   bool initialized_{false};
   // Costmap 2D pointer

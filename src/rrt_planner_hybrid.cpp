@@ -133,8 +133,7 @@ bool RRTPlannerHybrid::makePlan(const geometry_msgs::PoseStamped& start,
     plan = ProcessPath(path.value());
   }
 
-  UpdateVisualization(plan, rrt_star_->GetStartTree(),
-                      rrt_star_->GetGoalTree());
+  UpdateVisualization(plan, rrt_star_->GetSearchTree());
   PublishVisualization();
 
   if (!found_path) {
@@ -225,8 +224,7 @@ RRTPlannerHybrid::PlanT RRTPlannerHybrid::ProcessPath(
 }
 
 void RRTPlannerHybrid::UpdateVisualization(const PlanT& plan,
-                                           const TreeMsg& start_tree,
-                                           const TreeMsg& goal_tree) {
+                                           const TreeMsg& tree) {
   visualization_handler_->SetPathVisualization(plan);
-  visualization_handler_->SetSearchTreeVisualization(start_tree, goal_tree);
+  visualization_handler_->SetSearchTreeVisualization(tree);
 }

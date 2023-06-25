@@ -57,8 +57,8 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
     nav_utils::NormalizeAngle(reals[2]);
     angle = node->motion_table.GetClosestAngularBin(reals[2]);
     pose_in_collision = collision_checker_->PoseInCollision(
-        static_cast<unsigned int>(coordinates.x),
-        static_cast<unsigned int>(coordinates.y), reals[2], lethal_cost,
+        static_cast<unsigned int>(reals[0]),
+        static_cast<unsigned int>(reals[1]), reals[2], lethal_cost,
         allow_unknown);
 
     if (pose_in_collision) {

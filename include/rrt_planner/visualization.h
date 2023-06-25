@@ -81,11 +81,9 @@ class Visualization {
 
   /**
    * @brief Sets search tree for visualization
-   * @param start_tree Start search tree
-   * @param goal_tree Goal search tree
+   * @param tree Search tree
    */
-  void SetSearchTreeVisualization(const TreeMsg& start_tree,
-                                  const TreeMsg& goal_tree);
+  void SetSearchTreeVisualization(const TreeMsg& tree);
 
  private:
   /**
