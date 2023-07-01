@@ -252,6 +252,17 @@ class NodeHybrid {
   }
 
   /**
+   * @brief Computes index based on coordinates
+   * @param coordinates 
+   * @return unsigned int 
+   */
+  static inline unsigned int GetIndex(const Coordinates& coordinates) {
+    return GetIndex(static_cast<unsigned int>(coordinates.x),
+                    static_cast<unsigned int>(coordinates.y),
+                    static_cast<unsigned int>(coordinates.theta));
+  }
+
+  /**
    * @brief Generates coordinates from index
    * @param index Node index
    * @return Coordinates

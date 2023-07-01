@@ -22,14 +22,11 @@ RRTStar<NodeT>::RRTStar(const MotionModel& motion_model,
       goal_(nullptr),
       graph_(SearchGraph<NodeT>()),
       start_tree_(SearchTree<NodeT>()),
-      goal_tree_(SearchTree<NodeT>()) {
+      goal_tree_(SearchTree<NodeT>()),
+      idx_gen_(IndexGenerator<NodeT>(collision_checker)) {
   UpdateMotionModel(motion_model);
   UpdateSearchInfo(search_info);
   UpdateCollisionChecker(collision_checker);
-
-  // TODO: Move this to utils
-  gen = std::minstd_rand(std::random_device{}());
-  dist = std::uniform_real_distribution<double>(0.0, 1.0);
 }
 
 template <typename NodeT>
@@ -125,6 +122,7 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   auto goal_index = goal_->GetIndex();
 
   InitializeSearch(max_iterations, near_distance);
+  idx_gen_.UpdateGeneratorParams(target_bias, state_space_size);
 
   // Preallocating variables
   int iterations{0};
@@ -142,8 +140,7 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   while (iterations < max_iterations &&
          elapsed_time.count() < max_planning_time) {
     // 1) Get new index in state space
-    new_index =
-        GetNewIndex(target_bias, current_target_index, state_space_size);
+    new_index = idx_gen_(current_target_index);
     iterations++;
 
     // 2) Extend search tree with new index
@@ -378,26 +375,6 @@ typename RRTStar<NodeT>::CoordinatesVector RRTStar<NodeT>::PreparePath(
               std::back_inserter(coordinates_path));
   }
   return coordinates_path;
-}
-
-template <typename NodeT>
-unsigned int RRTStar<NodeT>::GetNewIndex(const double& target_bias,
-                                         const unsigned int& target_index,
-                                         const unsigned int& state_space_size) {
-  const double r = dist(gen);
-
-  if (r <= target_bias) {
-    return target_index;
-  }
-
-  return GenerateRandomIndex(state_space_size);
-}
-
-template <typename NodeT>
-unsigned int RRTStar<NodeT>::GenerateRandomIndex(
-    const unsigned int& state_space_size) {
-  return std::experimental::randint(static_cast<unsigned int>(0),
-                                    state_space_size);
 }
 
 // Instantiate algorithm for the supported template types

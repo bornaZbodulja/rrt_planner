@@ -18,6 +18,7 @@
 
 #include "nav_utils/nav_utils.h"
 #include "rrt_planner/constants.h"
+#include "rrt_planner/index_generator.h"
 #include "rrt_planner/node_2d.h"
 #include "rrt_planner/node_hybrid.h"
 #include "rrt_planner/search_graph.h"
@@ -195,24 +196,6 @@ class RRTStar {
   CoordinatesVector PreparePath(const NodeVector& path);
 
   /**
-   * @brief Gets new index for tree expansion
-   * @param target_bias
-   * @param target_index
-   * @param state_space_size
-   * @return unsigned int
-   */
-  unsigned int GetNewIndex(const double& target_bias,
-                           const unsigned int& target_index,
-                           const unsigned int& state_space_size);
-
-  /**
-   * @brief Generates random index in state space
-   * @param state_space_size State space size
-   * @return unsigned int Random index
-   */
-  unsigned int GenerateRandomIndex(const unsigned int& state_space_size);
-
-  /**
    * @brief Adds indexed node to search graph
    * @param index Index of the node
    * @return NodePtr Pointer to added node
@@ -249,9 +232,8 @@ class RRTStar {
   CollisionCheckerPtr collision_checker_;
   // State space dimensions
   unsigned int size_x_, size_y_, dim_3_;
-  // Utils for random number generation (TODO: move this to utils)
-  std::minstd_rand gen;
-  std::uniform_real_distribution<double> dist;
+  // Index generator for search tree expansion
+  IndexGenerator<NodeT> idx_gen_;
 };
 
 }  // namespace rrt_planner
