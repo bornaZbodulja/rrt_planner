@@ -92,11 +92,11 @@ AnalyticExpansion<NodeT>::GetAnalyticPath(const Coordinates& start,
   to[2] = node->motion_table.GetAngleFromBin(goal.theta);
 
   const auto d = node->motion_table.state_space->distance(from(), to());
-  static const double sqrt_2 = std::sqrt(2.0);
+  static constexpr double sqrt_2 = std::sqrt(2.0);
   int intervals = std::floor(d / sqrt_2);
   double angle{0.0};
-  Coordinates coordinates{};
-  CoordinatesVector analytic_path{};
+  Coordinates coordinates;
+  CoordinatesVector analytic_path;
   std::vector<double> reals;
 
   analytic_path.reserve(intervals + 2);

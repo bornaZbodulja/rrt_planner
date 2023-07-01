@@ -29,8 +29,10 @@ namespace rrt_planner {
 geometry_msgs::Pose GetWorldCoordinates(const double& mx, const double& my,
                                         costmap_2d::Costmap2D* costmap) {
   geometry_msgs::Pose pose;
-  pose.position.x = costmap->getOriginX() + mx * costmap->getResolution();
-  pose.position.y = costmap->getOriginY() + my * costmap->getResolution();
+  pose.position.x =
+      costmap->getOriginX() + (mx + 0.5) * costmap->getResolution();
+  pose.position.y =
+      costmap->getOriginY() + (my + 0.5) * costmap->getResolution();
   return pose;
 }
 
