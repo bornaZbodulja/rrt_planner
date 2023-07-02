@@ -11,8 +11,6 @@
 
 #include "rrt_planner/analytic_expansion.h"
 
-#include <ompl/base/ScopedState.h>
-
 #include "nav_utils/geometry_utils.h"
 
 using namespace rrt_planner;
@@ -33,13 +31,8 @@ AnalyticExpansion<NodeT>::TryAnalyticExpansion(const Coordinates& start,
   static ompl::base::ScopedState<> from(node->motion_table.state_space),
       to(node->motion_table.state_space), s(node->motion_table.state_space);
 
-  // TODO: Create separate method for this (Coordinates to state space)
-  from[0] = start.x;
-  from[1] = start.y;
-  from[2] = node->motion_table.GetAngleFromBin(start.theta);
-  to[0] = goal.x;
-  to[1] = goal.y;
-  to[2] = node->motion_table.GetAngleFromBin(goal.theta);
+  CoordinatesToStateSpace(from, start, node);
+  CoordinatesToStateSpace(to, goal, node);
 
   const auto d = node->motion_table.state_space->distance(from(), to());
   static const double sqrt_2 = std::sqrt(2.0);
@@ -84,12 +77,8 @@ AnalyticExpansion<NodeT>::GetAnalyticPath(const Coordinates& start,
   static ompl::base::ScopedState<> from(node->motion_table.state_space),
       to(node->motion_table.state_space), s(node->motion_table.state_space);
 
-  from[0] = start.x;
-  from[1] = start.y;
-  from[2] = node->motion_table.GetAngleFromBin(start.theta);
-  to[0] = goal.x;
-  to[1] = goal.y;
-  to[2] = node->motion_table.GetAngleFromBin(goal.theta);
+  CoordinatesToStateSpace(from, start, node);
+  CoordinatesToStateSpace(to, goal, node);
 
   const auto d = node->motion_table.state_space->distance(from(), to());
   static constexpr double sqrt_2 = std::sqrt(2.0);
@@ -127,14 +116,19 @@ double AnalyticExpansion<NodeT>::GetAnalyticPathLength(
   static ompl::base::ScopedState<> from(node->motion_table.state_space),
       to(node->motion_table.state_space);
 
-  from[0] = start.x;
-  from[1] = start.y;
-  from[2] = node->motion_table.GetAngleFromBin(start.theta);
-  to[0] = goal.x;
-  to[1] = goal.y;
-  to[2] = node->motion_table.GetAngleFromBin(goal.theta);
+  CoordinatesToStateSpace(from, start, node);
+  CoordinatesToStateSpace(to, goal, node);
 
   return node->motion_table.state_space->distance(from(), to());
+}
+
+template <typename NodeT>
+void AnalyticExpansion<NodeT>::CoordinatesToStateSpace(
+    ompl::base::ScopedState<>& state, const Coordinates& coordinates,
+    const NodePtr& node) const {
+  state[0] = coordinates.x;
+  state[1] = coordinates.y;
+  state[2] = node->motion_table.GetAngleFromBin(coordinates.theta);
 }
 
 template <>
@@ -160,6 +154,11 @@ double AnalyticExpansion<Node2D>::GetAnalyticPathLength(
     const NodePtr& node) const {
   return std::numeric_limits<double>::max();
 }
+
+template <>
+void AnalyticExpansion<Node2D>::CoordinatesToStateSpace(
+    ompl::base::ScopedState<>& state, const Coordinates& coordinates,
+    const NodePtr& node) const {}
 
 // Instantiate algorithm for the supported template types
 template class AnalyticExpansion<Node2D>;
