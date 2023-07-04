@@ -161,6 +161,14 @@ void RRTPlanner2D::LoadParams() {
   int lethal_cost_int;
   nh_.param<int>("lethal_cost", lethal_cost_int, 253);
   search_info_.lethal_cost = static_cast<unsigned char>(lethal_cost_int);
+
+  nh_.param<double>("rgd_increment_step", search_info_.rgd_increment_step, 0.5);
+  nh_.param<int>("rgd_iterations", search_info_.rgd_iterations, 10);
+
+  int rgd_stop_cost_int;
+  nh_.param<int>("rgd_stop_cost", rgd_stop_cost_int, 200);
+  search_info_.rgd_stop_cost = static_cast<unsigned char>(rgd_stop_cost_int);
+
   motion_model_ = MotionModel::TDM;
 }
 

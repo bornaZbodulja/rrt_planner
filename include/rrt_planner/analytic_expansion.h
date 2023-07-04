@@ -98,9 +98,9 @@ class AnalyticExpansion {
 
  private:
   /**
-   * @brief Populates state space from coodinates
+   * @brief Populates state space from coordinates
    * @param state Scoped state
-   * @param coordinates 
+   * @param coordinates
    * @param node Node pointer
    */
   void CoordinatesToStateSpace(ompl::base::ScopedState<>& state,

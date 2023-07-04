@@ -1,5 +1,5 @@
 /**
- * @file index_generator.cpp
+ * @file state_sampler.cpp
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
  * @brief
  * @version 0.1
@@ -9,12 +9,14 @@
  *
  */
 
-#include "rrt_planner/index_generator.h"
+#include "rrt_planner/state_sampler.h"
+
+#include "nav_utils/geometry_utils.h"
 
 using namespace rrt_planner;
 
 template <typename NodeT>
-IndexGenerator<NodeT>::IndexGenerator(
+StateSampler<NodeT>::StateSampler(
     const CollisionCheckerPtr& collision_checker) {
   UpdateCollisionChecker(collision_checker);
   gen_ = std::minstd_rand(std::random_device{}());
@@ -22,8 +24,7 @@ IndexGenerator<NodeT>::IndexGenerator(
 }
 
 template <typename NodeT>
-unsigned int IndexGenerator<NodeT>::operator()(
-    const unsigned int& target_index) {
+unsigned int StateSampler<NodeT>::operator()(const unsigned int& target_index) {
   const double r = dist_(gen_);
 
   if (r <= params_.target_bias) {
@@ -34,36 +35,39 @@ unsigned int IndexGenerator<NodeT>::operator()(
 }
 
 template <typename NodeT>
-unsigned int IndexGenerator<NodeT>::RGD(const unsigned int& random_index,
-                                        const unsigned int& target_index) {
+unsigned int StateSampler<NodeT>::RGD(const unsigned int& random_index,
+                                      const unsigned int& target_index) {
   auto rand_coords = NodeT::GetCoordinates(random_index);
   auto target_coords = NodeT::GetCoordinates(target_index);
   double distance;
   unsigned char cost;
 
-  // TODO: Add param for number of iterations
-  for (unsigned int i = 1; i < 10; i++) {
+  for (int i = 0; i < params_.rgd_iterations; i++) {
     cost =
         collision_checker_->GetCost(static_cast<unsigned int>(rand_coords.x),
                                     static_cast<unsigned int>(rand_coords.y));
-    // TODO: Add param for this cost
-    if (cost > 200) {
-      NodeT::GetIndex(rand_coords);
+
+    if (cost > params_.rgd_stop_cost) {
+      return NodeT::GetIndex(rand_coords);
     }
-    distance = NodeT::CoordinatesDistance(rand_coords, target_coords);
-    rand_coords.x += 1.0 * (target_coords.x - rand_coords.x) / distance;
-    rand_coords.y += 1.0 * (target_coords.y - rand_coords.y) / distance;
+
+    distance = nav_utils::GetEuclideanDistance<typename NodeT::Coordinates>(
+        rand_coords, target_coords);
+    rand_coords.x += params_.rgd_increment_step *
+                     (target_coords.x - rand_coords.x) / distance;
+    rand_coords.y += params_.rgd_increment_step *
+                     (target_coords.y - rand_coords.y) / distance;
   }
 
   return NodeT::GetIndex(rand_coords);
 }
 
 template <typename NodeT>
-unsigned int IndexGenerator<NodeT>::GenerateRandomIndex(
+unsigned int StateSampler<NodeT>::GenerateRandomIndex(
     const unsigned int& state_space_size) const {
   return std::experimental::randint(static_cast<unsigned int>(0),
                                     state_space_size);
 }
 
-template class IndexGenerator<Node2D>;
-template class IndexGenerator<NodeHybrid>;
+template class StateSampler<Node2D>;
+template class StateSampler<NodeHybrid>;

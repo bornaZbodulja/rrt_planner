@@ -180,6 +180,13 @@ void RRTPlannerHybrid::LoadParams() {
   angle_bin_size_ = static_cast<unsigned int>(angle_bin_size_int);
   angle_bin_ = 2.0 * M_PI / angle_bin_size_;
 
+  nh_.param<double>("rgd_increment_step", search_info_.rgd_increment_step, 0.5);
+  nh_.param<int>("rgd_iterations", search_info_.rgd_iterations, 10);
+
+  int rgd_stop_cost_int;
+  nh_.param<int>("rgd_stop_cost", rgd_stop_cost_int, 200);
+  search_info_.rgd_stop_cost = static_cast<unsigned char>(rgd_stop_cost_int);
+
   std::string motion_model_str;
   nh_.param<std::string>("motion_model", motion_model_str, "DUBINS");
   motion_model_ = FromString(motion_model_str);

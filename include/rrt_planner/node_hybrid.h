@@ -253,8 +253,8 @@ class NodeHybrid {
 
   /**
    * @brief Computes index based on coordinates
-   * @param coordinates 
-   * @return unsigned int 
+   * @param coordinates
+   * @return unsigned int
    */
   static inline unsigned int GetIndex(const Coordinates& coordinates) {
     return GetIndex(static_cast<unsigned int>(coordinates.x),
@@ -275,7 +275,7 @@ class NodeHybrid {
   }
 
   /**
-   * @brief Computes Euclidean distance between two coordinates
+   * @brief Computes distance between two coordinates
    * @param first_coordinates First coordinates
    * @param second_coordinates Second coordinates
    * @return double
@@ -284,7 +284,8 @@ class NodeHybrid {
       const Coordinates& first_coordinates,
       const Coordinates& second_coordinates) {
     return std::hypot(first_coordinates.x - second_coordinates.x,
-                      first_coordinates.y - second_coordinates.y);
+                      first_coordinates.y - second_coordinates.y) +
+           std::abs(second_coordinates.theta - first_coordinates.theta);
   }
 
   // Parent node

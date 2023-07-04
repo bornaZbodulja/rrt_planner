@@ -11,6 +11,8 @@
 
 #include "rrt_planner/rrt_star.h"
 
+#include "nav_utils/geometry_utils.h"
+
 using namespace rrt_planner;
 using namespace std::chrono;
 
@@ -23,7 +25,7 @@ RRTStar<NodeT>::RRTStar(const MotionModel& motion_model,
       graph_(SearchGraph<NodeT>()),
       start_tree_(SearchTree<NodeT>()),
       goal_tree_(SearchTree<NodeT>()),
-      idx_gen_(IndexGenerator<NodeT>(collision_checker)) {
+      sampler_(StateSampler<NodeT>(collision_checker)) {
   UpdateMotionModel(motion_model);
   UpdateSearchInfo(search_info);
   UpdateCollisionChecker(collision_checker);
@@ -114,6 +116,9 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   const double& connect_trees_max_length =
       search_info_.connect_trees_max_length;
   const unsigned int& state_space_size = size_x_ * size_y_ * dim_3_;
+  const double& rgd_increment_step = search_info_.rgd_increment_step;
+  const unsigned char rgd_stop_cost = search_info_.rgd_stop_cost;
+  const int& rgd_iterations = search_info_.rgd_iterations;
 
   const auto start_time = steady_clock::now();
   duration<double> elapsed_time = milliseconds(0);
@@ -122,11 +127,13 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   auto goal_index = goal_->GetIndex();
 
   InitializeSearch(max_iterations, near_distance);
-  idx_gen_.UpdateGeneratorParams(target_bias, state_space_size);
+  sampler_.UpdateSamplerParams(target_bias, state_space_size,
+                               rgd_increment_step, rgd_stop_cost,
+                               rgd_iterations);
 
   // Preallocating variables
   int iterations{0};
-  unsigned int new_index{0};
+  unsigned int new_index;
   NodePtr new_node{nullptr};
   NodePtr closest_node{nullptr};
   NodeVector near_nodes;
@@ -140,7 +147,7 @@ bool RRTStar<NodeT>::CreatePath(CoordinatesVector& path) {
   while (iterations < max_iterations &&
          elapsed_time.count() < max_planning_time) {
     // 1) Get new index in state space
-    new_index = idx_gen_(current_target_index);
+    new_index = sampler_(current_target_index);
     iterations++;
 
     // 2) Extend search tree with new index
@@ -253,16 +260,15 @@ bool RRTStar<NodeT>::ExtendTree(const unsigned int& index,
   double accumulated_cost;
 
   if (best_parent == nullptr) {
-    new_node->parent = closest_node;
-    accumulated_cost = closest_node->GetAccumulatedCost() +
-                       closest_node->GetTraversalCost(new_node);
-    new_node->SetAccumulatedCost(accumulated_cost);
-  } else {
-    new_node->parent = best_parent;
-    accumulated_cost = best_parent->GetAccumulatedCost() +
-                       best_parent->GetTraversalCost(new_node);
-    new_node->SetAccumulatedCost(accumulated_cost);
+    best_parent = closest_node;
   }
+
+  best_parent = BackTracking(new_node, best_parent, lethal_cost, allow_unknown);
+
+  new_node->parent = best_parent;
+  accumulated_cost = best_parent->GetAccumulatedCost() +
+                     best_parent->GetTraversalCost(new_node);
+  new_node->SetAccumulatedCost(accumulated_cost);
 
   new_node->Visited();
   tree.AddVertex(new_node);
@@ -294,8 +300,8 @@ bool RRTStar<NodeT>::ConnectTrees(NodePtr& new_node, NodePtr& closest_node,
     return false;
   }
 
-  if (NodeT::CoordinatesDistance(new_node->coordinates,
-                                 closest_node->coordinates) >
+  if (nav_utils::GetEuclideanDistance<typename NodeT::Coordinates>(
+          new_node->coordinates, closest_node->coordinates) >
       connect_trees_max_length) {
     return false;
   }
@@ -358,6 +364,31 @@ typename RRTStar<NodeT>::NodePtr RRTStar<NodeT>::ChooseParent(
   }
 
   return best_parent;
+}
+
+template <typename NodeT>
+typename RRTStar<NodeT>::NodePtr RRTStar<NodeT>::BackTracking(
+    NodePtr& new_node, NodePtr& parent_node, const unsigned char& lethal_cost,
+    const bool& allow_unknown) {
+  NodePtr current_anc = parent_node;
+  NodePtr current_parent = parent_node;
+  bool connection_valid{false};
+
+  while (current_anc->parent != nullptr) {
+    current_anc = current_anc->parent;
+    connection_valid =
+        current_anc
+            ->ExtendNode(new_node->coordinates, collision_checker_, lethal_cost,
+                         allow_unknown)
+            .has_value();
+    if (connection_valid) {
+      current_parent = current_anc;
+    } else {
+      return current_parent;
+    }
+  }
+
+  return current_parent;
 }
 
 template <typename NodeT>

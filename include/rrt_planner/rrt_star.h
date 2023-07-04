@@ -13,16 +13,15 @@
 #define RRT_PLANNER__RRT_STAR_H_
 
 #include <chrono>
-#include <experimental/random>
 #include <vector>
 
 #include "nav_utils/nav_utils.h"
 #include "rrt_planner/constants.h"
-#include "rrt_planner/index_generator.h"
 #include "rrt_planner/node_2d.h"
 #include "rrt_planner/node_hybrid.h"
 #include "rrt_planner/search_graph.h"
 #include "rrt_planner/search_tree.h"
+#include "rrt_planner/state_sampler.h"
 #include "rrt_planner/types.h"
 
 namespace rrt_planner {
@@ -178,13 +177,26 @@ class RRTStar {
 
   /**
    * @brief Picks best parent for new node from near nodes
-   * @param new_node
-   * @param near_nodes
+   * @param new_node New node selected for search tree expansion
+   * @param near_nodes Near nodes of new node
    * @param lethal_cost Lethal cost for collision checking
    * @param allow_unknown Whether to allow connection to go in unknown areas
-   * @return NodePtr
+   * @return NodePtr Best parent from near nodes
    */
   NodePtr ChooseParent(NodePtr& new_node, NodeVector& near_nodes,
+                       const unsigned char& lethal_cost,
+                       const bool& allow_unknown);
+
+  /**
+   * @brief Backtracks through ancestors of current node parent and chooses the
+   * last one which yields valid path to new node as new parent
+   * @param new_node New node added to search tree
+   * @param parent_node Current parent node
+   * @param lethal_cost Lethal cost for collision checking
+   * @param allow_unknown Whether to allow path to go to unknown areas
+   * @return NodePtr
+   */
+  NodePtr BackTracking(NodePtr& new_node, NodePtr& parent_node,
                        const unsigned char& lethal_cost,
                        const bool& allow_unknown);
 
@@ -232,8 +244,8 @@ class RRTStar {
   CollisionCheckerPtr collision_checker_;
   // State space dimensions
   unsigned int size_x_, size_y_, dim_3_;
-  // Index generator for search tree expansion
-  IndexGenerator<NodeT> idx_gen_;
+  // State sampler for search tree expansion
+  StateSampler<NodeT> sampler_;
 };
 
 }  // namespace rrt_planner
