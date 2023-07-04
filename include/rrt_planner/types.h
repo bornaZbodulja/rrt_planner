@@ -1,7 +1,7 @@
 /**
  * @file types.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief
+ * @brief Planning parameters definition
  * @version 0.1
  * @date 2023-05-06
  *
@@ -33,6 +33,12 @@ struct SearchInfo {
   bool rewire_tree{false};
   // Max length of connection between trees
   double connect_trees_max_length{0.0};
+  // Increment step for random gradient descent (between 0.0 and 1.0)
+  double rgd_increment_step{0.0};
+  // Stop cost random gradient descent
+  unsigned char rgd_stop_cost{0};
+  // Number of iterations for random gradient descent
+  int rgd_iterations{0};
   // Whether to allow expansion in unknown space
   bool allow_unknown{false};
   // Lethal cost for collision checking

@@ -60,6 +60,7 @@ add_library(${library_name}_2d SHARED
   src/search_tree.cpp
   src/visualization.cpp
   src/analytic_expansion.cpp
+  src/state_sampler.cpp
   src/node_2d.cpp
   src/node_hybrid.cpp
 )
@@ -70,6 +71,7 @@ add_library(${library_name}_hybrid SHARED
   src/search_tree.cpp
   src/visualization.cpp
   src/analytic_expansion.cpp
+  src/state_sampler.cpp
   src/node_2d.cpp
   src/node_hybrid.cpp
 )

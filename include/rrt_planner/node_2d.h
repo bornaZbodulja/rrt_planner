@@ -208,6 +208,16 @@ class Node2D {
   }
 
   /**
+   * @brief Computes index based on coordinates
+   * @param coordinates
+   * @return unsigned int
+   */
+  static inline unsigned int GetIndex(const Coordinates& coordinates) {
+    return GetIndex(static_cast<unsigned int>(coordinates.x),
+                    static_cast<unsigned int>(coordinates.y));
+  }
+
+  /**
    * @brief Generates coordinates from map cell index
    * @param index Map cell index
    * @return Coordinates

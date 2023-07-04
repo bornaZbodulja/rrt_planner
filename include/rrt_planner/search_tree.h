@@ -130,16 +130,6 @@ class SearchTree {
    */
   inline void SetTargetNode(const NodePtr& node) { target_node_ = node; }
 
-  /**
-   * @brief Computes squared distance between two node coordinates
-   * @param first_coordinates
-   * @param second_coordinates
-   * @return double
-   */
-  double CoordinatesDistanceSquared(
-      const Coordinates& first_coordinates,
-      const Coordinates& second_coordinates) const;
-
   // Root node pointer
   NodePtr root_node_;
   // Target node pointer

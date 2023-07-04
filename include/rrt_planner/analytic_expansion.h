@@ -12,6 +12,8 @@
 #ifndef RRT_PLANNER__ANALYTIC_EXPANSION_H_
 #define RRT_PLANNER__ANALYTIC_EXPANSION_H_
 
+#include <ompl/base/ScopedState.h>
+
 #include <cmath>
 #include <optional>
 #include <vector>
@@ -95,6 +97,16 @@ class AnalyticExpansion {
                                const NodePtr& node) const;
 
  private:
+  /**
+   * @brief Populates state space from coordinates
+   * @param state Scoped state
+   * @param coordinates
+   * @param node Node pointer
+   */
+  void CoordinatesToStateSpace(ompl::base::ScopedState<>& state,
+                               const Coordinates& coordinates,
+                               const NodePtr& node) const;
+
   // Motion model
   MotionModel motion_model_{MotionModel::UNKNOWN};
   // Collision checker pointer

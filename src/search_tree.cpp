@@ -11,6 +11,8 @@
 
 #include "rrt_planner/search_tree.h"
 
+#include "nav_utils/geometry_utils.h"
+
 using namespace rrt_planner;
 
 template <typename NodeT>
@@ -51,7 +53,7 @@ typename SearchTree<NodeT>::NodePtr SearchTree<NodeT>::GetClosestNode(
 
   for (auto current_it = tree_.begin(); current_it < tree_.end();
        current_it++) {
-    distance = CoordinatesDistanceSquared(new_node_coordinates,
+    distance = NodeT::CoordinatesDistance(new_node_coordinates,
                                           (*current_it)->coordinates);
     // If computed distance smaller than smallest, update nearest iterator and
     // smallest distance
@@ -79,8 +81,8 @@ void SearchTree<NodeT>::GetNearNodes(const unsigned int& index,
 
   for (auto current_it = tree_.cbegin(); current_it < tree_.cend();
        current_it++) {
-    distance = CoordinatesDistanceSquared(new_node_coordinates,
-                                          (*current_it)->coordinates);
+    distance = nav_utils::GetEuclideanDistanceSquared<typename NodeT::Coordinates>(
+        new_node_coordinates, (*current_it)->coordinates);
     // If computed distance smaller than near distance, adding node to near
     // nodes vector
     if (distance <= near_distance_squared) {
@@ -100,7 +102,7 @@ void SearchTree<NodeT>::RewireTree(NodePtr& new_node, NodeVector& near_nodes,
 
   bool smaller_cost_approach_found{false};
   bool connection_valid{false};
-  double new_approach_cost{0.0};
+  double new_approach_cost;
 
   for (auto& near_node : near_nodes) {
     // New approach cost
@@ -139,14 +141,6 @@ typename SearchTree<NodeT>::TreeMsg SearchTree<NodeT>::TreeToMsg() {
   }
 
   return msg;
-}
-
-template <typename NodeT>
-double SearchTree<NodeT>::CoordinatesDistanceSquared(
-    const Coordinates& first_coordinates,
-    const Coordinates& second_coordinates) const {
-  return std::pow(first_coordinates.x - second_coordinates.x, 2) +
-         std::pow(first_coordinates.y - second_coordinates.y, 2);
 }
 
 // Instantiate algorithm for the supported template types

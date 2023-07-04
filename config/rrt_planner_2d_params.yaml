@@ -5,6 +5,9 @@ RRTPlanner2D:
   cost_penalty: 2.0 # Penalty to apply to high cost areas
   rewire_tree: true # Whether to rewire tree after every expansion
   connect_trees_max_length: 10 # [m] Maximal Euclidean distance between two trees to try connecting them
+  rgd_increment_step: 0.5 # Increment step for random gradient descent (between 0.0 and 1.0)
+  rgd_stop_cost: 180 # Stop cost random gradient descent
+  rgd_iterations: 10 # Number of iterations for random gradient descent
   allow_unknown: false # Whether to allow expansion in unknown space
   lethal_cost: 230 # Lethal cost for collision checking
   max_expansion_iterations: 100000 # Maximum number of search tree expansions
