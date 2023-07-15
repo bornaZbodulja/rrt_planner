@@ -169,7 +169,7 @@ void RRTPlanner2D::LoadParams() {
   nh_.param<int>("rgd_stop_cost", rgd_stop_cost_int, 200);
   search_info_.rgd_stop_cost = static_cast<unsigned char>(rgd_stop_cost_int);
 
-  motion_model_ = MotionModel::TDM;
+  search_info_.motion_model = MotionModel::TDM;
 }
 
 RRTPlanner2D::Plan2DT RRTPlanner2D::CreatePath(const unsigned int& start_mx,

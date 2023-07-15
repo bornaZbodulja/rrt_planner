@@ -24,9 +24,9 @@
 #include <optional>
 #include <vector>
 
-#include "rrt_planner/constants.h"
+#include "rrt_planner/motion_model.h"
 #include "rrt_planner/rrt_star.h"
-#include "rrt_planner/types.h"
+#include "rrt_planner/search_info.h"
 #include "rrt_planner/utils.h"
 #include "rrt_planner/visualization.h"
 

@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "nav_utils/nav_utils.h"
-#include "rrt_planner/constants.h"
+#include "rrt_planner/motion_model.h"
 #include "rrt_planner/node_2d.h"
 #include "rrt_planner/node_hybrid.h"
 

@@ -18,11 +18,10 @@ using namespace rrt_planner;
 
 void HybridMotionTable::Initialize(const unsigned int& size_x_in,
                                    const unsigned int& angle_bin_size_in,
-                                   const SearchInfo& search_info,
-                                   const MotionModel& motion_model_in) {
+                                   const SearchInfo& search_info) {
   size_x = size_x_in;
   angle_bin_size = angle_bin_size_in;
-  motion_model = motion_model_in;
+  motion_model = search_info.motion_model;
   min_turning_radius = search_info.min_turning_radius;
   cell_cost_multiplier = search_info.cost_penalty;
   angle_bin = 2.0 * M_PI / angle_bin_size;
@@ -113,12 +112,10 @@ NodeHybrid::NodeVector NodeHybrid::BackTracePath() {
   return path;
 }
 
-void NodeHybrid::InitializeMotionModel(const unsigned int& size_x_in,
+void NodeHybrid::InitializeMotionTable(const unsigned int& size_x_in,
                                        const unsigned int& angle_bin_size_in,
-                                       const SearchInfo& search_info,
-                                       const MotionModel& motion_model) {
-  motion_table.Initialize(size_x_in, angle_bin_size_in, search_info,
-                          motion_model);
+                                       const SearchInfo& search_info) {
+  motion_table.Initialize(size_x_in, angle_bin_size_in, search_info);
   expander = std::make_unique<AnalyticExpansion<NodeHybrid>>();
-  expander->UpdateMotionModel(motion_model);
+  expander->UpdateMotionModel(search_info.motion_model);
 }

@@ -18,8 +18,7 @@
 #include <vector>
 
 #include "nav_utils/nav_utils.h"
-#include "rrt_planner/constants.h"
-#include "rrt_planner/types.h"
+#include "rrt_planner/search_info.h"
 
 namespace rrt_planner {
 
@@ -36,10 +35,8 @@ struct MotionTable2D {
    * @brief Initializes motion table
    * @param size_x_in Width of costmap
    * @param search_info Planner search info
-   * @param motion_model_in Motion model
    */
-  void Initialize(const unsigned int size_x_in, const SearchInfo& search_info,
-                  const MotionModel& motion_model_in);
+  void Initialize(const unsigned int size_x_in, const SearchInfo& search_info);
 
   // Motion model
   MotionModel motion_model{MotionModel::UNKNOWN};
@@ -190,11 +187,9 @@ class Node2D {
    * @brief Initializes motion model for Node2D
    * @param size_x_in Width of costmap
    * @param search_info Planner search info
-   * @param motion_model Motion model
    */
-  static void InitializeMotionModel(const unsigned int& size_x_in,
-                                    const SearchInfo& search_info,
-                                    const MotionModel& motion_model);
+  static void InitializeMotionTable(const unsigned int& size_x_in,
+                                    const SearchInfo& search_info);
 
   /**
    * @brief Computes index based on coordinates

@@ -1,5 +1,5 @@
 /**
- * @file constants.h
+ * @file motion_model.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
  * @brief
  * @version 0.1
@@ -18,7 +18,7 @@ namespace rrt_planner {
 
 enum class MotionModel { UNKNOWN = 0, TDM = 1, DUBINS = 2, REEDS_SHEPP = 3 };
 
-inline std::string ToString(const MotionModel& motion_model) {
+inline std::string MotionModelToString(const MotionModel& motion_model) {
   switch (motion_model) {
     case MotionModel::TDM:
       return "2D";
@@ -31,7 +31,7 @@ inline std::string ToString(const MotionModel& motion_model) {
   }
 }
 
-inline MotionModel FromString(const std::string& motion_model) {
+inline MotionModel MotionModelFromString(const std::string& motion_model) {
   if (motion_model == "2D") {
     return MotionModel::TDM;
   } else if (motion_model == "DUBINS") {

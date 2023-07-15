@@ -189,7 +189,7 @@ void RRTPlannerHybrid::LoadParams() {
 
   std::string motion_model_str;
   nh_.param<std::string>("motion_model", motion_model_str, "DUBINS");
-  motion_model_ = FromString(motion_model_str);
+  search_info_.motion_model = MotionModelFromString(motion_model_str);
 }
 
 RRTPlannerHybrid::PlanHybridT RRTPlannerHybrid::CreatePath(

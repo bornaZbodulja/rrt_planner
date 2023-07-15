@@ -1,5 +1,5 @@
 /**
- * @file types.h
+ * @file search_info.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
  * @brief Planning parameters definition
  * @version 0.1
@@ -9,8 +9,10 @@
  *
  */
 
-#ifndef RRT_PLANNER__TYPES_H_
-#define RRT_PLANNER__TYPES_H_
+#include "rrt_planner/motion_model.h"
+
+#ifndef RRT_PLANNER__SEARCH_INFO_H_
+#define RRT_PLANNER__SEARCH_INFO_H_
 
 namespace rrt_planner {
 
@@ -47,6 +49,8 @@ struct SearchInfo {
   int max_expansion_iterations{0};
   // Maximum allowed planning time
   double max_planning_time{0.0};
+  // Motion model
+  MotionModel motion_model{MotionModel::UNKNOWN};
 };
 
 }  // namespace rrt_planner

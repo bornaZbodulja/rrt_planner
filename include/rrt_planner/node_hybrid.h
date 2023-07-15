@@ -21,8 +21,7 @@
 #include <vector>
 
 #include "rrt_planner/analytic_expansion.h"
-#include "rrt_planner/constants.h"
-#include "rrt_planner/types.h"
+#include "rrt_planner/search_info.h"
 
 namespace rrt_planner {
 
@@ -44,12 +43,10 @@ struct HybridMotionTable {
    * @param size_x_in Width of costmap
    * @param angle_bin_size_in
    * @param search_info Planner search info
-   * @param motion_model_in Motion model
    */
   void Initialize(const unsigned int& size_x_in,
                   const unsigned int& angle_bin_size_in,
-                  const SearchInfo& search_info,
-                  const MotionModel& motion_model_in);
+                  const SearchInfo& search_info);
 
   /**
    * @brief Gets angular bin
@@ -230,12 +227,10 @@ class NodeHybrid {
    * @param size_x_in Width of costmap
    * @param angle_bin_size_in Number of angle bins
    * @param search_info Planner search info
-   * @param motion_model Motion model
    */
-  static void InitializeMotionModel(const unsigned int& size_x_in,
+  static void InitializeMotionTable(const unsigned int& size_x_in,
                                     const unsigned int& angle_bin_size_in,
-                                    const SearchInfo& search_info,
-                                    const MotionModel& motion_model);
+                                    const SearchInfo& search_info);
 
   /**
    * @brief Computes index based on coordinates

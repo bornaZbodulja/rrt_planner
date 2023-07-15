@@ -47,7 +47,7 @@ void RRTStar<NodeT>::InitializeStateSpace(const unsigned int& size_x,
 
   ClearGraph();
   ReserveGraph(search_info_.max_expansion_iterations);
-  NodeT::InitializeMotionModel(size_x_, dim_3_, search_info_, motion_model_);
+  NodeT::InitializeMotionTable(size_x_, dim_3_, search_info_);
 }
 
 template <>
@@ -60,7 +60,7 @@ void RRTStar<Node2D>::InitializeStateSpace(const unsigned int& size_x,
 
   ClearGraph();
   ReserveGraph(search_info_.max_expansion_iterations);
-  Node2D::InitializeMotionModel(size_x_, search_info_, motion_model_);
+  Node2D::InitializeMotionTable(size_x_, search_info_);
 }
 
 template <typename NodeT>

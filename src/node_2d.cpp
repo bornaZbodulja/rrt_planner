@@ -14,11 +14,10 @@
 using namespace rrt_planner;
 
 void MotionTable2D::Initialize(const unsigned int size_x_in,
-                               const SearchInfo& search_info,
-                               const MotionModel& motion_model_in) {
+                               const SearchInfo& search_info) {
   size_x = size_x_in;
   cell_cost_multiplier = search_info.cost_penalty;
-  motion_model = motion_model_in;
+  motion_model = search_info.motion_model;
 }
 
 Node2D::Node2D(const unsigned int& index)
@@ -105,8 +104,7 @@ Node2D::NodeVector Node2D::BackTracePath() {
   return path;
 }
 
-void Node2D::InitializeMotionModel(const unsigned int& size_x_in,
-                                   const SearchInfo& search_info,
-                                   const MotionModel& motion_model) {
-  motion_table.Initialize(size_x_in, search_info, motion_model);
+void Node2D::InitializeMotionTable(const unsigned int& size_x_in,
+                                   const SearchInfo& search_info) {
+  motion_table.Initialize(size_x_in, search_info);
 }
