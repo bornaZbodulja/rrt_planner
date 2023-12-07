@@ -1,7 +1,7 @@
-<library path="lib/librrt_planner_hybrid">
-    <class name="rrt_planner/RRTPlannerHybrid" type="rrt_planner::RRTPlannerHybrid" base_class_type="nav_core::BaseGlobalPlanner">
+<library path="lib/librrt_plugin_hybrid">
+    <class name="rrt_planner/planner_plugin/RRTPluginHybrid" type="rrt_planner::planner_plugin::RRTPluginHybrid" base_class_type="nav_core::BaseGlobalPlanner">
         <description>
-      Hybrid RRT*-Connect Planner
+          Hybrid RRT global planner plugin
         </description>
     </class>
 </library>

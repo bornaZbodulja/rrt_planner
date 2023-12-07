@@ -9,7 +9,7 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated-declarations")
 
-set(library_name rrt_planner)
+set(library_name rrt_plugin)
 
 find_package(ompl REQUIRED)
 
@@ -55,25 +55,23 @@ include_directories(
 )
 
 add_library(${library_name}_2d SHARED
-  src/rrt_planner_2d.cpp
-  src/rrt_star.cpp
-  src/search_tree.cpp
-  src/visualization.cpp
-  src/analytic_expansion.cpp
-  src/state_sampler.cpp
-  src/node_2d.cpp
-  src/node_hybrid.cpp
+  src/rrt_planner/planner_plugin/rrt_plugin_2d.cpp
+  src/rrt_planner/planner_core/rrt.cpp
+  src/rrt_planner/visualization_plugin/search_tree_visualization.cpp
+  src/state_space/state_connector_2d/line_connector.cpp
+  src/state_space/state_connector_2d/state_connector_2d.cpp
+  src/state_space/state_connector_hybrid/analytic_motion_hybrid.cpp
+  src/state_space/state_connector_hybrid/state_connector_hybrid.cpp
 )
 
 add_library(${library_name}_hybrid SHARED
-  src/rrt_planner_hybrid.cpp
-  src/rrt_star.cpp
-  src/search_tree.cpp
-  src/visualization.cpp
-  src/analytic_expansion.cpp
-  src/state_sampler.cpp
-  src/node_2d.cpp
-  src/node_hybrid.cpp
+  src/rrt_planner/planner_plugin/rrt_plugin_hybrid.cpp
+  src/rrt_planner/planner_core/rrt.cpp
+  src/rrt_planner/visualization_plugin/search_tree_visualization.cpp
+  src/state_space/state_connector_2d/line_connector.cpp
+  src/state_space/state_connector_2d/state_connector_2d.cpp
+  src/state_space/state_connector_hybrid/analytic_motion_hybrid.cpp
+  src/state_space/state_connector_hybrid/state_connector_hybrid.cpp
 )
 
 # target_link_libraries(${library_name}_2d ${nav_utils_LIBRARIES} ${catkin_LIBRARIES})
