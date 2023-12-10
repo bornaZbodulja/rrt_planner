@@ -39,7 +39,7 @@ typename RRT<StateT>::PlanningResultT RRT<StateT>::createPath() {
     if (tree_expansion_result && RRTBase::isGoal(new_node)) {
       ROS_INFO(
           "RRT planner found path, used iterations %d/%d, "
-          "planning time: %.3f.",
+          "planning time: %.3f seconds.",
           RRTBase::getCurrentExpansionIterationCounter(),
           RRTBase::getMaximumNumberOfIterations(), RRTBase::getElapsedTime());
 
