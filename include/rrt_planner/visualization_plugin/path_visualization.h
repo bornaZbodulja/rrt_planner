@@ -57,7 +57,7 @@ class PathVisualization {
  private:
   void clearPath() {
     // Setting header info
-    path_.header = nav_utils::PrepareHeader("map");
+    path_.header = nav_utils::prepareHeader("map");
     // Clearing poses
     path_.poses.clear();
   }

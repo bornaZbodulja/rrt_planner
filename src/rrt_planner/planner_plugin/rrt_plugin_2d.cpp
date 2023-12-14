@@ -47,7 +47,7 @@ void RRTPlugin2D::initialize(std::string name,
   const auto costmap_resolution = costmap_ros->getCostmap()->getResolution();
 
   const auto space_2d =
-      Space2D(collision_checker_->GetSizeX(), collision_checker_->GetSizeY());
+      Space2D(collision_checker_->getSizeX(), collision_checker_->getSizeY());
 
   state_space_ = std::make_shared<StateSpace2D>(space_2d);
   auto&& state_connector = ROSStateConnectorFactory::create2DStateConnector(
@@ -78,7 +78,7 @@ bool RRTPlugin2D::makePlan(const PoseStampedT& start, const PoseStampedT& goal,
   unsigned int start_mx, start_my;
   unsigned int goal_mx, goal_my;
 
-  if (collision_checker_->PoseInCollision(start)) {
+  if (collision_checker_->poseInCollision(start)) {
     ROS_WARN(
         "Start pose: (%.3f, %.3f, %.3f) in collision, returning planning "
         "failure!",
@@ -87,14 +87,14 @@ bool RRTPlugin2D::makePlan(const PoseStampedT& start, const PoseStampedT& goal,
     return false;
   }
 
-  if (!collision_checker_->WorldToMap(
+  if (!collision_checker_->worldToMap(
           start.pose.position.x, start.pose.position.y, start_mx, start_my)) {
     ROS_WARN(
         "Unable to set start pose for planning, returning planning failure!");
     return false;
   }
 
-  if (collision_checker_->PoseInCollision(goal)) {
+  if (collision_checker_->poseInCollision(goal)) {
     ROS_WARN(
         "Goal pose: (%.3f, %.3f, %.3f) in collision, returning planning "
         "failure!",
@@ -103,7 +103,7 @@ bool RRTPlugin2D::makePlan(const PoseStampedT& start, const PoseStampedT& goal,
     return false;
   }
 
-  if (!collision_checker_->WorldToMap(goal.pose.position.x,
+  if (!collision_checker_->worldToMap(goal.pose.position.x,
                                       goal.pose.position.y, goal_mx, goal_my)) {
     ROS_WARN(
         "Unable to set goal pose for planning, returning planning failure!");
@@ -153,7 +153,7 @@ void RRTPlugin2D::process2DPlan(const StateVector2D& plan_2d,
   plan.reserve(plan_2d.size());
 
   PoseStampedT pose;
-  pose.header = nav_utils::PrepareHeader("map");
+  pose.header = nav_utils::prepareHeader("map");
 
   std::transform(plan_2d.cbegin(), plan_2d.cend(), std::back_inserter(plan),
                  [&](const auto& state_2d) {
@@ -165,7 +165,7 @@ void RRTPlugin2D::process2DPlan(const StateVector2D& plan_2d,
   plan.front().pose.orientation = start.pose.orientation;
   plan.back().pose.orientation = goal.pose.orientation;
 
-  nav_utils::AssignPlanOrientation(plan);
+  nav_utils::assignPlanOrientation(plan);
 }
 
 void RRTPlugin2D::updateVisualization(const PlanT& plan) {
@@ -194,7 +194,7 @@ void RRTPlugin2D::updateVisualization(const PlanT& plan) {
 }
 
 void RRTPlugin2D::state2DToPose(const State2D& state_2d, PoseT& pose) {
-  collision_checker_->MapToWorld(static_cast<unsigned int>(state_2d.x),
+  collision_checker_->mapToWorld(static_cast<unsigned int>(state_2d.x),
                                  static_cast<unsigned int>(state_2d.y),
                                  pose.position.x, pose.position.y);
 }

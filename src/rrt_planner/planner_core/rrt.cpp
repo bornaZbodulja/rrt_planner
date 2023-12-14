@@ -57,7 +57,7 @@ typename RRT<StateT>::PlanningResultT RRT<StateT>::createPath() {
 }
 
 template <typename StateT>
-bool RRT<StateT>::expandTree(const unsigned int& index, SearchTreePtr& tree,
+bool RRT<StateT>::expandTree(unsigned int index, SearchTreePtr& tree,
                              NodePtr& new_node, NodePtr& closest_node,
                              NodePtr& parent_node) {
   new_node = nullptr;
@@ -93,7 +93,7 @@ bool RRT<StateT>::expandTree(const unsigned int& index, SearchTreePtr& tree,
   }
 
   new_node->setCellCost(
-      collision_checker_->GetCost(static_cast<unsigned int>(new_node_state.x),
+      collision_checker_->getCost(static_cast<unsigned int>(new_node_state.x),
                                   static_cast<unsigned int>(new_node_state.y)));
   new_node->state = new_node_state;
 

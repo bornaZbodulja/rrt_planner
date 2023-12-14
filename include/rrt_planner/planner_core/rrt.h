@@ -65,7 +65,7 @@ class RRT : public RRTCore<StateT> {
    * @param parent_node Pointer to parent node of new node (filled by method)
    * @return True if search tree was successfully expanded false otherwise
    */
-  virtual bool expandTree(const unsigned int& index, SearchTreePtr& tree,
+  virtual bool expandTree(unsigned int index, SearchTreePtr& tree,
                           NodePtr& new_node, NodePtr& closest_node,
                           NodePtr& parent_node);
 

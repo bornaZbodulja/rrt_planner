@@ -46,8 +46,8 @@ void RRTPluginHybrid::initialize(std::string name,
 
   const auto costmap_resolution = costmap_ros->getCostmap()->getResolution();
 
-  const auto space_hybrid = SpaceHybrid(collision_checker_->GetSizeX(),
-                                        collision_checker_->GetSizeY(), 180);
+  const auto space_hybrid = SpaceHybrid(collision_checker_->getSizeX(),
+                                        collision_checker_->getSizeY(), 180);
 
   state_space_ = std::make_shared<StateSpaceHybrid>(space_hybrid);
   auto&& state_connector = ROSStateConnectorFactory::createHybridStateConnector(
@@ -78,7 +78,7 @@ bool RRTPluginHybrid::makePlan(const PoseStampedT& start,
   unsigned int start_mx, start_my, start_ang_bin;
   unsigned int goal_mx, goal_my, goal_ang_bin;
 
-  if (collision_checker_->PoseInCollision(start)) {
+  if (collision_checker_->poseInCollision(start)) {
     ROS_WARN(
         "Start pose: (%.3f, %.3f, %.3f) in collision, returning planning "
         "failure!",
@@ -87,14 +87,14 @@ bool RRTPluginHybrid::makePlan(const PoseStampedT& start,
     return false;
   }
 
-  if (!collision_checker_->WorldToMap(
+  if (!collision_checker_->worldToMap(
           start.pose.position.x, start.pose.position.y, start_mx, start_my)) {
     ROS_WARN(
         "Unable to set start pose for planning, returning planning failure!");
     return false;
   }
 
-  if (collision_checker_->PoseInCollision(goal)) {
+  if (collision_checker_->poseInCollision(goal)) {
     ROS_WARN(
         "Goal pose: (%.3f, %.3f, %.3f) in collision, returning planning "
         "failure!",
@@ -103,7 +103,7 @@ bool RRTPluginHybrid::makePlan(const PoseStampedT& start,
     return false;
   }
 
-  if (!collision_checker_->WorldToMap(goal.pose.position.x,
+  if (!collision_checker_->worldToMap(goal.pose.position.x,
                                       goal.pose.position.y, goal_mx, goal_my)) {
     ROS_WARN(
         "Unable to set goal pose for planning, returning planning failure!");
@@ -159,7 +159,7 @@ void RRTPluginHybrid::processHybridPlan(const StateVectorHybrid& plan_hybrid,
   plan.reserve(plan_hybrid.size());
 
   PoseStampedT pose;
-  pose.header = nav_utils::PrepareHeader("map");
+  pose.header = nav_utils::prepareHeader("map");
 
   std::transform(plan_hybrid.cbegin(), plan_hybrid.cend(),
                  std::back_inserter(plan), [&](const auto& state_hybrid) {
@@ -196,7 +196,7 @@ void RRTPluginHybrid::updateVisualization(const PlanT& plan) {
 
 void RRTPluginHybrid::stateHybridToPose(const StateHybrid& state_hybrid,
                                         PoseT& pose) {
-  collision_checker_->MapToWorld(static_cast<unsigned int>(state_hybrid.x),
+  collision_checker_->mapToWorld(static_cast<unsigned int>(state_hybrid.x),
                                  static_cast<unsigned int>(state_hybrid.y),
                                  pose.position.x, pose.position.y);
   pose.orientation = tf2::toMsg(

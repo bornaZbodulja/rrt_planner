@@ -19,26 +19,26 @@ LineConnector::ExpansionResultT LineConnector::tryLineExpand(
     const CollisionCheckerPtr& collision_checker) const {
   auto&& line_iterator = createLineIterator(start, target);
   // skip start position
-  line_iterator.Advance();
+  line_iterator.advance();
 
   // TODO: Simplify this
 
   int iteration{0};
 
-  while (line_iterator.IsValid() &&
+  while (line_iterator.isValid() &&
          iteration < connection_params.max_extension_states) {
-    if (collision_checker->PointInCollision(
-            line_iterator.GetCurrentX(), line_iterator.GetCurrentY(),
+    if (collision_checker->pointInCollision(
+            line_iterator.getCurrentX(), line_iterator.getCurrentY(),
             connection_params.lethal_cost, connection_params.allow_unknown)) {
       return {};
     }
     iteration++;
-    line_iterator.Advance();
+    line_iterator.advance();
   }
 
   return std::make_optional<StateT>(
-      static_cast<double>(line_iterator.GetPreviousX()),
-      static_cast<double>(line_iterator.GetPreviousY()));
+      static_cast<double>(line_iterator.getPreviousX()),
+      static_cast<double>(line_iterator.getPreviousY()));
 }
 
 bool LineConnector::tryConnectStates(
@@ -47,17 +47,17 @@ bool LineConnector::tryConnectStates(
     const CollisionCheckerPtr& collision_checker) const {
   auto&& line_iterator = createLineIterator(start, goal);
   // skip start position
-  line_iterator.Advance();
+  line_iterator.advance();
 
   // TODO: Simplify this
 
-  while (line_iterator.IsValid()) {
-    if (collision_checker->PointInCollision(
-            line_iterator.GetCurrentX(), line_iterator.GetCurrentY(),
+  while (line_iterator.isValid()) {
+    if (collision_checker->pointInCollision(
+            line_iterator.getCurrentX(), line_iterator.getCurrentY(),
             connection_params.lethal_cost, connection_params.allow_unknown)) {
       return false;
     }
-    line_iterator.Advance();
+    line_iterator.advance();
   }
 
   return true;
@@ -69,12 +69,12 @@ LineConnector::StateVector LineConnector::getLinePath(
 
   auto&& line_iterator = createLineIterator(start, goal);
   // skip start position
-  line_iterator.Advance();
+  line_iterator.advance();
 
-  while (line_iterator.IsValid()) {
-    path.emplace_back(static_cast<double>(line_iterator.GetCurrentX()),
-                      static_cast<double>(line_iterator.GetCurrentY()));
-    line_iterator.Advance();
+  while (line_iterator.isValid()) {
+    path.emplace_back(static_cast<double>(line_iterator.getCurrentX()),
+                      static_cast<double>(line_iterator.getCurrentY()));
+    line_iterator.advance();
   }
 
   return path;

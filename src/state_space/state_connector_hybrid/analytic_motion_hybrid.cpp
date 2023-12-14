@@ -57,9 +57,9 @@ AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
   for (double i = 1.0; i <= iterations; i++) {
     ompl_state_space_->interpolate(from(), to(), i / intervals, s());
     reals = s.reals();
-    nav_utils::NormalizeAngle(reals[2]);
+    nav_utils::normalizeAngle(reals[2]);
 
-    if (collision_checker->PoseInCollision(
+    if (collision_checker->poseInCollision(
             static_cast<unsigned int>(reals[0]),
             static_cast<unsigned int>(reals[1]), reals[2],
             connection_params.lethal_cost, connection_params.allow_unknown)) {
@@ -91,9 +91,9 @@ bool AnalyticMotionHybrid::tryAnalyticConnect(
   for (double i = 1.0; i <= iterations; i++) {
     ompl_state_space_->interpolate(from(), to(), i / iterations, s());
     reals = s.reals();
-    nav_utils::NormalizeAngle(reals[2]);
+    nav_utils::normalizeAngle(reals[2]);
 
-    if (collision_checker->PoseInCollision(
+    if (collision_checker->poseInCollision(
             static_cast<unsigned int>(reals[0]),
             static_cast<unsigned int>(reals[1]), reals[2],
             connection_params.lethal_cost, connection_params.allow_unknown)) {
@@ -125,7 +125,7 @@ AnalyticMotionHybrid::StateVector AnalyticMotionHybrid::getAnalyticPath(
   for (double i = 1.0; i <= intervals; i++) {
     ompl_state_space_->interpolate(from(), to(), i / intervals, s());
     reals = s.reals();
-    nav_utils::NormalizeAngle(reals[2]);
+    nav_utils::normalizeAngle(reals[2]);
     path.emplace_back(reals[0], reals[1],
                       state_space->getClosestAngularBin(reals[2]));
   }

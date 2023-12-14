@@ -25,7 +25,7 @@ SearchTreeVisualization::SearchTreeVisualization(ros::NodeHandle* nh,
 
 void SearchTreeVisualization::setTree(const TreeT& search_tree) {
   MarkerT tree_marker;
-  tree_marker.header = nav_utils::PrepareHeader("map");
+  tree_marker.header = nav_utils::prepareHeader("map");
   tree_marker.ns = tree_id_;
   tree_marker.type = visualization_msgs::Marker::LINE_LIST;
   tree_marker.action = visualization_msgs::Marker::ADD;

@@ -114,7 +114,7 @@ class RRTCore {
     start_->state = start_state;
     start_->setAccumulatedCost(0.0);
     start_->setCellCost(
-        collision_checker_->GetCost(static_cast<unsigned int>(start_state.x),
+        collision_checker_->getCost(static_cast<unsigned int>(start_state.x),
                                     static_cast<unsigned int>(start_state.y)));
     start_->visited();
     start_tree_->setRootNode(start_);
@@ -129,7 +129,7 @@ class RRTCore {
     goal_->state = goal_state;
     goal_->setAccumulatedCost(0.0);
     goal_->setCellCost(
-        collision_checker_->GetCost(static_cast<unsigned int>(goal_state.x),
+        collision_checker_->getCost(static_cast<unsigned int>(goal_state.x),
                                     static_cast<unsigned int>(goal_state.y)));
     goal_->visited();
     start_tree_->setTargetNode(goal_);

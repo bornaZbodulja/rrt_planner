@@ -55,7 +55,7 @@ struct RGD {
     StateT mid_state;
 
     for (int i = 0; i < iterations; i++) {
-      if (collision_checker->GetCost(static_cast<unsigned int>(rand_state.x),
+      if (collision_checker->getCost(static_cast<unsigned int>(rand_state.x),
                                      static_cast<unsigned int>(rand_state.y)) >
           stop_cost) {
         break;
