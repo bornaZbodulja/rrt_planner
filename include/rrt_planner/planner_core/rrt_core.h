@@ -141,18 +141,12 @@ class RRTCore {
    */
   virtual PlanningResultT createPath() = 0;
 
+  /**
+   * @brief
+   * @return TreeMsgVectorT
+   */
   virtual TreeMsgVectorT getSearchTrees() const {
-    auto&& index_tree = start_tree_->getSearchTree();
-    TreeMsgT state_tree;
-    state_tree.reserve(index_tree.size());
-
-    std::transform(index_tree.cbegin(), index_tree.cend(),
-                   std::back_inserter(state_tree), [&](const auto& edge) {
-                     return EdgeT{state_space_->getState(edge.first),
-                                  state_space_->getState(edge.second)};
-                   });
-
-    return {state_tree};
+    return {searchTreeToTreeMsg(start_tree_)};
   }
 
   inline void updateCollisionChecker(
@@ -228,6 +222,25 @@ class RRTCore {
 
   inline bool isGoal(const NodePtr& node) const {
     return node->getIndex() == goal_->getIndex();
+  }
+
+  /**
+   * @brief
+   * @param tree
+   * @return TreeMsgT
+   */
+  TreeMsgT searchTreeToTreeMsg(const SearchTreePtr& tree) const {
+    auto&& index_tree = tree->getSearchTree();
+    TreeMsgT tree_msg;
+    tree_msg.reserve(index_tree.size());
+
+    std::transform(index_tree.cbegin(), index_tree.cend(),
+                   std::back_inserter(tree_msg), [&](const auto& edge) {
+                     return EdgeT{state_space_->getState(edge.first),
+                                  state_space_->getState(edge.second)};
+                   });
+
+    return tree_msg;
   }
 
   inline unsigned int getStartIndex() const { return start_->getIndex(); }

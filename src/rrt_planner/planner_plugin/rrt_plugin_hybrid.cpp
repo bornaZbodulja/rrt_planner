@@ -31,6 +31,7 @@ PLUGINLIB_EXPORT_CLASS(rrt_planner::planner_plugin::RRTPluginHybrid,
 using namespace rrt_planner::planner_plugin;
 using namespace rrt_planner::param_loader;
 using namespace rrt_planner::ros_factory;
+using namespace rrt_planner::visualization_factory;
 
 void RRTPluginHybrid::initialize(std::string name,
                                  costmap_2d::Costmap2DROS* costmap_ros) {
@@ -49,7 +50,7 @@ void RRTPluginHybrid::initialize(std::string name,
                                         collision_checker_->GetSizeY(), 180);
 
   state_space_ = std::make_shared<StateSpaceHybrid>(space_hybrid);
-  auto state_connector = ROSStateConnectorFactory::createHybridStateConnector(
+  auto&& state_connector = ROSStateConnectorFactory::createHybridStateConnector(
       state_space_, collision_checker_, costmap_resolution, &nh_);
 
   auto search_policy = loadSearchPolicy(&nh_);
@@ -58,6 +59,9 @@ void RRTPluginHybrid::initialize(std::string name,
   rrt_planner_ = ROSPlannerFactory::createPlanner<StateHybrid>(
       search_policy, sampling_policy, state_space_, std::move(state_connector),
       collision_checker_, costmap_resolution, &nh_);
+
+  visualization_ =
+      VisualizationFactory::createVisualization(search_policy, &nh_);
 
   initialized_ = true;
 }
@@ -70,7 +74,6 @@ bool RRTPluginHybrid::makePlan(const PoseStampedT& start,
   }
 
   plan.clear();
-  clearVisualization();
 
   unsigned int start_mx, start_my, start_ang_bin;
   unsigned int goal_mx, goal_my, goal_ang_bin;
@@ -129,6 +132,7 @@ bool RRTPluginHybrid::makePlan(const PoseStampedT& start,
     processHybridPlan(plan_hybrid.value(), plan);
   }
 
+  clearVisualization();
   updateVisualization(plan);
   publishVisualization();
 

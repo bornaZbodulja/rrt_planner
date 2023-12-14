@@ -21,14 +21,17 @@ namespace rrt_planner::planner_core {
 enum class SearchPolicy {
   UNKNOWN = 0,
   RRT = 1,
-  RRT_STAR = 2,
-  BIDIRECTIONAL_RRT_STAR = 3
+  BIDIRECTIONAL_RRT = 2,
+  RRT_STAR = 3,
+  BIDIRECTIONAL_RRT_STAR = 4
 };
 
 inline std::string searchPolicyToString(SearchPolicy search_policy) {
   switch (search_policy) {
     case SearchPolicy::RRT:
       return "RRT";
+    case SearchPolicy::BIDIRECTIONAL_RRT:
+      return "Bidirectional RRT";
     case SearchPolicy::RRT_STAR:
       return "RRT*";
     case SearchPolicy::BIDIRECTIONAL_RRT_STAR:
@@ -41,6 +44,8 @@ inline std::string searchPolicyToString(SearchPolicy search_policy) {
 inline SearchPolicy searchPolicyFromString(std::string search_policy) {
   if (search_policy == "RRT") {
     return SearchPolicy::RRT;
+  } else if (search_policy == "BIDIRECTIONAL_RRT") {
+    return SearchPolicy::BIDIRECTIONAL_RRT;
   } else if (search_policy == "RRT_STAR") {
     return SearchPolicy::RRT_STAR;
   } else if (search_policy == "BIDIRECTIONAL_RRT_STAR") {

@@ -57,6 +57,7 @@ include_directories(
 add_library(${library_name}_2d SHARED
   src/rrt_planner/planner_plugin/rrt_plugin_2d.cpp
   src/rrt_planner/planner_core/rrt.cpp
+  src/rrt_planner/planner_core/bidirectional_rrt.cpp
   src/rrt_planner/visualization_plugin/search_tree_visualization.cpp
   src/state_space/state_connector_2d/line_connector.cpp
   src/state_space/state_connector_2d/state_connector_2d.cpp
@@ -67,6 +68,7 @@ add_library(${library_name}_2d SHARED
 add_library(${library_name}_hybrid SHARED
   src/rrt_planner/planner_plugin/rrt_plugin_hybrid.cpp
   src/rrt_planner/planner_core/rrt.cpp
+  src/rrt_planner/planner_core/bidirectional_rrt.cpp
   src/rrt_planner/visualization_plugin/search_tree_visualization.cpp
   src/state_space/state_connector_2d/line_connector.cpp
   src/state_space/state_connector_2d/state_connector_2d.cpp

@@ -38,6 +38,8 @@ class VisualizationFactory {
     switch (search_policy) {
       case SearchPolicyT::RRT:
         return std::make_unique<RRTVisualizationT>(nh);
+      case SearchPolicyT::BIDIRECTIONAL_RRT:
+        return std::make_unique<BidirectionalRRTVisualizationT>(nh);
       case SearchPolicyT::RRT_STAR:
         return std::make_unique<RRTVisualizationT>(nh);
       case SearchPolicyT::BIDIRECTIONAL_RRT_STAR:

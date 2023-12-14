@@ -43,14 +43,16 @@ inline rrt_planner::planner_core::SearchParams loadSearchParams(
     loadParam<double>(nh, "near_distance", search_params.near_distance);
     // Scaling with costmap resolution
     search_params.near_distance /= costmap_resolution;
+  }
 
-    if (search_policy ==
-        rrt_planner::planner_core::SearchPolicy::BIDIRECTIONAL_RRT_STAR) {
-      loadParam<double>(nh, "tree_connection_max_length",
-                        search_params.tree_connection_max_length);
-      // Scaling with costmap resolution
-      search_params.tree_connection_max_length /= costmap_resolution;
-    }
+  if (search_policy ==
+          rrt_planner::planner_core::SearchPolicy::BIDIRECTIONAL_RRT ||
+      search_policy ==
+          rrt_planner::planner_core::SearchPolicy::BIDIRECTIONAL_RRT_STAR) {
+    loadParam<double>(nh, "tree_connection_max_length",
+                      search_params.tree_connection_max_length);
+    // Scaling with costmap resolution
+    search_params.tree_connection_max_length /= costmap_resolution;
   }
 
   return search_params;

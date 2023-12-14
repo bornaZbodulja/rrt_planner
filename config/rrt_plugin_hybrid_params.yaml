@@ -1,17 +1,20 @@
-RRTPlannerHybrid:
-  edge_length: 0.2 # [m] Defines length of the edges connecting nodes in search tree
+RRTPluginHybrid:
+  edge_length: 1.0 # [m] Defines length of the edges connecting nodes in search tree
   target_bias: 0.05 # Defines bias towards target of the search tree when generating random node (between 0.0 and 1.0)
   near_distance: 0.5 # [m] Defines neighborhood of the nodes in the search tree
   cost_penalty: 2.0 # Penalty to apply to high cost areas
-  min_turning_radius: 2.0 # [m] Minimal turning radius of the vehicle
-  rewire_tree: true # Whether to rewire tree after every expansion
-  connect_trees_max_length: 10 # [m] Maximal Euclidean distance between two trees to try connecting them
-  rgd_increment_step: 0.5 # Increment step for random gradient descent (between 0.0 and 1.0)
-  rgd_stop_cost: 180 # Stop cost random gradient descent
-  rgd_iterations: 10 # Number of iterations for random gradient descent
+  traversal_cost: 1.0
+  # rewire_tree: true # Whether to rewire tree after every expansion
+  tree_connection_max_length: 10.0 # [m] Maximal Euclidean distance between two trees to try connecting them
   allow_unknown: false # Whether to allow expansion in unknown space
   lethal_cost: 230 # Lethal cost for collision checking
   max_expansion_iterations: 100000 # Maximum number of search tree expansions
-  max_planning_time: 5.0 # Maximum allowed planning time
-  angle_bin_size: 180 # Number of angle bins
-  motion_model: "DUBINS" # (DUBINS or REEDS-SHEPP)
+  max_planning_timeout: 5.0 # Maximum allowed planning time
+  sampling_policy: "RGD_SAMPLING" # RGD_SAMPLING
+  search_policy: "BIDIRECTIONAL_RRT" #RRT, BIDIRECTIONAL_RRT
+  motion_model: "REEDS-SHEPP" # DUBINS, REEDS-SHEPP
+  min_turning_radius: 1.0 # [m]
+  RGD:
+    increment_step: 0.5 # Increment step for random gradient descent (between 0.0 and 1.0)
+    stop_cost: 180 # Stop cost random gradient descent
+    iterations: 20 # Number of iterations for random gradient descent

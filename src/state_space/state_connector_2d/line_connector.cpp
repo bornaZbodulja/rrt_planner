@@ -74,6 +74,7 @@ LineConnector::StateVector LineConnector::getLinePath(
   while (line_iterator.IsValid()) {
     path.emplace_back(static_cast<double>(line_iterator.GetCurrentX()),
                       static_cast<double>(line_iterator.GetCurrentY()));
+    line_iterator.Advance();
   }
 
   return path;

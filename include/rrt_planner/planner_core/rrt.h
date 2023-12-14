@@ -20,33 +20,36 @@ namespace rrt_planner::planner_core {
 template <typename StateT>
 class RRT : public RRTCore<StateT> {
  public:
-  using RRTBase = RRTCore<StateT>;
-  using NodePtr = typename RRTBase::NodePtr;
-  using StateVector = typename RRTBase::StateVector;
-  using StateSpacePtr = typename RRTBase::StateSpacePtr;
-  using StateConnectorPtr = typename RRTBase::StateConnectorPtr;
-  using StateSamplerPtr = typename RRTBase::StateSamplerPtr;
-  using SearchTreePtr = typename RRTBase::SearchTreePtr;
-  using SearchInfo = typename RRTBase::SearchInfo;
-  using PlanningResultT = typename RRTBase::PlanningResultT;
-  using RRTBase::collision_checker_;
-  using RRTBase::start_tree_;
-  using RRTBase::state_connector_;
-  using RRTBase::state_space_;
+  using RRTCoreT = RRTCore<StateT>;
+  using NodePtr = typename RRTCoreT::NodePtr;
+  using StateVector = typename RRTCoreT::StateVector;
+  using StateSpacePtr = typename RRTCoreT::StateSpacePtr;
+  using StateConnectorPtr = typename RRTCoreT::StateConnectorPtr;
+  using StateSamplerPtr = typename RRTCoreT::StateSamplerPtr;
+  using SearchTreePtr = typename RRTCoreT::SearchTreePtr;
+  using SearchInfo = typename RRTCoreT::SearchInfo;
+  using PlanningResultT = typename RRTCoreT::PlanningResultT;
+  using RRTCoreT::collision_checker_;
+  using RRTCoreT::start_tree_;
+  using RRTCoreT::state_connector_;
+  using RRTCoreT::state_space_;
 
   /**
    * @brief
    * @param state_space
    * @param state_connector
+   * @param state_sampler
    * @param search_info
    * @param collision_checker
    */
   RRT(const StateSpacePtr& state_space, StateConnectorPtr&& state_connector,
       StateSamplerPtr&& state_sampler, SearchInfo&& search_info,
       const CollisionCheckerPtr& collision_checker)
-      : RRTBase(state_space, std::move(state_connector),
-                std::move(state_sampler), std::move(search_info),
-                collision_checker) {}
+      : RRTCoreT(state_space, std::move(state_connector),
+                 std::move(state_sampler), std::move(search_info),
+                 collision_checker) {}
+
+  ~RRT() override = default;
 
   PlanningResultT createPath() override;
 
@@ -71,9 +74,7 @@ class RRT : public RRTCore<StateT> {
    * @param node
    * @return StateVector
    */
-  inline virtual StateVector backTracePath(NodePtr& node) {
-    return node->backTracePath();
-  };
+  StateVector backTracePathToRoot(NodePtr& node);
 };
 }  // namespace rrt_planner::planner_core
 
