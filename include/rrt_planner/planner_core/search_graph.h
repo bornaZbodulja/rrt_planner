@@ -30,9 +30,9 @@ class SearchGraph {
   SearchGraph() = default;
   ~SearchGraph() { clear(); }
 
-  inline void reserve(unsigned int size) { graph_.reserve(size); }
+  void reserve(unsigned int size) { graph_.reserve(size); }
 
-  inline void clear() {
+  void clear() {
     // Resetting all nodes before deleting them!!!
     std::for_each(graph_.begin(), graph_.end(),
                   [&](auto& it) { it.second.reset(); });

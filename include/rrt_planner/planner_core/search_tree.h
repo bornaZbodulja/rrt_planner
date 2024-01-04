@@ -41,26 +41,26 @@ class SearchTree {
     delete target_node_;
   }
 
-  inline void clear() {
+  void clear() {
     root_node_ = nullptr;
     target_node_ = nullptr;
     tree_.clear();
   }
 
-  inline void reserve(unsigned int size) { tree_.reserve(size); }
+  void reserve(unsigned int size) { tree_.reserve(size); }
 
-  inline void addVertex(const NodePtr& node) { tree_.push_back(node); }
+  void addVertex(const NodePtr& node) { tree_.push_back(node); }
 
-  inline bool isNodeInTree(const NodePtr& node) {
+  bool isNodeInTree(const NodePtr& node) {
     return std::find(tree_.begin(), tree_.end(), node) != tree_.end();
   }
 
-  inline void setRootNode(const NodePtr& node) {
+  void setRootNode(const NodePtr& node) {
     root_node_ = node;
     addVertex(node);
   }
 
-  inline void setTargetNode(const NodePtr& node) { target_node_ = node; }
+  void setTargetNode(const NodePtr& node) { target_node_ = node; }
 
   /**
    * @brief

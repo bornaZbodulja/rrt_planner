@@ -149,8 +149,7 @@ class RRTCore {
     return {searchTreeToTreeMsg(start_tree_)};
   }
 
-  inline void updateCollisionChecker(
-      const CollisionCheckerPtr& collision_checker) {
+  void updateCollisionChecker(const CollisionCheckerPtr& collision_checker) {
     collision_checker_ = collision_checker;
   }
 
@@ -160,7 +159,7 @@ class RRTCore {
    * @param target_index Index of target node in search tree
    * @return unsigned int
    */
-  inline unsigned int getNewExpansionIndex(unsigned int target_index) {
+  unsigned int getNewExpansionIndex(unsigned int target_index) {
     return state_sampler_->generateTreeExpansionIndex(
         target_index, state_space_.get(), collision_checker_);
   }
@@ -171,8 +170,7 @@ class RRTCore {
    * @param search_tree
    * @return NodePtr
    */
-  inline NodePtr getClosestNode(unsigned int index,
-                                const SearchTreePtr& search_tree) {
+  NodePtr getClosestNode(unsigned int index, const SearchTreePtr& search_tree) {
     return search_tree->getClosestNode(index, distance_getter_);
   }
 
@@ -203,7 +201,7 @@ class RRTCore {
    * @param node
    * @return double
    */
-  inline double getCostmapCost(const NodePtr& node) {
+  double getCostmapCost(const NodePtr& node) {
     return search_info_.cost_penalty * node->getCellCost();
   }
 
@@ -213,14 +211,14 @@ class RRTCore {
    * @param child_state
    * @return double
    */
-  inline double getTraversalCost(const NodePtr& parent_node,
-                                 const NodePtr& child_node) const {
+  double getTraversalCost(const NodePtr& parent_node,
+                          const NodePtr& child_node) const {
     return search_info_.traversal_cost *
            state_connector_->getStatesDistance(parent_node->state,
                                                child_node->state);
   }
 
-  inline bool isGoal(const NodePtr& node) const {
+  bool isGoal(const NodePtr& node) const {
     return node->getIndex() == goal_->getIndex();
   }
 
@@ -243,53 +241,47 @@ class RRTCore {
     return tree_msg;
   }
 
-  inline unsigned int getStartIndex() const { return start_->getIndex(); }
+  unsigned int getStartIndex() const { return start_->getIndex(); }
 
-  inline unsigned int getGoalIndex() const { return goal_->getIndex(); }
+  unsigned int getGoalIndex() const { return goal_->getIndex(); }
 
-  inline void addNodeToTree(const NodePtr& node, SearchTreePtr& tree) {
+  void addNodeToTree(const NodePtr& node, SearchTreePtr& tree) {
     tree->addVertex(node);
   }
 
-  inline NodePtr getNodeFromGraph(unsigned int index) {
+  NodePtr getNodeFromGraph(unsigned int index) {
     return graph_->getNode(index);
   }
 
-  inline void clearGraph() { graph_->clear(); }
+  void clearGraph() { graph_->clear(); }
 
-  inline void reserveGraph(unsigned int size) { graph_->reserve(size); }
+  void reserveGraph(unsigned int size) { graph_->reserve(size); }
 
-  inline void clearStartTree() { start_tree_->clear(); }
+  void clearStartTree() { start_tree_->clear(); }
 
-  inline void reserveStartTree(unsigned int size) {
-    start_tree_->reserve(size);
-  }
+  void reserveStartTree(unsigned int size) { start_tree_->reserve(size); }
 
-  inline void setPlanningStartTime() { timeout_handler_.setStartTime(); }
+  void setPlanningStartTime() { timeout_handler_.setStartTime(); }
 
-  inline double getElapsedTime() const {
-    return timeout_handler_.getElapsedTime();
-  }
+  double getElapsedTime() const { return timeout_handler_.getElapsedTime(); }
 
-  inline bool isPlanningTimeoutReached() const {
+  bool isPlanningTimeoutReached() const {
     return timeout_handler_.timeoutReached();
   }
 
-  inline void resetExpansionIterationsCounter() { iterations_counter_ = 0; }
+  void resetExpansionIterationsCounter() { iterations_counter_ = 0; }
 
-  inline int getCurrentExpansionIterationCounter() {
-    return iterations_counter_;
-  }
+  int getCurrentExpansionIterationCounter() { return iterations_counter_; }
 
-  inline unsigned int getMaximumNumberOfIterations() {
+  unsigned int getMaximumNumberOfIterations() {
     return search_info_.max_expansion_iterations;
   }
 
-  inline bool reachedMaximumNumberOfIterations() {
+  bool reachedMaximumNumberOfIterations() {
     return ++iterations_counter_ > search_info_.max_expansion_iterations;
   }
 
-  inline bool planningExpired() {
+  bool planningExpired() {
     return isPlanningTimeoutReached() || reachedMaximumNumberOfIterations();
   }
 

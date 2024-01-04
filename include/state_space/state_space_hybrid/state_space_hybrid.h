@@ -26,30 +26,29 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
                    unsigned int dim_3_in)
       : space_{size_x_in, size_y_in, dim_3_in} {}
 
-  inline unsigned int getIndex(const StateHybrid& state) const override {
+  unsigned int getIndex(const StateHybrid& state) const override {
     return state.theta + state.x * space_.dim_3 +
            state.y * space_.size_x * space_.dim_3;
   }
 
-  inline StateHybrid getState(unsigned int index) const override {
+  StateHybrid getState(unsigned int index) const override {
     return StateHybrid((index / space_.dim_3) % space_.size_x,
                        index / (space_.dim_3 * space_.size_x),
                        index % space_.dim_3);
   }
 
-  inline void normalizeState(StateHybrid& state) const override {
+  void normalizeState(StateHybrid& state) const override {
     state.x = std::fmod(state.x, static_cast<double>(space_.size_x));
     state.y = std::fmod(state.y, static_cast<double>(space_.size_y));
     state.theta = std::fmod(state.theta, static_cast<double>(space_.dim_3));
   }
 
-  inline StateHybrid getStateDistance(
-      const StateHybrid& start_state,
-      const StateHybrid& goal_state) const override {
+  StateHybrid getStateDistance(const StateHybrid& start_state,
+                               const StateHybrid& goal_state) const override {
     return (goal_state - start_state);
   }
 
-  inline unsigned int getStateSpaceSize() const override {
+  unsigned int getStateSpaceSize() const override {
     return space_.size_x * space_.size_y * space_.dim_3;
   }
 
@@ -58,7 +57,7 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
    * @param theta Raw orientation
    * @return unsigned int Index of bin
    */
-  inline unsigned int getClosestAngularBin(double theta) const {
+  unsigned int getClosestAngularBin(double theta) const {
     return static_cast<unsigned int>(std::floor(theta / space_.angle_bin));
   }
 
@@ -68,7 +67,7 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
    * @return double
    * TODO: Make this method use double instead of unsigned int
    */
-  inline double getAngleFromBin(unsigned int bin_idx) {
+  double getAngleFromBin(unsigned int bin_idx) {
     return bin_idx * space_.angle_bin;
   }
 

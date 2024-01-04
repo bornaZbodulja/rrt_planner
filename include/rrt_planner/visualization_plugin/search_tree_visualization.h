@@ -35,15 +35,14 @@ class SearchTreeVisualization {
    * @param nh
    * @param tree_identifier
    */
-  SearchTreeVisualization(ros::NodeHandle* nh,
-                          std::string tree_identifier,
+  SearchTreeVisualization(ros::NodeHandle* nh, std::string tree_identifier,
                           const ColorT& tree_color);
 
   ~SearchTreeVisualization() = default;
 
-  inline void publishVisualization() const { tree_pub_.publish(tree_); }
+  void publishVisualization() const { tree_pub_.publish(tree_); }
 
-  inline void clearVisualization() {
+  void clearVisualization() {
     clearSearchTreeVisualization();
     publishVisualization();
   }
@@ -51,7 +50,7 @@ class SearchTreeVisualization {
   void setTree(const TreeT& search_tree);
 
  private:
-  inline void clearSearchTreeVisualization() {
+  void clearSearchTreeVisualization() {
     tree_.action = visualization_msgs::Marker::DELETE;
   }
 

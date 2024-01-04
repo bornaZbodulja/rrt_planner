@@ -24,18 +24,16 @@ struct State2D : public State<State2D> {
   State2D() = default;
   explicit State2D(double x_in, double y_in) : x(x_in), y(y_in) {}
 
-  inline void operator*(double k) override {
+  void operator*(double k) override {
     x *= k;
     y *= k;
   }
 
-  inline State2D operator+(const State2D& rhs) const override {
+  State2D operator+(const State2D& rhs) const override {
     return State2D{x + rhs.x, y + rhs.y};
   }
 
-  inline double norm() const override {
-    return std::pow(x, 2) + std::pow(y, 2);
-  }
+  double norm() const override { return std::pow(x, 2) + std::pow(y, 2); }
 
   double x{0.0}, y{0.0};
 };

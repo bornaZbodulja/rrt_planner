@@ -24,7 +24,7 @@ namespace rrt_planner::param_loader {
  * @param costmap_resolution
  * @return state_space::state_connector::StateConnectorParams
  */
-inline state_space::state_connector::StateConnectorParams
+state_space::state_connector::StateConnectorParams
 loadStateConnectorParams(ros::NodeHandle* nh, double costmap_resolution) {
   state_space::state_connector::StateConnectorParams connector_params;
   loadParam<bool>(nh, "allow_unknown", connector_params.allow_unknown);

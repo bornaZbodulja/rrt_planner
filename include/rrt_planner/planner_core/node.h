@@ -36,19 +36,19 @@ class Node {
 
   ~Node() { delete parent; }
 
-  inline unsigned int getIndex() const { return index_; }
+  unsigned int getIndex() const { return index_; }
 
-  inline bool isVisited() const { return visited_; }
+  bool isVisited() const { return visited_; }
 
-  inline double getCellCost() const { return cell_cost_; }
+  double getCellCost() const { return cell_cost_; }
 
-  inline double getAccumulatedCost() const { return accumulated_cost_; }
+  double getAccumulatedCost() const { return accumulated_cost_; }
 
-  inline void visited() { visited_ = true; }
+  void visited() { visited_ = true; }
 
-  inline void setCellCost(double cost) { cell_cost_ = cost; }
+  void setCellCost(double cost) { cell_cost_ = cost; }
 
-  inline void setAccumulatedCost(double cost) { accumulated_cost_ = cost; }
+  void setAccumulatedCost(double cost) { accumulated_cost_ = cost; }
 
   void reset() {
     parent = nullptr;
@@ -57,11 +57,9 @@ class Node {
     accumulated_cost_ = std::numeric_limits<double>::max();
   }
 
-  inline bool operator==(const Node& rhs) const {
-    return index_ == rhs.getIndex();
-  }
+  bool operator==(const Node& rhs) const { return index_ == rhs.getIndex(); }
 
-  inline void rewireNode(const NodePtr& new_parent, double accumulated_cost) {
+  void rewireNode(const NodePtr& new_parent, double accumulated_cost) {
     parent = new_parent;
     accumulated_cost_ = accumulated_cost;
   }

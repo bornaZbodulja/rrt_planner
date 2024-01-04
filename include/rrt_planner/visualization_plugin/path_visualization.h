@@ -37,9 +37,9 @@ class PathVisualization {
 
   ~PathVisualization() = default;
 
-  inline void publishVisualization() const { path_pub_.publish(path_); }
+  void publishVisualization() const { path_pub_.publish(path_); }
 
-  inline void clearVisualization() {
+  void clearVisualization() {
     clearPath();
     publishVisualization();
   }

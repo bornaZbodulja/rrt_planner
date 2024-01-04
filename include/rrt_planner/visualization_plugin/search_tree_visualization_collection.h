@@ -54,12 +54,12 @@ class SearchTreeVisualizationCollection {
     it->second->setTree(search_tree);
   }
 
-  inline void publishVisualization() const {
+  void publishVisualization() const {
     std::for_each(collection_.cbegin(), collection_.cend(),
                   [&](const auto& it) { it.second->publishVisualization(); });
   }
 
-  inline void clearVisualization() {
+  void clearVisualization() {
     std::for_each(collection_.cbegin(), collection_.cend(),
                   [&](const auto& it) { it.second->clearVisualization(); });
   }

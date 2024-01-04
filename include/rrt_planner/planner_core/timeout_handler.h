@@ -25,15 +25,15 @@ class TimeoutHandler {
    */
   explicit TimeoutHandler(double timeout) : timeout_(timeout * 1000.0) {}
 
-  inline void setStartTime() { start_time_ = getCurrentTime(); }
+  void setStartTime() { start_time_ = getCurrentTime(); }
 
-  inline bool timeoutReached() const {
+  bool timeoutReached() const {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
                getCurrentTime() - start_time_)
                .count() > timeout_;
   }
 
-  inline double getElapsedTime() const {
+  double getElapsedTime() const {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
                getCurrentTime() - start_time_)
                .count() /
@@ -41,9 +41,7 @@ class TimeoutHandler {
   }
 
  private:
-  inline TimeT getCurrentTime() const {
-    return std::chrono::system_clock::now();
-  }
+  TimeT getCurrentTime() const { return std::chrono::system_clock::now(); }
 
   // Timeout in milliseconds
   double timeout_;

@@ -37,9 +37,7 @@ class Visualization {
 
   virtual ~Visualization() = default;
 
-  inline void updatePathVisualization(const PlanT& plan) {
-    path_vis_->setPath(plan);
-  }
+  void updatePathVisualization(const PlanT& plan) { path_vis_->setPath(plan); }
 
   /**
    * @brief
@@ -47,12 +45,12 @@ class Visualization {
    */
   virtual void updateSearchTreeVisualization(const TreeVector& trees) = 0;
 
-  inline void publishVisualization() const {
+  void publishVisualization() const {
     path_vis_->publishVisualization();
     tree_vis_->publishVisualization();
   }
 
-  inline void clearVisualization() {
+  void clearVisualization() {
     path_vis_->clearVisualization();
     tree_vis_->clearVisualization();
   }

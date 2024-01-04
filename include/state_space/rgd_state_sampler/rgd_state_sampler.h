@@ -69,7 +69,7 @@ class RGDStateSampler
   }
 
  protected:
-  inline unsigned int generateRandomIndexInStateSpace() const {
+  unsigned int generateRandomIndexInStateSpace() const {
     return std::experimental::randint(static_cast<unsigned int>(0),
                                       params_.state_space_size);
   }

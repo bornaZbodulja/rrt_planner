@@ -24,7 +24,7 @@ namespace rrt_planner::param_loader {
  * @param costmap_resolution 
  * @return state_space::state_connector_hybrid::HybridModel 
  */
-inline state_space::state_connector_hybrid::HybridModel loadHybridModel(
+state_space::state_connector_hybrid::HybridModel loadHybridModel(
     ros::NodeHandle* nh, double costmap_resolution) {
   state_space::state_connector_hybrid::HybridModel hybrid_model;
   hybrid_model.hybrid_motion_model = loadHybridMotionModel(nh);

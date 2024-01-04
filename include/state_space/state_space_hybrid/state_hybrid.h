@@ -25,17 +25,17 @@ struct StateHybrid : public State<StateHybrid> {
   StateHybrid(double x_in, double y_in, double theta_in)
       : x(x_in), y(y_in), theta(theta_in) {}
 
-  inline void operator*(double k) override {
+  void operator*(double k) override {
     x *= k;
     y *= k;
     theta *= k;
   }
 
-  inline StateHybrid operator+(const StateHybrid& rhs) const override {
+  StateHybrid operator+(const StateHybrid& rhs) const override {
     return StateHybrid{x + rhs.x, y + rhs.y, theta + rhs.theta};
   }
 
-  inline double norm() const override {
+  double norm() const override {
     const auto d = std::pow(x, 2) + std::pow(y, 2);
 
     // TODO: Implement this to be continuous function

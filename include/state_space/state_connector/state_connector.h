@@ -35,8 +35,7 @@ class StateConnector {
       : params_(params), collision_checker_(collision_checker) {}
   virtual ~StateConnector() = default;
 
-  inline void updateCollisionChecker(
-      const CollisionCheckerPtr& collision_checker) {
+  void updateCollisionChecker(const CollisionCheckerPtr& collision_checker) {
     collision_checker_ = collision_checker;
   }
 

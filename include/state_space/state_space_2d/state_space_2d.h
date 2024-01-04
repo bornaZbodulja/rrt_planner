@@ -25,25 +25,25 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
   StateSpace2D(unsigned int size_x_in, unsigned int size_y_in)
       : space_{size_x_in, size_y_in} {}
 
-  inline unsigned int getIndex(const State2D& state) const override {
+  unsigned int getIndex(const State2D& state) const override {
     return state.y * space_.size_x + state.x;
   }
 
-  inline State2D getState(unsigned int index) const override {
+  State2D getState(unsigned int index) const override {
     return State2D(index % space_.size_x, index / space_.size_x);
   }
 
-  inline void normalizeState(State2D& state) const override {
+  void normalizeState(State2D& state) const override {
     state.x = std::fmod(state.x, static_cast<double>(space_.size_x));
     state.y = std::fmod(state.y, static_cast<double>(space_.size_y));
   }
 
-  inline State2D getStateDistance(const State2D& start_state,
-                                  const State2D& goal_state) const override {
+  State2D getStateDistance(const State2D& start_state,
+                           const State2D& goal_state) const override {
     return (goal_state - start_state);
   }
 
-  inline unsigned int getStateSpaceSize() const override {
+  unsigned int getStateSpaceSize() const override {
     return space_.size_x * space_.size_y;
   }
 

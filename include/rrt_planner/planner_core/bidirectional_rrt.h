@@ -103,7 +103,7 @@ class BidirectionalRRT : public RRT<StateT> {
    */
   StateVector preparePath(NodePtr& first_node, NodePtr& second_node);
 
-  inline void clearGoalTree() { goal_tree_->clear(); }
+  void clearGoalTree() { goal_tree_->clear(); }
 
   SearchTreePtr goal_tree_;
 };

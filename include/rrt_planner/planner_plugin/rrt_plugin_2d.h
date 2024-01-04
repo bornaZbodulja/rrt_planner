@@ -96,11 +96,9 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
   void process2DPlan(const StateVector2D& plan_2d, const PoseStampedT& start,
                      const PoseStampedT& goal, PlanT& plan);
 
-  inline void publishVisualization() const {
-    visualization_->publishVisualization();
-  }
+  void publishVisualization() const { visualization_->publishVisualization(); }
 
-  inline void clearVisualization() { visualization_->clearVisualization(); }
+  void clearVisualization() { visualization_->clearVisualization(); }
 
   /**
    * @brief

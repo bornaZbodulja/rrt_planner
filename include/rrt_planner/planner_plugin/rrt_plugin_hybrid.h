@@ -94,11 +94,9 @@ class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
    */
   void processHybridPlan(const StateVectorHybrid& plan_hybrid, PlanT& plan);
 
-  inline void publishVisualization() const {
-    visualization_->publishVisualization();
-  }
+  void publishVisualization() const { visualization_->publishVisualization(); }
 
-  inline void clearVisualization() { visualization_->clearVisualization(); }
+  void clearVisualization() { visualization_->clearVisualization(); }
 
   /**
    * @brief

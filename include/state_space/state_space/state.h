@@ -24,9 +24,9 @@ struct State {
   virtual T operator+(const T& rhs) const = 0;
   virtual double norm() const = 0;
 
-  inline virtual void operator/(double k) final { this->operator*(1 / k); };
+  virtual void operator/(double k) final { this->operator*(1 / k); }
 
-  inline virtual T operator-(const T& rhs) const final {
+  virtual T operator-(const T& rhs) const final {
     T res = rhs;
     res.operator*(-1.0);
     res = this->operator+(res);

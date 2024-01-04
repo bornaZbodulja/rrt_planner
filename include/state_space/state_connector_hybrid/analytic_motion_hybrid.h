@@ -95,14 +95,14 @@ class AnalyticMotionHybrid {
                                const StateSpacePtr& state_space) const;
 
  private:
-  inline bool isMotionModelValid() const {
+  bool isMotionModelValid() const {
     return (hybrid_model_.hybrid_motion_model == HybridMotionModel::DUBINS) ||
            (hybrid_model_.hybrid_motion_model ==
             HybridMotionModel::REEDS_SHEPP);
   }
 
-  inline double getAnalyticStateDistance(
-      ompl::base::ScopedState<>& start, ompl::base::ScopedState<>& goal) const {
+  double getAnalyticStateDistance(ompl::base::ScopedState<>& start,
+                                  ompl::base::ScopedState<>& goal) const {
     return ompl_state_space_->distance(start(), goal());
   }
 
