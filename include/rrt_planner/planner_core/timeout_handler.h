@@ -13,20 +13,24 @@
 
 namespace rrt_planner::planner_core {
 /**
- * @brief
+ * @brief Class for monitoring planning time
  */
 class TimeoutHandler {
  public:
   using TimeT = std::chrono::time_point<std::chrono::system_clock>;
 
   /**
-   * @brief
+   * @brief Class constructor
    * @param timeout Timeout in seconds
    */
   explicit TimeoutHandler(double timeout) : timeout_(timeout * 1000.0) {}
 
   void setStartTime() { start_time_ = getCurrentTime(); }
 
+  /**
+   * @brief Checks if timeout has been reached
+   * @return True if timeout reached, false otherwise
+   */
   bool timeoutReached() const {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
                getCurrentTime() - start_time_)

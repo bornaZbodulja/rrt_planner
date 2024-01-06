@@ -19,7 +19,7 @@
 
 namespace rrt_planner::planner_core {
 /**
- * @brief
+ * @brief Holder for expanded nodes of tree
  * @tparam NodeT
  */
 template <typename NodeT>
@@ -29,17 +29,16 @@ class SearchTree {
   using NodeVector = std::vector<NodePtr>;
   using EdgeT = std::pair<unsigned int, unsigned int>;
   using TreeT = std::vector<EdgeT>;
+
   /**
-   * @brief Computes distance between nodes based on node indexes
+   * @brief Computes distance between states in state space associated with
+   * given indexes
    */
   using DistanceGetter = std::function<double(unsigned int, unsigned int)>;
 
   SearchTree() = default;
 
-  ~SearchTree() {
-    delete root_node_;
-    delete target_node_;
-  }
+  ~SearchTree() { clear(); }
 
   void clear() {
     root_node_ = nullptr;
@@ -63,9 +62,9 @@ class SearchTree {
   void setTargetNode(const NodePtr& node) { target_node_ = node; }
 
   /**
-   * @brief
-   * @param index
-   * @param distance_getter
+   * @brief Returns closest node to state associated with given index
+   * @param index Given index
+   * @param distance_getter Computes distance between two states in state space
    * @return NodePtr
    */
   NodePtr getClosestNode(unsigned int index,
@@ -74,22 +73,21 @@ class SearchTree {
       return nullptr;
     }
 
-    auto nearest_it =
-        std::min_element(tree_.cbegin(), tree_.cend(),
-                         [&](const auto& node1, const auto& node2) {
-                           return distance_getter(node1->getIndex(), index) <
-                                  distance_getter(node2->getIndex(), index);
-                         });
-    // TODO: Optimize this later to be one statement
-    return (*nearest_it);
+    return *std::min_element(tree_.cbegin(), tree_.cend(),
+                             [&](const auto& node1, const auto& node2) {
+                               return distance_getter(node1->getIndex(),
+                                                      index) <
+                                      distance_getter(node2->getIndex(), index);
+                             });
   }
 
   /**
-   * @brief
-   * @param index
-   * @param near_nodes
-   * @param distance_getter
-   * @param near_distance
+   * @brief Returns vector of nodes in neighborhood of state associated with
+   * given index
+   * @param index Given index
+   * @param near_nodes Filled by method
+   * @param distance_getter Computes distance between two states in state space
+   * @param near_distance Defines neighborhood of nodes
    */
   void getNearNodes(unsigned int index, NodeVector& near_nodes,
                     DistanceGetter& distance_getter, double near_distance) {
@@ -107,7 +105,8 @@ class SearchTree {
   }
 
   /**
-   * @brief
+   * @brief Returns search tree as vector of pairs of indexes where each pair
+   * represents parent-child relation in search tree
    * @return TreeT
    */
   TreeT getSearchTree() const {
