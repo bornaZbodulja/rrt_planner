@@ -33,7 +33,9 @@ struct State2D : public State<State2D> {
     return State2D{x + rhs.x, y + rhs.y};
   }
 
-  double norm() const override { return std::pow(x, 2) + std::pow(y, 2); }
+  double squaredL2norm() const override {
+    return std::pow(x, 2) + std::pow(y, 2);
+  }
 
   double x{0.0}, y{0.0};
 };

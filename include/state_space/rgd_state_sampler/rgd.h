@@ -48,7 +48,7 @@ struct RGD {
     if (iterations <= 0) {
       return random_index;
     }
-    
+
     auto rand_state = state_space->getState(random_index);
     auto target_state = state_space->getState(target_index);
 
@@ -62,8 +62,7 @@ struct RGD {
       }
 
       mid_state = target_state - rand_state;
-      // TODO: Add another type of norm and remove this ugly sqrt
-      mid_state.operator*(increment_step / std::sqrt(mid_state.norm()));
+      mid_state.operator*(increment_step / mid_state.l2norm());
       rand_state = rand_state + mid_state;
       state_space->normalizeState(rand_state);
     }

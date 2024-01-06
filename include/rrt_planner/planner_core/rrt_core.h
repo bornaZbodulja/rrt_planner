@@ -80,7 +80,7 @@ class RRTCore {
       return state_space_
           ->getStateDistance(state_space_->getState(index1),
                              state_space_->getState(index2))
-          .norm();
+          .squaredL2norm();
     };
 
     reserveStartTree(search_info_.max_expansion_iterations);
@@ -90,8 +90,8 @@ class RRTCore {
   virtual ~RRTCore() {
     clearStartTree();
     clearGraph();
-    delete start_;
-    delete goal_;
+    start_ = nullptr;
+    goal_ = nullptr;
   };
 
   /**

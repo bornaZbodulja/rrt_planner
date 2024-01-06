@@ -35,7 +35,7 @@ struct StateHybrid : public State<StateHybrid> {
     return StateHybrid{x + rhs.x, y + rhs.y, theta + rhs.theta};
   }
 
-  double norm() const override {
+  double squaredL2norm() const override {
     const auto d = std::pow(x, 2) + std::pow(y, 2);
 
     // TODO: Implement this to be continuous function
