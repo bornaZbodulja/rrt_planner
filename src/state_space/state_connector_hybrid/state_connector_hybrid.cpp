@@ -11,7 +11,7 @@
 
 #include "state_space/state_connector_hybrid/state_connector_hybrid.h"
 
-using namespace state_space::state_connector_hybrid;
+namespace state_space::state_connector_hybrid {
 
 StateConnectorHybrid::StateConnectorHybrid(
     const StateSpacePtr& state_space, const HybridModel& hybrid_model,
@@ -48,3 +48,4 @@ double StateConnectorHybrid::getStatesDistance(const StateT& start_state,
   return analytic_expander_->getAnalyticPathLength(start_state, goal_state,
                                                    state_space_.get());
 }
+}  // namespace state_space::state_connector_hybrid

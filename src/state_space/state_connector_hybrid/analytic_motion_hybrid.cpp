@@ -16,7 +16,7 @@
 
 #include "nav_utils/geometry_utils.h"
 
-using namespace state_space::state_connector_hybrid;
+namespace state_space::state_connector_hybrid {
 
 AnalyticMotionHybrid::AnalyticMotionHybrid(const HybridModel& hybrid_model)
     : hybrid_model_(hybrid_model) {
@@ -163,3 +163,4 @@ void AnalyticMotionHybrid::stateToOMPLState(
   ompl_state[1] = state.y;
   ompl_state[2] = state_space->getAngleFromBin(state.theta);
 }
+}  // namespace state_space::state_connector_hybrid

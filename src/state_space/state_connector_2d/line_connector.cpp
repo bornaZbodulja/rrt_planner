@@ -11,7 +11,7 @@
 
 #include "state_space/state_connector_2d/line_connector.h"
 
-using namespace state_space::state_connector_2d;
+namespace state_space::state_connector_2d {
 
 LineConnector::ExpansionResultT LineConnector::tryLineExpand(
     const StateT& start, const StateT& target,
@@ -90,3 +90,4 @@ LineIteratorT LineConnector::createLineIterator(const StateT& start,
   return LineIteratorT{static_cast<int>(start.x), static_cast<int>(start.y),
                        static_cast<int>(goal.x), static_cast<int>(goal.y)};
 }
+}  // namespace state_space::state_connector_2d

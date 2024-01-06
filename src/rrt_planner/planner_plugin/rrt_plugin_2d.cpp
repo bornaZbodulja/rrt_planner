@@ -28,10 +28,11 @@
 PLUGINLIB_EXPORT_CLASS(rrt_planner::planner_plugin::RRTPlugin2D,
                        nav_core::BaseGlobalPlanner)
 
-using namespace rrt_planner::planner_plugin;
 using namespace rrt_planner::param_loader;
 using namespace rrt_planner::ros_factory;
 using namespace rrt_planner::visualization_factory;
+
+namespace rrt_planner::planner_plugin {
 
 void RRTPlugin2D::initialize(std::string name,
                              costmap_2d::Costmap2DROS* costmap_ros) {
@@ -198,3 +199,4 @@ void RRTPlugin2D::state2DToPose(const State2D& state_2d, PoseT& pose) {
                                  static_cast<unsigned int>(state_2d.y),
                                  pose.position.x, pose.position.y);
 }
+}  // namespace rrt_planner::planner_plugin

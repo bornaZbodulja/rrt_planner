@@ -13,7 +13,10 @@
 
 #include <ros/console.h>
 
-using namespace rrt_planner::planner_core;
+#include "state_space/state_space_2d/state_2d.h"
+#include "state_space/state_space_hybrid/state_hybrid.h"
+
+namespace rrt_planner::planner_core {
 
 template <typename StateT>
 typename BidirectionalRRT<StateT>::PlanningResultT
@@ -124,6 +127,10 @@ BidirectionalRRT<StateT>::preparePath(NodePtr& first_node,
   return path;
 }
 
+}  // namespace rrt_planner::planner_core
+
 // Instantiate algorithm for the supported template types
-template class BidirectionalRRT<state_space::state_space_2d::State2D>;
-template class BidirectionalRRT<state_space::state_space_hybrid::StateHybrid>;
+template class rrt_planner::planner_core::BidirectionalRRT<
+    state_space::state_space_2d::State2D>;
+template class rrt_planner::planner_core::BidirectionalRRT<
+    state_space::state_space_hybrid::StateHybrid>;

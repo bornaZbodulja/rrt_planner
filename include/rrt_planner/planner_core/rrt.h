@@ -12,9 +12,9 @@
 #ifndef RRT_PLANNER__PLANNER_CORE__RRT_H_
 #define RRT_PLANNER__PLANNER_CORE__RRT_H_
 
+#include <nav_utils/nav_utils.h>
+
 #include "rrt_planner/planner_core/rrt_core.h"
-#include "state_space/state_space_2d/state_2d.h"
-#include "state_space/state_space_hybrid/state_hybrid.h"
 
 namespace rrt_planner::planner_core {
 template <typename StateT>

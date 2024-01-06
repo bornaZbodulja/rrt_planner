@@ -28,10 +28,11 @@
 PLUGINLIB_EXPORT_CLASS(rrt_planner::planner_plugin::RRTPluginHybrid,
                        nav_core::BaseGlobalPlanner)
 
-using namespace rrt_planner::planner_plugin;
 using namespace rrt_planner::param_loader;
 using namespace rrt_planner::ros_factory;
 using namespace rrt_planner::visualization_factory;
+
+namespace rrt_planner::planner_plugin {
 
 void RRTPluginHybrid::initialize(std::string name,
                                  costmap_2d::Costmap2DROS* costmap_ros) {
@@ -204,3 +205,4 @@ void RRTPluginHybrid::stateHybridToPose(const StateHybrid& state_hybrid,
                       state_space_->getAngleFromBin(
                           static_cast<unsigned int>(state_hybrid.theta))});
 }
+}  // namespace rrt_planner::planner_plugin

@@ -13,7 +13,10 @@
 
 #include <ros/console.h>
 
-using namespace rrt_planner::planner_core;
+#include "state_space/state_space_2d/state_2d.h"
+#include "state_space/state_space_hybrid/state_hybrid.h"
+
+namespace rrt_planner::planner_core {
 
 template <typename StateT>
 typename RRT<StateT>::PlanningResultT RRT<StateT>::createPath() {
@@ -151,6 +154,10 @@ typename RRT<StateT>::StateVector RRT<StateT>::backTracePathToRoot(
   return interpolated_path;
 }
 
+}  // namespace rrt_planner::planner_core
+
 // Instantiate algorithm for the supported template types
-template class RRT<state_space::state_space_2d::State2D>;
-template class RRT<state_space::state_space_hybrid::StateHybrid>;
+template class rrt_planner::planner_core::RRT<
+    state_space::state_space_2d::State2D>;
+template class rrt_planner::planner_core::RRT<
+    state_space::state_space_hybrid::StateHybrid>;

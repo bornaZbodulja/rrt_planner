@@ -11,7 +11,7 @@
 
 #include "state_space/state_connector_2d/state_connector_2d.h"
 
-using namespace state_space::state_connector_2d;
+namespace state_space::state_connector_2d {
 
 StateConnector2D::StateConnector2D(const ConnectorParamsT& params,
                                    const CollisionCheckerPtr& collision_checker)
@@ -40,3 +40,4 @@ double StateConnector2D::getStatesDistance(const StateT& start_state,
                                            const StateT& goal_state) const {
   return line_expander_->getLinePathLength(start_state, goal_state);
 }
+}  // namespace state_space::state_connector_2d

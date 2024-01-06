@@ -12,6 +12,8 @@
 #ifndef RRT_PLANNER__PLANNER_CORE__BIDIRECTIONAL_RRT_H_
 #define RRT_PLANNER__PLANNER_CORE__BIDIRECTIONAL_RRT_H_
 
+#include <nav_utils/nav_utils.h>
+
 #include "rrt_planner/planner_core/rrt.h"
 #include "rrt_planner/planner_core/rrt_core.h"
 
