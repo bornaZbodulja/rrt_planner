@@ -41,7 +41,7 @@ class SearchGraph {
 
   /**
    * @brief Gets node from graph at given index
-   * @param index
+   * @param index Given index
    * @return NodePtr Pointer to node at given index
    */
   NodePtr getNode(unsigned int index) {

@@ -34,7 +34,7 @@ class Node {
         cell_cost_(std::numeric_limits<double>::quiet_NaN()),
         accumulated_cost_(std::numeric_limits<double>::max()) {}
 
-  ~Node() { delete parent; }
+  ~Node() { parent = nullptr; }
 
   unsigned int getIndex() const { return index_; }
 
