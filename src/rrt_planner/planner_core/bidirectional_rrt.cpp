@@ -55,6 +55,7 @@ BidirectionalRRT<StateT>::createPath() {
             : tryConnectTrees(new_node, closest_node, start_tree_);
 
     if (tree_expansion_result && tree_connecting_result) {
+      // TODO: Extract this log to method in RRTCore so all planners can use it
       ROS_INFO(
           "Bidirectional RRT planner found path, used iterations %d/%d, "
           "planning time: %.3f seconds.",

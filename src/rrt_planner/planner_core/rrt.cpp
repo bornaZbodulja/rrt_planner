@@ -40,6 +40,7 @@ typename RRT<StateT>::PlanningResultT RRT<StateT>::createPath() {
 
     // 3. If expansion was successful, check if new node is target
     if (tree_expansion_result && RRTCoreT::isGoal(new_node)) {
+      // TODO: Extract this log to method in RRTCore so all planners can use it
       ROS_INFO(
           "RRT planner found path, used iterations %d/%d, "
           "planning time: %.3f seconds.",

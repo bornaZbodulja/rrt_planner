@@ -40,6 +40,7 @@ class RRTCore {
  public:
   using NodeT = Node<StateT>;
   using NodePtr = NodeT*;
+  using NodeVector = std::vector<NodePtr>;
   using StateVector = std::vector<StateT>;
   using StateSpaceT = state_space::StateSpace<StateT>;
   using StateSpacePtr = std::shared_ptr<StateSpaceT>;
@@ -172,6 +173,19 @@ class RRTCore {
    */
   NodePtr getClosestNode(unsigned int index, const SearchTreePtr& search_tree) {
     return search_tree->getClosestNode(index, distance_getter_);
+  }
+
+  /**
+   * @brief Returns nodes(states) in search tree which are in neighborhood of
+   * state associated with given index
+   * @param index Given index
+   * @param near_nodes Near nodes (filled by method)
+   * @param search_tree Search tree pointer
+   */
+  void getNearNodes(unsigned int index, NodeVector& near_nodes,
+                    const SearchTreePtr& search_tree) {
+    search_tree->getNearNodes(index, near_nodes, distance_getter_,
+                              search_info_.near_distance);
   }
 
   /**

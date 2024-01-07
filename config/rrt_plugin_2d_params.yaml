@@ -1,17 +1,17 @@
 RRTPlugin2D:
   edge_length: 0.2 # [m] Defines length of the edges connecting nodes in search tree
   target_bias: 0.05 # Defines bias towards target of the search tree when generating random node (between 0.0 and 1.0)
-  near_distance: 0.5 # [m] Defines neighborhood of the nodes in the search tree
+  near_distance: 4.0 # [m] Defines neighborhood of the nodes in the search tree
   cost_penalty: 2.0 # Penalty to apply to high cost areas
   traversal_cost: 1.0
-  # rewire_tree: true # Whether to rewire tree after every expansion
+  rewire_tree: true # Whether to rewire tree after every expansion
   tree_connection_max_length: 10 # [m] Maximal Euclidean distance between two trees to try connecting them
   allow_unknown: false # Whether to allow expansion in unknown space
   lethal_cost: 230 # Lethal cost for collision checking
   max_expansion_iterations: 100000 # Maximum number of search tree expansions
   max_planning_timeout: 5.0 # Maximum allowed planning time
   sampling_policy: "RGD_SAMPLING" # RGD_SAMPLING
-  search_policy: "RRT" #RRT, BIDIRECTIONAL_RRT
+  search_policy: "RRT" #RRT, BIDIRECTIONAL_RRT, RRT_STAR
   RGD:
     increment_step: 0.5 # Increment step for random gradient descent (between 0.0 and 1.0)
     stop_cost: 180 # Stop cost random gradient descent

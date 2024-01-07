@@ -44,7 +44,7 @@ class RGDStateSampler
         gen_(std::minstd_rand(std::random_device{}())),
         dist_(std::uniform_real_distribution<double>(0.0, 1.0)) {}
 
-  ~RGDStateSampler() = default;
+  ~RGDStateSampler() override = default;
 
   /**
    * @brief Generates new index for search tree expansion

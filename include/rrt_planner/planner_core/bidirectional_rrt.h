@@ -1,7 +1,7 @@
 /**
  * @file bidirectional_rrt.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief Bidirectional RRT algorithm implementation
+ * @brief Bidirectional RRT algorithm declaration
  * @version 0.1
  * @date 2023-12-10
  *

@@ -19,6 +19,7 @@
 #include "rrt_planner/planner_core/bidirectional_rrt.h"
 #include "rrt_planner/planner_core/rrt.h"
 #include "rrt_planner/planner_core/rrt_core.h"
+#include "rrt_planner/planner_core/rrt_star.h"
 #include "rrt_planner/planner_core/search_policy.h"
 #include "state_space/state_connector/state_connector.h"
 #include "state_space/state_sampler/state_sampler.h"
@@ -76,6 +77,11 @@ class PlannerFactory {
       case SearchPolicyT::BIDIRECTIONAL_RRT:
         return std::make_unique<
             rrt_planner::planner_core::BidirectionalRRT<StateT>>(
+            state_space, std::move(state_connector), std::move(state_sampler),
+            std::move(search_info), collision_checker);
+
+      case SearchPolicyT::RRT_STAR:
+        return std::make_unique<rrt_planner::planner_core::RRTStar<StateT>>(
             state_space, std::move(state_connector), std::move(state_sampler),
             std::move(search_info), collision_checker);
 
