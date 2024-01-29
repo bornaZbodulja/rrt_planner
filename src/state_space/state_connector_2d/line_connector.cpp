@@ -30,7 +30,7 @@ LineConnector::ExpansionResultT LineConnector::tryLineExpand(
     if (collision_checker->pointInCollision(
             line_iterator.getCurrentX(), line_iterator.getCurrentY(),
             connection_params.lethal_cost, connection_params.allow_unknown)) {
-      return {};
+      return std::nullopt;
     }
     iteration++;
     line_iterator.advance();

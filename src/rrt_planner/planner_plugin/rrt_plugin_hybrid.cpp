@@ -47,11 +47,12 @@ void RRTPluginHybrid::initialize(std::string name,
 
   const auto costmap_resolution = costmap_ros->getCostmap()->getResolution();
 
+  // TODO: Expose bin size as parameter (180)
   const auto space_hybrid = SpaceHybrid(collision_checker_->getSizeX(),
                                         collision_checker_->getSizeY(), 180);
 
   state_space_ = std::make_shared<StateSpaceHybrid>(space_hybrid);
-  auto&& state_connector = ROSStateConnectorFactory::createHybridStateConnector(
+  auto state_connector = ROSStateConnectorFactory::createHybridStateConnector(
       state_space_, collision_checker_, costmap_resolution, &nh_);
 
   auto search_policy = loadSearchPolicy(&nh_);

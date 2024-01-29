@@ -41,7 +41,7 @@ inline std::string searchPolicyToString(SearchPolicy search_policy) {
   }
 }
 
-inline SearchPolicy searchPolicyFromString(std::string search_policy) {
+inline SearchPolicy searchPolicyFromString(const std::string& search_policy) {
   if (search_policy == "RRT") {
     return SearchPolicy::RRT;
   } else if (search_policy == "BIDIRECTIONAL_RRT") {

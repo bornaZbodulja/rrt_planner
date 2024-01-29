@@ -26,7 +26,7 @@ class ROSStateSamplerFactory {
   template <typename StateT>
   using StateSamplerT = state_space::state_sampler::StateSampler<StateT>;
   template <typename StateT>
-  using StateSamplerPtr = std::unique_ptr<StateSamplerT<StateT>>;
+  using StateSamplerPtr = std::shared_ptr<StateSamplerT<StateT>>;
   using CommonParamsT = state_space::state_sampler::StateSamplerParams;
   using StateSamplerFactoryT =
       state_space::state_sampler_factory::StateSamplerFactory;

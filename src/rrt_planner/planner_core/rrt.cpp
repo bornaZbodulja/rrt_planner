@@ -51,13 +51,14 @@ typename RRT<StateT>::PlanningResultT RRT<StateT>::createPath() {
     }
   }
 
+  // TODO: Extract this log to method in RRTCore so all planners can use it
   ROS_WARN(
       "RRT planner unable to find path, used iterations: %d/%d, planning time: "
       "%.3f seconds.",
       RRTCoreT::getCurrentExpansionIterationCounter(),
       RRTCoreT::getMaximumNumberOfIterations(), RRTCoreT::getElapsedTime());
 
-  return {};
+  return std::nullopt;
 }
 
 template <typename StateT>

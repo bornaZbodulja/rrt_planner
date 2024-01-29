@@ -42,12 +42,11 @@ class RRT : public RRTCore<StateT> {
    * @param search_info Search params
    * @param collision_checker Collision checker pointer
    */
-  RRT(const StateSpacePtr& state_space, StateConnectorPtr&& state_connector,
-      StateSamplerPtr&& state_sampler, SearchInfo&& search_info,
-      const CollisionCheckerPtr& collision_checker)
-      : RRTCoreT(state_space, std::move(state_connector),
-                 std::move(state_sampler), std::move(search_info),
-                 collision_checker) {}
+  RRT(StateSpacePtr state_space, StateConnectorPtr state_connector,
+      StateSamplerPtr state_sampler, SearchInfo search_info,
+      CollisionCheckerPtr collision_checker)
+      : RRTCoreT(state_space, state_connector, state_sampler,
+                 search_info, collision_checker) {}
 
   ~RRT() override = default;
 

@@ -30,7 +30,7 @@ class ROSStateConnectorFactory {
   template <typename StateT>
   using StateConnectorT = state_space::state_connector::StateConnector<StateT>;
   template <typename StateT>
-  using StateConnectorPtr = std::unique_ptr<StateConnectorT<StateT>>;
+  using StateConnectorPtr = std::shared_ptr<StateConnectorT<StateT>>;
   using State2D = state_space::state_space_2d::State2D;
   using StateConnector2DT = state_space::state_connector_2d::StateConnector2D;
   using StateHybrid = state_space::state_space_hybrid::StateHybrid;
@@ -56,17 +56,17 @@ class ROSStateConnectorFactory {
     auto&& connector_params =
         rrt_planner::param_loader::loadStateConnectorParams(nh,
                                                             costmap_resolution);
-    return std::make_unique<StateConnector2DT>(connector_params,
+    return std::make_shared<StateConnector2DT>(connector_params,
                                                collision_checker);
   }
 
   /**
-   * @brief 
-   * @param state_space 
-   * @param collision_checker 
-   * @param costmap_resolution 
-   * @param nh 
-   * @return StateConnectorPtr<StateHybrid> 
+   * @brief
+   * @param state_space
+   * @param collision_checker
+   * @param costmap_resolution
+   * @param nh
+   * @return StateConnectorPtr<StateHybrid>
    */
   static StateConnectorPtr<StateHybrid> createHybridStateConnector(
       const StateSpaceHybridPtr& state_space,
@@ -77,7 +77,7 @@ class ROSStateConnectorFactory {
                                                             costmap_resolution);
     auto&& hybrid_model =
         rrt_planner::param_loader::loadHybridModel(nh, costmap_resolution);
-    return std::make_unique<StateConnectorHybridT>(
+    return std::make_shared<StateConnectorHybridT>(
         state_space, hybrid_model, connector_params, collision_checker);
   }
 };

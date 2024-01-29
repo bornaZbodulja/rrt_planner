@@ -39,7 +39,7 @@ AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
     const ConnectionParamsT& connection_params,
     const CollisionCheckerPtr& collision_checker) const {
   if (!isMotionModelValid()) {
-    return {};
+    return std::nullopt;
   }
 
   static ompl::base::ScopedState<> from(ompl_state_space_),
@@ -63,7 +63,7 @@ AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
             static_cast<unsigned int>(reals[0]),
             static_cast<unsigned int>(reals[1]), reals[2],
             connection_params.lethal_cost, connection_params.allow_unknown)) {
-      return {};
+      return std::nullopt;
     }
   }
 
@@ -76,7 +76,7 @@ bool AnalyticMotionHybrid::tryAnalyticConnect(
     const ConnectionParamsT& connection_params,
     const CollisionCheckerPtr& collision_checker) const {
   if (!isMotionModelValid()) {
-    return {};
+    return false;
   }
 
   static ompl::base::ScopedState<> from(ompl_state_space_),

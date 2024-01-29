@@ -25,7 +25,7 @@ class StateSamplerFactory {
   template <typename StateT>
   using StateSamplerT = state_space::state_sampler::StateSampler<StateT>;
   template <typename StateT>
-  using StateSamplerPtr = std::unique_ptr<StateSamplerT<StateT>>;
+  using StateSamplerPtr = std::shared_ptr<StateSamplerT<StateT>>;
   using CommonParamsT = state_space::state_sampler::StateSamplerParams;
   template <typename StateT>
   using RGDStateSamplerT =
@@ -44,7 +44,7 @@ class StateSamplerFactory {
   template <typename StateT>
   static StateSamplerPtr<StateT> createRGDSampler(CommonParamsT&& common_params,
                                                   RGDParamsT&& rgd_params) {
-    return std::make_unique<RGDStateSamplerT<StateT>>(std::move(common_params),
+    return std::make_shared<RGDStateSamplerT<StateT>>(std::move(common_params),
                                                       std::move(rgd_params));
   }
 };

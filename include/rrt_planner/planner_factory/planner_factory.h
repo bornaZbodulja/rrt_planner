@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "rrt_planner/planner_core/bidirectional_rrt.h"
+#include "rrt_planner/planner_core/bidirectional_rrt_star.h"
 #include "rrt_planner/planner_core/rrt.h"
 #include "rrt_planner/planner_core/rrt_core.h"
 #include "rrt_planner/planner_core/rrt_star.h"
@@ -37,11 +38,11 @@ class PlannerFactory {
   template <typename StateT>
   using StateConnectorT = state_space::state_connector::StateConnector<StateT>;
   template <typename StateT>
-  using StateConnectorPtr = std::unique_ptr<StateConnectorT<StateT>>;
+  using StateConnectorPtr = std::shared_ptr<StateConnectorT<StateT>>;
   template <typename StateT>
   using StateSamplerT = state_space::state_sampler::StateSampler<StateT>;
   template <typename StateT>
-  using StateSamplerPtr = std::unique_ptr<StateSamplerT<StateT>>;
+  using StateSamplerPtr = std::shared_ptr<StateSamplerT<StateT>>;
   template <typename StateT>
   using RRTPlannerT = rrt_planner::planner_core::RRTCore<StateT>;
   template <typename StateT>
@@ -64,26 +65,32 @@ class PlannerFactory {
    */
   template <typename StateT>
   static RRTPlannerPtr<StateT> createPlanner(
-      SearchPolicyT search_policy, const StateSpacePtr<StateT>& state_space,
-      StateConnectorPtr<StateT>&& state_connector,
-      StateSamplerPtr<StateT>&& state_sampler, SearchInfo&& search_info,
-      const CollisionCheckerPtr& collision_checker) {
+      SearchPolicyT search_policy, StateSpacePtr<StateT> state_space,
+      StateConnectorPtr<StateT> state_connector,
+      StateSamplerPtr<StateT> state_sampler, SearchInfo search_info,
+      CollisionCheckerPtr collision_checker) {
     switch (search_policy) {
       case SearchPolicyT::RRT:
         return std::make_unique<rrt_planner::planner_core::RRT<StateT>>(
-            state_space, std::move(state_connector), std::move(state_sampler),
-            std::move(search_info), collision_checker);
+            state_space, state_connector, state_sampler, search_info,
+            collision_checker);
 
       case SearchPolicyT::BIDIRECTIONAL_RRT:
         return std::make_unique<
             rrt_planner::planner_core::BidirectionalRRT<StateT>>(
-            state_space, std::move(state_connector), std::move(state_sampler),
-            std::move(search_info), collision_checker);
+            state_space, state_connector, state_sampler, search_info,
+            collision_checker);
 
       case SearchPolicyT::RRT_STAR:
         return std::make_unique<rrt_planner::planner_core::RRTStar<StateT>>(
-            state_space, std::move(state_connector), std::move(state_sampler),
-            std::move(search_info), collision_checker);
+            state_space, state_connector, state_sampler, search_info,
+            collision_checker);
+
+      case SearchPolicyT::BIDIRECTIONAL_RRT_STAR:
+        return std::make_unique<
+            rrt_planner::planner_core::BidirectionalRRTStar<StateT>>(
+            state_space, state_connector, state_sampler, search_info,
+            collision_checker);
 
       default:
         return nullptr;

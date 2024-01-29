@@ -51,7 +51,7 @@ void RRTPlugin2D::initialize(std::string name,
       Space2D(collision_checker_->getSizeX(), collision_checker_->getSizeY());
 
   state_space_ = std::make_shared<StateSpace2D>(space_2d);
-  auto&& state_connector = ROSStateConnectorFactory::create2DStateConnector(
+  auto state_connector = ROSStateConnectorFactory::create2DStateConnector(
       collision_checker_, costmap_resolution, &nh_);
 
   auto search_policy = loadSearchPolicy(&nh_);

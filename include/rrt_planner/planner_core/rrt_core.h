@@ -45,9 +45,9 @@ class RRTCore {
   using StateSpaceT = state_space::StateSpace<StateT>;
   using StateSpacePtr = std::shared_ptr<StateSpaceT>;
   using StateConnector = state_space::state_connector::StateConnector<StateT>;
-  using StateConnectorPtr = std::unique_ptr<StateConnector>;
+  using StateConnectorPtr = std::shared_ptr<StateConnector>;
   using StateSamplerT = state_space::state_sampler::StateSampler<StateT>;
-  using StateSamplerPtr = std::unique_ptr<StateSamplerT>;
+  using StateSamplerPtr = std::shared_ptr<StateSamplerT>;
   using SearchTreeT = SearchTree<NodeT>;
   using SearchTreePtr = std::unique_ptr<SearchTreeT>;
   using SearchGraphT = SearchGraph<NodeT>;
@@ -66,16 +66,16 @@ class RRTCore {
    * @param search_info
    * @param collision_checker
    */
-  RRTCore(const StateSpacePtr& state_space, StateConnectorPtr&& state_connector,
-          StateSamplerPtr&& state_sampler, SearchInfo&& search_info,
-          const CollisionCheckerPtr& collision_checker)
+  RRTCore(StateSpacePtr state_space, StateConnectorPtr state_connector,
+          StateSamplerPtr state_sampler, SearchInfo search_info,
+          CollisionCheckerPtr collision_checker)
       : start_tree_(std::make_unique<SearchTreeT>()),
-        search_info_(std::move(search_info)),
+        search_info_(search_info),
         state_space_(state_space),
-        state_connector_(std::move(state_connector)),
+        state_connector_(state_connector),
         collision_checker_(collision_checker),
         graph_(std::make_unique<SearchGraphT>()),
-        state_sampler_(std::move(state_sampler)),
+        state_sampler_(state_sampler),
         timeout_handler_(TimeoutHandler(search_info_.max_planning_time)) {
     distance_getter_ = [&](unsigned int index1, unsigned int index2) -> double {
       return state_space_
@@ -96,7 +96,7 @@ class RRTCore {
   };
 
   /**
-   * @brief Initializes search by clearing memory for search graph and tree
+   * @brief Initializes search by clearing memory from previous search
    */
   virtual void initializeSearch() {
     start_ = nullptr;

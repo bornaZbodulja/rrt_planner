@@ -14,8 +14,6 @@
 
 #include <nav_utils/nav_utils.h>
 
-#include <vector>
-
 #include "rrt_planner/planner_core/rrt.h"
 #include "rrt_planner/planner_core/rrt_core.h"
 
@@ -35,10 +33,10 @@ class RRTStar : public RRT<StateT> {
   using SearchInfo = typename RRTCoreT::SearchInfo;
   using PlanningResultT = typename RRTCoreT::PlanningResultT;
   using RRTCoreT::collision_checker_;
+  using RRTCoreT::search_info_;
   using RRTCoreT::start_tree_;
   using RRTCoreT::state_connector_;
   using RRTCoreT::state_space_;
-  using RRTCoreT::search_info_;
 
   /**
    * @brief Planner constructor
@@ -48,11 +46,10 @@ class RRTStar : public RRT<StateT> {
    * @param search_info Search params
    * @param collision_checker Collision checker pointer
    */
-  RRTStar(const StateSpacePtr& state_space, StateConnectorPtr&& state_connector,
-          StateSamplerPtr&& state_sampler, SearchInfo&& search_info,
-          const CollisionCheckerPtr& collision_checker)
-      : RRTBaseT(state_space, std::move(state_connector),
-                 std::move(state_sampler), std::move(search_info),
+  RRTStar(StateSpacePtr state_space, StateConnectorPtr state_connector,
+          StateSamplerPtr state_sampler, SearchInfo search_info,
+          CollisionCheckerPtr collision_checker)
+      : RRTBaseT(state_space, state_connector, state_sampler, search_info,
                  collision_checker) {}
 
   ~RRTStar() override = default;

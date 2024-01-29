@@ -36,7 +36,7 @@ class ROSPlannerFactory {
   template <typename StateT>
   using StateConnectorT = state_space::state_connector::StateConnector<StateT>;
   template <typename StateT>
-  using StateConnectorPtr = std::unique_ptr<StateConnectorT<StateT>>;
+  using StateConnectorPtr = std::shared_ptr<StateConnectorT<StateT>>;
   template <typename StateT>
   using RRTPlannerT = rrt_planner::planner_core::RRTCore<StateT>;
   template <typename StateT>
@@ -59,17 +59,17 @@ class ROSPlannerFactory {
   template <typename StateT>
   static RRTPlannerPtr<StateT> createPlanner(
       SearchPolicyT search_policy, SamplingPolicyT sampling_policy,
-      const StateSpacePtr<StateT>& state_space,
-      StateConnectorPtr<StateT>&& state_connector,
-      const CollisionCheckerPtr& collision_checker, double costmap_resolution,
+      StateSpacePtr<StateT> state_space,
+      StateConnectorPtr<StateT> state_connector,
+      CollisionCheckerPtr collision_checker, double costmap_resolution,
       ros::NodeHandle* nh) {
-    auto&& state_sampler = ROSStateSamplerFactory::createSampler<StateT>(
+    auto state_sampler = ROSStateSamplerFactory::createSampler<StateT>(
         sampling_policy, state_space->getStateSpaceSize(), nh);
-    auto&& search_params = rrt_planner::param_loader::loadSearchParams(
+    auto search_params = rrt_planner::param_loader::loadSearchParams(
         nh, search_policy, costmap_resolution);
     return PlannerFactoryT::createPlanner<StateT>(
-        search_policy, state_space, std::move(state_connector),
-        std::move(state_sampler), std::move(search_params), collision_checker);
+        search_policy, state_space, state_connector, state_sampler,
+        search_params, collision_checker);
   }
 };
 }  // namespace rrt_planner::ros_factory

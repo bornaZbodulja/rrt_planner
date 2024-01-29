@@ -75,6 +75,7 @@ BidirectionalRRT<StateT>::createPath() {
     expanding_start_tree = !expanding_start_tree;
   }
 
+  // TODO: Extract this log to method in RRTCore so all planners can use it
   ROS_WARN(
       "Bidirectional RRT planner unable to find path, used iterations: %d/%d, "
       "planning time: "
@@ -82,7 +83,7 @@ BidirectionalRRT<StateT>::createPath() {
       RRTCoreT::getCurrentExpansionIterationCounter(),
       RRTCoreT::getMaximumNumberOfIterations(), RRTCoreT::getElapsedTime());
 
-  return {};
+  return std::nullopt;
 }
 
 template <typename StateT>

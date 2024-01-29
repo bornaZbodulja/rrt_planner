@@ -23,15 +23,15 @@ class BidirectionalRRT : public RRT<StateT> {
  public:
   using RRTBaseT = RRT<StateT>;
   using RRTCoreT = RRTCore<StateT>;
-  using NodePtr = typename RRTBaseT::NodePtr;
-  using StateVector = typename RRTBaseT::StateVector;
-  using StateSpacePtr = typename RRTBaseT::StateSpacePtr;
-  using StateConnectorPtr = typename RRTBaseT::StateConnectorPtr;
-  using StateSamplerPtr = typename RRTBaseT::StateSamplerPtr;
+  using NodePtr = typename RRTCoreT::NodePtr;
+  using StateVector = typename RRTCoreT::StateVector;
+  using StateSpacePtr = typename RRTCoreT::StateSpacePtr;
+  using StateConnectorPtr = typename RRTCoreT::StateConnectorPtr;
+  using StateSamplerPtr = typename RRTCoreT::StateSamplerPtr;
   using SearchTreeT = typename RRTCoreT::SearchTreeT;
-  using SearchTreePtr = typename RRTBaseT::SearchTreePtr;
-  using SearchInfo = typename RRTBaseT::SearchInfo;
-  using PlanningResultT = typename RRTBaseT::PlanningResultT;
+  using SearchTreePtr = typename RRTCoreT::SearchTreePtr;
+  using SearchInfo = typename RRTCoreT::SearchInfo;
+  using PlanningResultT = typename RRTCoreT::PlanningResultT;
   using TreeMsgVectorT = typename RRTCoreT::TreeMsgVectorT;
   using RRTCoreT::collision_checker_;
   using RRTCoreT::goal_;
@@ -49,13 +49,11 @@ class BidirectionalRRT : public RRT<StateT> {
    * @param search_info
    * @param collision_checker
    */
-  BidirectionalRRT(const StateSpacePtr& state_space,
-                   StateConnectorPtr&& state_connector,
-                   StateSamplerPtr&& state_sampler, SearchInfo&& search_info,
-                   const CollisionCheckerPtr& collision_checker)
-      : RRTBaseT(state_space, std::move(state_connector),
-                 std::move(state_sampler), std::move(search_info),
-                 collision_checker),
+  BidirectionalRRT(StateSpacePtr state_space, StateConnectorPtr state_connector,
+                   StateSamplerPtr state_sampler, SearchInfo search_info,
+                   CollisionCheckerPtr collision_checker)
+      : RRTBaseT(state_space, state_connector, state_sampler,
+                 search_info, collision_checker),
         goal_tree_(std::make_unique<SearchTreeT>()) {}
 
   ~BidirectionalRRT() override { clearGoalTree(); }
