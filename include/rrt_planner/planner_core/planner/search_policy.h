@@ -9,12 +9,12 @@
  *
  */
 
-#ifndef RRT_PLANNER__PLANNER_CORE__SEARCH_POLICY_H_
-#define RRT_PLANNER__PLANNER_CORE__SEARCH_POLICY_H_
+#ifndef RRT_PLANNER__PLANNER_CORE__PLANNER__SEARCH_POLICY_H_
+#define RRT_PLANNER__PLANNER_CORE__PLANNER__SEARCH_POLICY_H_
 
 #include <string>
 
-namespace rrt_planner::planner_core {
+namespace rrt_planner::planner_core::planner {
 /**
  * @brief Representation of possible search policies for planner
  */
@@ -26,7 +26,7 @@ enum class SearchPolicy {
   BIDIRECTIONAL_RRT_STAR = 4
 };
 
-inline std::string searchPolicyToString(SearchPolicy search_policy) {
+inline const char* searchPolicyToString(SearchPolicy search_policy) {
   switch (search_policy) {
     case SearchPolicy::RRT:
       return "RRT";
@@ -54,6 +54,6 @@ inline SearchPolicy searchPolicyFromString(const std::string& search_policy) {
     return SearchPolicy::UNKNOWN;
   }
 }
-}  // namespace rrt_planner::planner_core
+}  // namespace rrt_planner::planner_core::planner
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_CORE__PLANNER__SEARCH_POLICY_H_

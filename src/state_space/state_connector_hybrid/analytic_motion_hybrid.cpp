@@ -18,8 +18,8 @@
 
 namespace state_space::state_connector_hybrid {
 
-AnalyticMotionHybrid::AnalyticMotionHybrid(const HybridModel& hybrid_model)
-    : hybrid_model_(hybrid_model) {
+AnalyticMotionHybrid::AnalyticMotionHybrid(HybridModel&& hybrid_model)
+    : hybrid_model_(std::move(hybrid_model)) {
   switch (hybrid_model_.hybrid_motion_model) {
     case HybridMotionModel::DUBINS:
       ompl_state_space_ = std::make_unique<ompl::base::DubinsStateSpace>(
@@ -72,7 +72,7 @@ AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
 }
 
 bool AnalyticMotionHybrid::tryAnalyticConnect(
-    const StateT& start, const StateT& goal, const StateSpacePtr& state_space,
+    const StateT& start, const StateT& goal, const StateSpacePtr state_space,
     const ConnectionParamsT& connection_params,
     const CollisionCheckerPtr& collision_checker) const {
   if (!isMotionModelValid()) {

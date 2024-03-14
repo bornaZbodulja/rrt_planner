@@ -13,18 +13,20 @@
 #define RRT_PLANNER__PARAM_LOADER__SEARCH_POLICY_LOADER_H_
 
 #include "rrt_planner/param_loader/param_loader.h"
-#include "rrt_planner/planner_core/search_policy.h"
+#include "rrt_planner/planner_core/planner/search_policy.h"
 
 namespace rrt_planner::param_loader {
 
-inline rrt_planner::planner_core::SearchPolicy loadSearchPolicy(
+inline rrt_planner::planner_core::planner::SearchPolicy loadSearchPolicy(
     ros::NodeHandle* nh) {
   std::string search_policy_str;
   loadParam<std::string>(nh, "search_policy", search_policy_str);
   auto search_policy =
-      rrt_planner::planner_core::searchPolicyFromString(search_policy_str);
+      rrt_planner::planner_core::planner::searchPolicyFromString(
+          search_policy_str);
 
-  if (search_policy == rrt_planner::planner_core::SearchPolicy::UNKNOWN) {
+  if (search_policy ==
+      rrt_planner::planner_core::planner::SearchPolicy::UNKNOWN) {
     ROS_ERROR("Unknown search policy for planner: %s. Terminating the program!",
               search_policy_str.c_str());
     exit(0);
@@ -32,7 +34,6 @@ inline rrt_planner::planner_core::SearchPolicy loadSearchPolicy(
 
   return search_policy;
 }
-
 }  // namespace rrt_planner::param_loader
 
-#endif
+#endif  // RRT_PLANNER__PARAM_LOADER__SEARCH_POLICY_LOADER_H_

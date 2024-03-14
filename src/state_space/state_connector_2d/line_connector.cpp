@@ -17,7 +17,7 @@ LineConnector::ExpansionResultT LineConnector::tryLineExpand(
     const StateT& start, const StateT& target,
     const ConnectionParamsT& connection_params,
     const CollisionCheckerPtr& collision_checker) const {
-  auto&& line_iterator = createLineIterator(start, target);
+  LineIteratorT line_iterator = createLineIterator(start, target);
   // skip start position
   line_iterator.advance();
 
@@ -45,7 +45,7 @@ bool LineConnector::tryConnectStates(
     const StateT& start, const StateT& goal,
     const ConnectionParamsT& connection_params,
     const CollisionCheckerPtr& collision_checker) const {
-  auto&& line_iterator = createLineIterator(start, goal);
+  LineIteratorT line_iterator = createLineIterator(start, goal);
   // skip start position
   line_iterator.advance();
 
@@ -67,7 +67,7 @@ LineConnector::StateVector LineConnector::getLinePath(
     const StateT& start, const StateT& goal) const {
   StateVector path;
 
-  auto&& line_iterator = createLineIterator(start, goal);
+  LineIteratorT line_iterator = createLineIterator(start, goal);
   // skip start position
   line_iterator.advance();
 
@@ -85,8 +85,8 @@ double LineConnector::getLinePathLength(const StateT& start,
   return std::hypot(goal.x - start.x, goal.y - start.y);
 }
 
-LineIteratorT LineConnector::createLineIterator(const StateT& start,
-                                                const StateT& goal) const {
+typename LineConnector::LineIteratorT LineConnector::createLineIterator(
+    const StateT& start, const StateT& goal) const {
   return LineIteratorT{static_cast<int>(start.x), static_cast<int>(start.y),
                        static_cast<int>(goal.x), static_cast<int>(goal.y)};
 }

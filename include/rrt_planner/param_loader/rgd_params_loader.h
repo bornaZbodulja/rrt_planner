@@ -26,7 +26,6 @@ inline state_space::rgd_state_sampler::RGDParams loadRGDParams(
 
   return rgd_params;
 }
-
 }  // namespace rrt_planner::param_loader
 
-#endif
+#endif // RRT_PLANNER__PARAM_LOADER__RGD_PARAMS_LOADER_H_

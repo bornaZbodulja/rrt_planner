@@ -9,15 +9,15 @@
  *
  */
 
-#ifndef RRT_PLANNER__PLANNER_CORE__SEARCH_TREE_H_
-#define RRT_PLANNER__PLANNER_CORE__SEARCH_TREE_H_
+#ifndef RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__SEARCH_TREE_H_
+#define RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__SEARCH_TREE_H_
 
 #include <algorithm>
 #include <functional>
 #include <utility>
 #include <vector>
 
-namespace rrt_planner::planner_core {
+namespace rrt_planner::planner_core::planner_entities {
 /**
  * @brief Holder for expanded nodes of tree
  * @tparam NodeT
@@ -28,7 +28,7 @@ class SearchTree {
   using NodePtr = NodeT*;
   using NodeVector = std::vector<NodePtr>;
   using EdgeT = std::pair<unsigned int, unsigned int>;
-  using TreeT = std::vector<EdgeT>;
+  using EdgeVectorT = std::vector<EdgeT>;
 
   /**
    * @brief Computes distance between states in state space associated with
@@ -36,9 +36,10 @@ class SearchTree {
    */
   using DistanceGetter = std::function<double(unsigned int, unsigned int)>;
 
-  SearchTree() = default;
+  SearchTree(DistanceGetter&& distance_getter)
+      : distance_getter_(std::move(distance_getter)) {}
 
-  ~SearchTree() { clear(); }
+  ~SearchTree() = default;
 
   void clear() {
     root_node_ = nullptr;
@@ -64,44 +65,41 @@ class SearchTree {
   /**
    * @brief Returns closest node to state associated with given index
    * @param index Given index
-   * @param distance_getter Computes distance between two states in state space
-   * @return NodePtr
+   * @return NodePtr Pointer to closest node
    */
-  NodePtr getClosestNode(unsigned int index,
-                         DistanceGetter& distance_getter) const {
+  NodePtr getClosestNode(unsigned int index) const {
     if (tree_.empty()) {
       return nullptr;
     }
 
-    return *std::min_element(tree_.cbegin(), tree_.cend(),
-                             [&](const auto& node1, const auto& node2) {
-                               return distance_getter(node1->getIndex(),
-                                                      index) <
-                                      distance_getter(node2->getIndex(), index);
-                             });
+    return *std::min_element(
+        tree_.cbegin(), tree_.cend(),
+        [this, index](const NodePtr& node1, const NodePtr& node2) {
+          return distance_getter_(node1->getIndex(), index) <
+                 distance_getter_(node2->getIndex(), index);
+        });
   }
 
   /**
    * @brief Returns vector of nodes in neighborhood of state associated with
    * given index
    * @param index Given index
-   * @param near_nodes Filled by method
-   * @param distance_getter Computes distance between two states in state space
    * @param near_distance Defines neighborhood of nodes
    */
-  void getNearNodes(unsigned int index, NodeVector& near_nodes,
-                    DistanceGetter& distance_getter, double near_distance) {
-    near_nodes.clear();
+  NodeVector getNearNodes(unsigned int index, double near_distance) const {
+    NodeVector near_nodes{};
 
     if (tree_.empty()) {
-      return;
+      return {};
     }
 
     std::copy_if(tree_.cbegin(), tree_.cend(), std::back_inserter(near_nodes),
                  [&](const NodePtr& node) {
-                   return distance_getter(node->getIndex(), index) <=
+                   return distance_getter_(node->getIndex(), index) <=
                           near_distance;
                  });
+
+    return near_nodes;
   }
 
   /**
@@ -109,17 +107,17 @@ class SearchTree {
    * represents parent-child relation in search tree
    * @return TreeT
    */
-  TreeT getSearchTree() const {
-    TreeT tree;
-    tree.reserve(tree_.size());
+  EdgeVectorT getTreeEdges() const {
+    EdgeVectorT edges;
+    edges.reserve(tree_.size());
 
-    std::for_each(tree_.cbegin(), tree_.cend(), [&](const auto& node) {
+    std::for_each(tree_.cbegin(), tree_.cend(), [&](const NodePtr& node) {
       if (node != nullptr && node->parent != nullptr) {
-        tree.emplace_back(node->getIndex(), node->parent->getIndex());
+        edges.emplace_back(node->getIndex(), node->parent->getIndex());
       }
     });
 
-    return tree;
+    return edges;
   }
 
  protected:
@@ -129,8 +127,10 @@ class SearchTree {
   NodePtr target_node_{nullptr};
   // Holder for nodes in tree
   NodeVector tree_;
+  // Distance getter
+  DistanceGetter distance_getter_;
 };
 
-}  // namespace rrt_planner::planner_core
+}  // namespace rrt_planner::planner_core::planner_entities
 
 #endif

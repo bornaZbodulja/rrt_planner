@@ -12,6 +12,9 @@
 #ifndef RRT_PLANNER__ROS_FACTORY__ROS_STATE_CONNECTOR_FACTORY_H_
 #define RRT_PLANNER__ROS_FACTORY__ROS_STATE_CONNECTOR_FACTORY_H_
 
+#include <nav_utils/collision_checker.h>
+#include <ros/node_handle.h>
+
 #include <memory>
 
 #include "rrt_planner/param_loader/connector_params_loader.h"
@@ -25,62 +28,37 @@
 #include "state_space/state_space_hybrid/state_space_hybrid.h"
 
 namespace rrt_planner::ros_factory {
-class ROSStateConnectorFactory {
- public:
-  template <typename StateT>
-  using StateConnectorT = state_space::state_connector::StateConnector<StateT>;
-  template <typename StateT>
-  using StateConnectorPtr = std::shared_ptr<StateConnectorT<StateT>>;
-  using State2D = state_space::state_space_2d::State2D;
-  using StateConnector2DT = state_space::state_connector_2d::StateConnector2D;
-  using StateHybrid = state_space::state_space_hybrid::StateHybrid;
-  using StateSpaceHybrid = state_space::state_space_hybrid::StateSpaceHybrid;
-  using StateSpaceHybridPtr = std::shared_ptr<StateSpaceHybrid>;
-  using StateConnectorHybridT =
-      state_space::state_connector_hybrid::StateConnectorHybrid;
-  using StateConnectorParamsT =
-      state_space::state_connector::StateConnectorParams;
 
-  ROSStateConnectorFactory() = delete;
+inline std::shared_ptr<state_space::state_connector::StateConnector<
+    state_space::state_space_2d::State2D>>
+create2DStateConnector(
+    ros::NodeHandle* nh,
+    const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker) {
+  state_space::state_connector::StateConnectorParams connector_params =
+      rrt_planner::param_loader::loadStateConnectorParams(
+          nh, collision_checker->getMapResolution());
+  return std::make_shared<state_space::state_connector_2d::StateConnector2D>(
+      std::move(connector_params), collision_checker);
+}
 
-  /**
-   * @brief
-   * @param collision_checker
-   * @param costmap_resolution
-   * @param nh
-   * @return StateConnectorPtr<State2D>
-   */
-  static StateConnectorPtr<State2D> create2DStateConnector(
-      const CollisionCheckerPtr& collision_checker, double costmap_resolution,
-      ros::NodeHandle* nh) {
-    auto&& connector_params =
-        rrt_planner::param_loader::loadStateConnectorParams(nh,
-                                                            costmap_resolution);
-    return std::make_shared<StateConnector2DT>(connector_params,
-                                               collision_checker);
-  }
-
-  /**
-   * @brief
-   * @param state_space
-   * @param collision_checker
-   * @param costmap_resolution
-   * @param nh
-   * @return StateConnectorPtr<StateHybrid>
-   */
-  static StateConnectorPtr<StateHybrid> createHybridStateConnector(
-      const StateSpaceHybridPtr& state_space,
-      const CollisionCheckerPtr& collision_checker, double costmap_resolution,
-      ros::NodeHandle* nh) {
-    auto&& connector_params =
-        rrt_planner::param_loader::loadStateConnectorParams(nh,
-                                                            costmap_resolution);
-    auto&& hybrid_model =
-        rrt_planner::param_loader::loadHybridModel(nh, costmap_resolution);
-    return std::make_shared<StateConnectorHybridT>(
-        state_space, hybrid_model, connector_params, collision_checker);
-  }
-};
+inline std::shared_ptr<state_space::state_connector::StateConnector<
+    state_space::state_space_hybrid::StateHybrid>>
+createHybridStateConnector(
+    ros::NodeHandle* nh,
+    const std::shared_ptr<state_space::state_space_hybrid::StateSpaceHybrid>&
+        state_space,
+    const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker) {
+  state_space::state_connector::StateConnectorParams connector_params =
+      rrt_planner::param_loader::loadStateConnectorParams(
+          nh, collision_checker->getMapResolution());
+  state_space::state_connector_hybrid::HybridModel hybrid_model =
+      rrt_planner::param_loader::loadHybridModel(
+          nh, collision_checker->getMapResolution());
+  return std::make_shared<
+      state_space::state_connector_hybrid::StateConnectorHybrid>(
+      state_space, std::move(hybrid_model), std::move(connector_params),
+      collision_checker);
+}
 }  // namespace rrt_planner::ros_factory
 
 #endif

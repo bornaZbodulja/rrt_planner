@@ -34,7 +34,7 @@ class StateConnector2D : public state_space::state_connector::StateConnector<
       StateT>::collision_checker_;
   using state_space::state_connector::StateConnector<StateT>::params_;
 
-  StateConnector2D(const ConnectorParamsT& params,
+  StateConnector2D(ConnectorParamsT&& params,
                    const CollisionCheckerPtr& collision_checker);
 
   ExpansionResultT expandState(const StateT& current_state,

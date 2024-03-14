@@ -9,13 +9,13 @@
  *
  */
 
-#ifndef RRT_PLANNER__PLANNER_CORE__NODE_H_
-#define RRT_PLANNER__PLANNER_CORE__NODE_H_
+#ifndef RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__NODE_H_
+#define RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__NODE_H_
 
 #include <limits>
 #include <vector>
 
-namespace rrt_planner::planner_core {
+namespace rrt_planner::planner_core::planner_entities {
 /**
  * @brief Node interface
  * @tparam T State template
@@ -31,7 +31,6 @@ class Node {
       : parent(nullptr),
         index_(index),
         visited_(false),
-        cell_cost_(std::numeric_limits<double>::quiet_NaN()),
         accumulated_cost_(std::numeric_limits<double>::max()) {}
 
   ~Node() { parent = nullptr; }
@@ -40,20 +39,15 @@ class Node {
 
   bool isVisited() const { return visited_; }
 
-  double getCellCost() const { return cell_cost_; }
-
   double getAccumulatedCost() const { return accumulated_cost_; }
 
   void visited() { visited_ = true; }
-
-  void setCellCost(double cost) { cell_cost_ = cost; }
 
   void setAccumulatedCost(double cost) { accumulated_cost_ = cost; }
 
   void reset() {
     parent = nullptr;
     visited_ = false;
-    cell_cost_ = std::numeric_limits<double>::quiet_NaN();
     accumulated_cost_ = std::numeric_limits<double>::max();
   }
 
@@ -70,7 +64,7 @@ class Node {
    */
   StateVector backTracePath() {
     StateVector path;
-    auto current_node = this;
+    NodePtr current_node = this;
 
     while (current_node != nullptr) {
       path.push_back(current_node->state);
@@ -90,12 +84,10 @@ class Node {
   unsigned int index_;
   // Whether node was initialized
   bool visited_;
-  // Cost of the map cell associated with node
-  double cell_cost_;
   // Accumulated cost of node
   double accumulated_cost_;
 };
 
-}  // namespace rrt_planner::planner_core
+}  // namespace rrt_planner::planner_core::planner_entities
 
 #endif

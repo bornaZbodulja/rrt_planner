@@ -12,7 +12,7 @@
 #ifndef STATE_SPACE__STATE_CONNECTOR_HYBRID__ANALYTIC_MOTION_HYBRID_H_
 #define STATE_SPACE__STATE_CONNECTOR_HYBRID__ANALYTIC_MOTION_HYBRID_H_
 
-#include <nav_utils/nav_utils.h>
+#include <nav_utils/collision_checker.h>
 #include <ompl/base/ScopedState.h>
 #include <ompl/base/StateSpace.h>
 
@@ -37,11 +37,13 @@ class AnalyticMotionHybrid {
   using StateT = state_space::state_space_hybrid::StateHybrid;
   using StateSpaceT = state_space::state_space_hybrid::StateSpaceHybrid;
   using StateSpacePtr = StateSpaceT*;
+  using CollisionCheckerT = nav_utils::CollisionChecker;
+  using CollisionCheckerPtr = CollisionCheckerT*;
   using StateVector = std::vector<StateT>;
   using ExpansionResultT = std::optional<StateT>;
   using ConnectionParamsT = state_space::state_connector::StateConnectorParams;
 
-  explicit AnalyticMotionHybrid(const HybridModel& hybrid_model);
+  explicit AnalyticMotionHybrid(HybridModel&& hybrid_model);
   ~AnalyticMotionHybrid() = default;
 
   /**
@@ -70,7 +72,7 @@ class AnalyticMotionHybrid {
    * @return false
    */
   bool tryAnalyticConnect(const StateT& start, const StateT& goal,
-                          const StateSpacePtr& state_space,
+                          const StateSpacePtr state_space,
                           const ConnectionParamsT& connection_params,
                           const CollisionCheckerPtr& collision_checker) const;
 

@@ -12,6 +12,8 @@
 #ifndef STATE_SPACE__STATE_SPACE_HYBRID__STATE_SPACE_HYBRID_H_
 #define STATE_SPACE__STATE_SPACE_HYBRID__STATE_SPACE_HYBRID_H_
 
+#include <nav_utils/collision_checker.h>
+
 #include <cmath>
 
 #include "state_space/state_space/state_space.h"
@@ -21,7 +23,10 @@
 namespace state_space::state_space_hybrid {
 class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
  public:
-  StateSpaceHybrid(const SpaceHybrid& space_in) : space_(space_in) {}
+  using CollisionCheckerT = nav_utils::CollisionChecker;
+  using CollisionCheckerPtr = CollisionCheckerT*;
+
+  StateSpaceHybrid(SpaceHybrid&& space_in) : space_(std::move(space_in)) {}
   StateSpaceHybrid(unsigned int size_x_in, unsigned int size_y_in,
                    unsigned int dim_3_in)
       : space_{size_x_in, size_y_in, dim_3_in} {}
@@ -50,6 +55,12 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
 
   unsigned int getStateSpaceSize() const override {
     return space_.size_x * space_.size_y * space_.dim_3;
+  }
+
+  double getStateCost(const StateHybrid& state,
+                      const CollisionCheckerPtr& collision_checker) const {
+    return collision_checker->getCost(static_cast<unsigned int>(state.x),
+                                      static_cast<unsigned int>(state.y));
   }
 
   /**

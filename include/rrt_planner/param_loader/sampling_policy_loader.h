@@ -33,7 +33,6 @@ inline state_space::state_sampler::SamplingPolicy loadSamplingPolicy(
 
   return sampling_policy;
 }
-
 }  // namespace rrt_planner::param_loader
 
-#endif
+#endif // RRT_PLANNER__PARAM_LOADER__SAMPLING_POLICY_LOADER_H_

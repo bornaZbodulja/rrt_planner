@@ -17,15 +17,8 @@
 
 namespace rrt_planner::param_loader {
 
-/**
- * @brief
- *
- * @param nh
- * @param costmap_resolution
- * @return state_space::state_connector::StateConnectorParams
- */
-state_space::state_connector::StateConnectorParams
-loadStateConnectorParams(ros::NodeHandle* nh, double costmap_resolution) {
+inline state_space::state_connector::StateConnectorParams
+loadStateConnectorParams(ros::NodeHandle* nh, double map_resolution) {
   state_space::state_connector::StateConnectorParams connector_params;
   loadParam<bool>(nh, "allow_unknown", connector_params.allow_unknown);
   loadParam<unsigned char>(nh, "lethal_cost", connector_params.lethal_cost);
@@ -34,11 +27,10 @@ loadStateConnectorParams(ros::NodeHandle* nh, double costmap_resolution) {
   loadParam<double>(nh, "edge_length", edge_length);
   // Scaling with costmap resolution
   connector_params.max_extension_states =
-      static_cast<int>(edge_length / costmap_resolution);
+      static_cast<int>(edge_length / map_resolution);
 
   return connector_params;
 }
-
 }  // namespace rrt_planner::param_loader
 
-#endif
+#endif  // RRT_PLANNER__PARAM_LOADER__CONNECTOR_PARAMS_LOADER_H_

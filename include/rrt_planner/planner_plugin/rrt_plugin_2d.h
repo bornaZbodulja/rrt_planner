@@ -17,7 +17,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_core/base_global_planner.h>
-#include <nav_utils/nav_utils.h>
+#include <nav_utils/collision_checker.h>
 #include <ros/node_handle.h>
 
 #include <memory>
@@ -25,9 +25,10 @@
 #include <utility>
 #include <vector>
 
-#include "rrt_planner/planner_core/rrt_core.h"
+#include "rrt_planner/planner_core/planner/planner.h"
 #include "rrt_planner/visualization_plugin/visualization.h"
 #include "state_space/state_connector_2d/state_connector_2d.h"
+#include "state_space/state_connector/state_connector.h"
 #include "state_space/state_space_2d/space_2d.h"
 #include "state_space/state_space_2d/state_2d.h"
 #include "state_space/state_space_2d/state_space_2d.h"
@@ -36,23 +37,26 @@ namespace rrt_planner::planner_plugin {
 class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
  public:
   using State2D = state_space::state_space_2d::State2D;
+  using State2DVector = std::vector<State2D>;
   using Space2D = state_space::state_space_2d::Space2D;
   using StateVector2D = std::vector<State2D>;
   using StateSpace2D = state_space::state_space_2d::StateSpace2D;
   using StateSpace2DPtr = std::shared_ptr<StateSpace2D>;
-  using StateConnector2D = state_space::state_connector_2d::StateConnector2D;
-  using RRTPlanner2D = rrt_planner::planner_core::RRTCore<State2D>;
+  using StateConnector2D = state_space::state_connector::StateConnector<State2D>;
+  using StateConnector2DPtr = std::shared_ptr<StateConnector2D>;
+  using RRTPlanner2D = rrt_planner::planner_core::planner::Planner<State2D>;
   using RRTPlanner2DPtr = std::unique_ptr<RRTPlanner2D>;
   using VisualizationT = rrt_planner::visualization::Visualization;
   using VisualizationPtr = std::unique_ptr<VisualizationT>;
+  using CollisionCheckerT = nav_utils::CollisionChecker;
+  using CollisionCheckerPtr = std::shared_ptr<CollisionCheckerT>;
   using PoseT = geometry_msgs::Pose;
   using PoseStampedT = geometry_msgs::PoseStamped;
   using PlanT = std::vector<PoseStampedT>;
   using Plan2DT = std::optional<StateVector2D>;
-  using Edge2DT = std::pair<State2D, State2D>;
-  using Tree2DT = std::vector<Edge2DT>;
+  using Tree2DT = std::vector<State2DVector>;
   using Tree2DVector = std::vector<Tree2DT>;
-  using EdgeT = std::pair<PoseT, PoseT>;
+  using EdgeT = std::vector<PoseT>;
   using TreeT = std::vector<EdgeT>;
   using TreeVector = std::vector<TreeT>;
 
@@ -84,7 +88,7 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
    * @param goal
    * @return Plan2DT
    */
-  Plan2DT create2DPlan(State2D start, State2D goal);
+  Plan2DT create2DPlan(const State2D& start, const State2D& goal);
 
   /**
    * @brief
@@ -120,7 +124,7 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
   // Visualization plugin pointer
   VisualizationPtr visualization_;
   // RRT planner pointer
-  RRTPlanner2DPtr rrt_planner_;
+  RRTPlanner2DPtr planner_;
   // 2D state space pointer
   StateSpace2DPtr state_space_;
   // Collision checker pointer

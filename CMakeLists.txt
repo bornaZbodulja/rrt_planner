@@ -13,7 +13,7 @@ set(library_name rrt_plugin)
 
 find_package(ompl REQUIRED)
 
-find_package(Eigen3 REQUIRED)
+# find_package(Eigen3 REQUIRED)
 
 find_package(catkin REQUIRED 
   COMPONENTS
@@ -50,16 +50,14 @@ include_directories(
   include
   # ${nav_utils_INCLUDE_DIRS}
   ${OMPL_INCLUDE_DIRS}
-  ${Eigen3_INCLUDE_DIRS}
+  # ${Eigen3_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
 add_library(${library_name}_2d SHARED
   src/rrt_planner/planner_plugin/rrt_plugin_2d.cpp
-  src/rrt_planner/planner_core/rrt.cpp
-  src/rrt_planner/planner_core/bidirectional_rrt.cpp
-  src/rrt_planner/planner_core/rrt_star.cpp
-  src/rrt_planner/planner_core/bidirectional_rrt_star.cpp
+  src/rrt_planner/planner_core/planner_implementations/rrt.cpp
+  src/rrt_planner/planner_core/planner_implementations/bidirectional_rrt.cpp
   src/rrt_planner/visualization_plugin/search_tree_visualization.cpp
   src/state_space/state_connector_2d/line_connector.cpp
   src/state_space/state_connector_2d/state_connector_2d.cpp
@@ -69,10 +67,8 @@ add_library(${library_name}_2d SHARED
 
 add_library(${library_name}_hybrid SHARED
   src/rrt_planner/planner_plugin/rrt_plugin_hybrid.cpp
-  src/rrt_planner/planner_core/rrt.cpp
-  src/rrt_planner/planner_core/bidirectional_rrt.cpp
-  src/rrt_planner/planner_core/rrt_star.cpp
-  src/rrt_planner/planner_core/bidirectional_rrt_star.cpp
+  src/rrt_planner/planner_core/planner_implementations/rrt.cpp
+  src/rrt_planner/planner_core/planner_implementations/bidirectional_rrt.cpp
   src/rrt_planner/visualization_plugin/search_tree_visualization.cpp
   src/state_space/state_connector_2d/line_connector.cpp
   src/state_space/state_connector_2d/state_connector_2d.cpp

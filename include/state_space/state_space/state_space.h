@@ -12,6 +12,8 @@
 #ifndef STATE_SPACE__STATE_SPACE__STATE_SPACE_H_
 #define STATE_SPACE__STATE_SPACE__STATE_SPACE_H_
 
+#include <nav_utils/collision_checker.h>
+
 namespace state_space {
 /**
  * @brief State space interface
@@ -20,6 +22,9 @@ namespace state_space {
 template <typename StateT>
 class StateSpace {
  public:
+  using CollisionCheckerT = nav_utils::CollisionChecker;
+  using CollisionCheckerPtr = CollisionCheckerT*;
+
   virtual ~StateSpace() = default;
 
   /**
@@ -56,6 +61,15 @@ class StateSpace {
    * @return unsigned int
    */
   virtual unsigned int getStateSpaceSize() const = 0;
+
+  /**
+   * @brief Computes cost of given state
+   * @param state
+   * @return double
+   */
+  virtual double getStateCost(
+      const StateT& state,
+      const CollisionCheckerPtr& collision_checker) const = 0;
 };
 
 }  // namespace state_space

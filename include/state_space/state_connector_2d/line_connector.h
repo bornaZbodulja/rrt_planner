@@ -12,7 +12,8 @@
 #ifndef STATE_SPACE__STATE_CONNECTOR_2D__LINE_CONNECTOR_H_
 #define STATE_SPACE__STATE_CONNECTOR_2D__LINE_CONNECTOR_H_
 
-#include <nav_utils/nav_utils.h>
+#include <nav_utils/collision_checker.h>
+#include <nav_utils/line_iterator.h>
 
 #include <optional>
 #include <vector>
@@ -26,6 +27,9 @@ class LineConnector {
  public:
   using StateT = state_space::state_space_2d::State2D;
   using StateVector = std::vector<StateT>;
+  using CollisionCheckerT = nav_utils::CollisionChecker;
+  using CollisionCheckerPtr = CollisionCheckerT*;
+  using LineIteratorT = nav_utils::LineIterator;
   using ExpansionResultT = std::optional<StateT>;
   using ConnectionParamsT = state_space::state_connector::StateConnectorParams;
 
@@ -40,10 +44,9 @@ class LineConnector {
    * @param collision_checker
    * @return ExpansionResultT
    */
-  ExpansionResultT tryLineExpand(
-      const StateT& start, const StateT& target,
-      const ConnectionParamsT& connection_params,
-      const CollisionCheckerPtr& collision_checker) const;
+  ExpansionResultT tryLineExpand(const StateT& start, const StateT& target,
+                                 const ConnectionParamsT& connection_params,
+                                 const CollisionCheckerPtr& collision_checker) const;
 
   /**
    * @brief

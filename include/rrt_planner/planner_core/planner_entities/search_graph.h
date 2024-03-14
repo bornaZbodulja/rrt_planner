@@ -9,14 +9,14 @@
  *
  */
 
-#ifndef RRT_PLANNER__PLANNER_CORE__SEARCH_GRAPH_H_
-#define RRT_PLANNER__PLANNER_CORE__SEARCH_GRAPH_H_
+#ifndef RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__SEARCH_GRAPH_H_
+#define RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__SEARCH_GRAPH_H_
 
 #include <unordered_map>
 
-#include "rrt_planner/planner_core/node.h"
+#include "rrt_planner/planner_core/planner_entities/node.h"
 
-namespace rrt_planner::planner_core {
+namespace rrt_planner::planner_core::planner_entities {
 /**
  * @brief Holder for storing indexed nodes in the graph
  * @tparam NodeT Node template
@@ -28,7 +28,7 @@ class SearchGraph {
   using NodeGraph = std::unordered_map<unsigned int, NodeT>;
 
   SearchGraph() = default;
-  ~SearchGraph() { clear(); }
+  ~SearchGraph() = default;
 
   void reserve(unsigned int size) { graph_.reserve(size); }
 
@@ -58,6 +58,6 @@ class SearchGraph {
  private:
   NodeGraph graph_;
 };  // namespace rrt_planner::planner_core
-}  // namespace rrt_planner::planner_core
+}  // namespace rrt_planner::planner_core::planner_entities
 
 #endif

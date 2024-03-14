@@ -12,42 +12,42 @@
 #ifndef STATE_SPACE__STATE_SAMPLER_FACTORY__STATE_SAMPLER_FACTORY_H_
 #define STATE_SPACE__STATE_SAMPLER_FACTORY__STATE_SAMPLER_FACTORY_H_
 
+#include <nav_utils/collision_checker.h>
+
 #include <memory>
 
+#include "state_space/basic_state_sampler/basic_state_sampler.h"
+#include "state_space/basic_state_sampler/basic_state_sampler_params.h"
 #include "state_space/rgd_state_sampler/rgd_params.h"
 #include "state_space/rgd_state_sampler/rgd_state_sampler.h"
 #include "state_space/state_sampler/state_sampler.h"
-#include "state_space/state_sampler/state_sampler_params.h"
+#include "state_space/state_space/state_space.h"
 
 namespace state_space::state_sampler_factory {
-class StateSamplerFactory {
- public:
-  template <typename StateT>
-  using StateSamplerT = state_space::state_sampler::StateSampler<StateT>;
-  template <typename StateT>
-  using StateSamplerPtr = std::shared_ptr<StateSamplerT<StateT>>;
-  using CommonParamsT = state_space::state_sampler::StateSamplerParams;
-  template <typename StateT>
-  using RGDStateSamplerT =
-      state_space::rgd_state_sampler::RGDStateSampler<StateT>;
-  using RGDParamsT = state_space::rgd_state_sampler::RGDParams;
+template <typename StateT>
+inline std::unique_ptr<state_space::state_sampler::StateSampler<StateT>>
+createBasicStateSampler(
+    state_space::basic_state_sampler::BasicStateSamplerParams&&
+        basic_state_sampler_params,
+    const std::shared_ptr<state_space::StateSpace<StateT>>& state_space) {
+  return std::make_unique<
+      state_space::basic_state_sampler::BasicStateSampler<StateT>>(
+      std::move(basic_state_sampler_params), state_space);
+}
 
-  StateSamplerFactory() = delete;
-
-  /**
-   * @brief
-   * @tparam StateT
-   * @param common_params
-   * @param rgd_params
-   * @return StateSamplerPtr<StateT>
-   */
-  template <typename StateT>
-  static StateSamplerPtr<StateT> createRGDSampler(CommonParamsT&& common_params,
-                                                  RGDParamsT&& rgd_params) {
-    return std::make_shared<RGDStateSamplerT<StateT>>(std::move(common_params),
-                                                      std::move(rgd_params));
-  }
-};
+template <typename StateT>
+inline std::unique_ptr<state_space::state_sampler::StateSampler<StateT>>
+createRGDStateSampler(
+    state_space::basic_state_sampler::BasicStateSamplerParams&&
+        basic_state_sampler_params,
+    state_space::rgd_state_sampler::RGDParams&& rgd_params,
+    const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
+    const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker) {
+  return std::make_unique<
+      state_space::rgd_state_sampler::RGDStateSampler<StateT>>(
+      std::move(basic_state_sampler_params), std::move(rgd_params), state_space,
+      collision_checker);
+}
 }  // namespace state_space::state_sampler_factory
 
-#endif
+#endif  // STATE_SPACE__STATE_SAMPLER_FACTORY__STATE_SAMPLER_FACTORY_H_

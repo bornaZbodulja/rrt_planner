@@ -12,6 +12,8 @@
 #ifndef STATE_SPACE__STATE_SPACE__STATE_SPACE_2D_H_
 #define STATE_SPACE__STATE_SPACE__STATE_SPACE_2D_H_
 
+#include <nav_utils/collision_checker.h>
+
 #include <cmath>
 
 #include "state_space/state_space/state_space.h"
@@ -21,7 +23,10 @@
 namespace state_space::state_space_2d {
 class StateSpace2D : public state_space::StateSpace<State2D> {
  public:
-  StateSpace2D(const Space2D& space_in) : space_(space_in) {}
+  using CollisionCheckerT = nav_utils::CollisionChecker;
+  using CollisionCheckerPtr = CollisionCheckerT*;
+
+  StateSpace2D(Space2D&& space_in) : space_(std::move(space_in)) {}
   StateSpace2D(unsigned int size_x_in, unsigned int size_y_in)
       : space_{size_x_in, size_y_in} {}
 
@@ -45,6 +50,12 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
 
   unsigned int getStateSpaceSize() const override {
     return space_.size_x * space_.size_y;
+  }
+
+  double getStateCost(const State2D& state,
+                      const CollisionCheckerPtr& collision_checker) const {
+    return collision_checker->getCost(static_cast<unsigned int>(state.x),
+                                      static_cast<unsigned int>(state.y));
   }
 
  protected:

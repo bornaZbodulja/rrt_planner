@@ -17,7 +17,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_core/base_global_planner.h>
-#include <nav_utils/nav_utils.h>
+#include <nav_utils/collision_checker.h>
 #include <ros/node_handle.h>
 
 #include <memory>
@@ -25,9 +25,9 @@
 #include <utility>
 #include <vector>
 
-#include "rrt_planner/planner_core/rrt_core.h"
+#include "rrt_planner/planner_core/planner/planner.h"
 #include "rrt_planner/visualization_plugin/visualization.h"
-#include "state_space/state_connector_hybrid/state_connector_hybrid.h"
+#include "state_space/state_connector/state_connector.h"
 #include "state_space/state_space_hybrid/space_hybrid.h"
 #include "state_space/state_space_hybrid/state_hybrid.h"
 #include "state_space/state_space_hybrid/state_space_hybrid.h"
@@ -36,24 +36,28 @@ namespace rrt_planner::planner_plugin {
 class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
  public:
   using StateHybrid = state_space::state_space_hybrid::StateHybrid;
+  using StateHybridVector = std::vector<StateHybrid>;
   using SpaceHybrid = state_space::state_space_hybrid::SpaceHybrid;
   using StateVectorHybrid = std::vector<StateHybrid>;
   using StateSpaceHybrid = state_space::state_space_hybrid::StateSpaceHybrid;
   using StateSpaceHybridPtr = std::shared_ptr<StateSpaceHybrid>;
   using StateConnectorHybrid =
-      state_space::state_connector_hybrid::StateConnectorHybrid;
-  using RRTPlannerHybrid = rrt_planner::planner_core::RRTCore<StateHybrid>;
+      state_space::state_connector::StateConnector<StateHybrid>;
+  using StateConnectorHybridPtr = std::shared_ptr<StateConnectorHybrid>;
+  using RRTPlannerHybrid =
+      rrt_planner::planner_core::planner::Planner<StateHybrid>;
   using RRTPlannerHybridPtr = std::unique_ptr<RRTPlannerHybrid>;
   using VisualizationT = rrt_planner::visualization::Visualization;
   using VisualizationPtr = std::unique_ptr<VisualizationT>;
+  using CollisionCheckerT = nav_utils::CollisionChecker;
+  using CollisionCheckerPtr = std::shared_ptr<CollisionCheckerT>;
   using PoseT = geometry_msgs::Pose;
   using PoseStampedT = geometry_msgs::PoseStamped;
   using PlanT = std::vector<PoseStampedT>;
   using PlanHybridT = std::optional<StateVectorHybrid>;
-  using EdgeHybridT = std::pair<StateHybrid, StateHybrid>;
-  using TreeHybridT = std::vector<EdgeHybridT>;
+  using TreeHybridT = std::vector<StateHybridVector>;
   using TreeHybridVector = std::vector<TreeHybridT>;
-  using EdgeT = std::pair<PoseT, PoseT>;
+  using EdgeT = std::vector<PoseT>;
   using TreeT = std::vector<EdgeT>;
   using TreeVector = std::vector<TreeT>;
 
@@ -85,7 +89,8 @@ class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
    * @param goal
    * @return PlanHybridT
    */
-  PlanHybridT createHybridPlan(StateHybrid start, StateHybrid goal);
+  PlanHybridT createHybridPlan(const StateHybrid& start,
+                               const StateHybrid& goal);
 
   /**
    * @brief
@@ -118,7 +123,7 @@ class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
   // Visualization plugin pointer
   VisualizationPtr visualization_;
   // RRT planner pointer
-  RRTPlannerHybridPtr rrt_planner_;
+  RRTPlannerHybridPtr planner_;
   // Hybrid state space pointer
   StateSpaceHybridPtr state_space_;
   // Collision checker pointer
@@ -126,4 +131,4 @@ class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
 };
 }  // namespace rrt_planner::planner_plugin
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_PLUGIN__RRT_PLUGIN_HYBRID_H_

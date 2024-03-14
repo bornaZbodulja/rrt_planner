@@ -28,10 +28,6 @@
 PLUGINLIB_EXPORT_CLASS(rrt_planner::planner_plugin::RRTPlugin2D,
                        nav_core::BaseGlobalPlanner)
 
-using namespace rrt_planner::param_loader;
-using namespace rrt_planner::ros_factory;
-using namespace rrt_planner::visualization_factory;
-
 namespace rrt_planner::planner_plugin {
 
 void RRTPlugin2D::initialize(std::string name,
@@ -45,24 +41,23 @@ void RRTPlugin2D::initialize(std::string name,
 
   collision_checker_ = std::make_shared<CollisionCheckerT>(costmap_ros);
 
-  const auto costmap_resolution = costmap_ros->getCostmap()->getResolution();
+  Space2D space_2d = Space2D(collision_checker_->getMapSizeX(),
+                             collision_checker_->getMapSizeY());
 
-  const auto space_2d =
-      Space2D(collision_checker_->getSizeX(), collision_checker_->getSizeY());
+  state_space_ = std::make_shared<StateSpace2D>(std::move(space_2d));
 
-  state_space_ = std::make_shared<StateSpace2D>(space_2d);
-  auto state_connector = ROSStateConnectorFactory::create2DStateConnector(
-      collision_checker_, costmap_resolution, &nh_);
+  auto search_policy = rrt_planner::param_loader::loadSearchPolicy(&nh_);
+  auto sampling_policy = rrt_planner::param_loader::loadSamplingPolicy(&nh_);
+  StateConnector2DPtr state_connector =
+      rrt_planner::ros_factory::create2DStateConnector(&nh_,
+                                                       collision_checker_);
 
-  auto search_policy = loadSearchPolicy(&nh_);
-  auto sampling_policy = loadSamplingPolicy(&nh_);
+  planner_ = rrt_planner::ros_factory::createPlanner<State2D>(
+      &nh_, search_policy, sampling_policy, state_space_, state_connector,
+      collision_checker_);
 
-  rrt_planner_ = ROSPlannerFactory::createPlanner<State2D>(
-      search_policy, sampling_policy, state_space_, std::move(state_connector),
-      collision_checker_, costmap_resolution, &nh_);
-
-  visualization_ =
-      VisualizationFactory::createVisualization(search_policy, &nh_);
+  visualization_ = rrt_planner::visualization_factory::createVisualization(
+      &nh_, search_policy);
 
   initialized_ = true;
 }
@@ -116,11 +111,11 @@ bool RRTPlugin2D::makePlan(const PoseStampedT& start, const PoseStampedT& goal,
            tf2::getYaw(start.pose.orientation), goal.pose.position.x,
            goal.pose.position.y, tf2::getYaw(goal.pose.orientation));
 
-  auto&& plan_2d = create2DPlan(
+  auto plan_2d = create2DPlan(
       State2D{static_cast<double>(start_mx), static_cast<double>(start_my)},
       State2D{static_cast<double>(goal_mx), static_cast<double>(goal_my)});
 
-  const auto plan_found = plan_2d.has_value();
+  bool plan_found = plan_2d.has_value();
 
   if (plan_found) {
     process2DPlan(plan_2d.value(), start, goal, plan);
@@ -139,13 +134,13 @@ bool RRTPlugin2D::makePlan(const PoseStampedT& start, const PoseStampedT& goal,
   }
 }
 
-typename RRTPlugin2D::Plan2DT RRTPlugin2D::create2DPlan(State2D start,
-                                                        State2D goal) {
-  rrt_planner_->initializeSearch();
-  rrt_planner_->setStart(start);
-  rrt_planner_->setGoal(goal);
+RRTPlugin2D::Plan2DT RRTPlugin2D::create2DPlan(const State2D& start,
+                                               const State2D& goal) {
+  planner_->initializeSearch();
+  planner_->setStart(start);
+  planner_->setGoal(goal);
 
-  return rrt_planner_->createPath();
+  return planner_->createPath();
 }
 
 void RRTPlugin2D::process2DPlan(const StateVector2D& plan_2d,
@@ -171,25 +166,33 @@ void RRTPlugin2D::process2DPlan(const StateVector2D& plan_2d,
 
 void RRTPlugin2D::updateVisualization(const PlanT& plan) {
   visualization_->updatePathVisualization(plan);
-  Tree2DVector&& tree_2d_vector = rrt_planner_->getSearchTrees();
+  Tree2DVector tree_2d_vector = planner_->getTrees();
   TreeVector tree_vector;
   tree_vector.reserve(tree_2d_vector.size());
 
-  std::for_each(
-      tree_2d_vector.cbegin(), tree_2d_vector.cend(), [&](const auto& tree_2d) {
-        PoseT child, parent;
-        TreeT tree;
-        tree.reserve(tree_2d.size());
+  std::transform(tree_2d_vector.cbegin(), tree_2d_vector.cend(),
+                 std::back_inserter(tree_vector), [&](const Tree2DT& tree_2d) {
+                   TreeT tree;
+                   tree.reserve(tree_2d.size());
 
-        std::transform(tree_2d.cbegin(), tree_2d.cend(),
-                       std::back_inserter(tree), [&](const auto& edge_2d) {
-                         state2DToPose(edge_2d.first, child);
-                         state2DToPose(edge_2d.second, parent);
-                         return EdgeT{child, parent};
-                       });
+                   std::transform(tree_2d.cbegin(), tree_2d.cend(),
+                                  std::back_inserter(tree),
+                                  [&](const State2DVector& edge_2d) {
+                                    EdgeT edge;
+                                    edge.reserve(edge_2d.size());
 
-        tree_vector.push_back(std::move(tree));
-      });
+                                    std::transform(
+                                        edge_2d.cbegin(), edge_2d.cend(),
+                                        std::back_inserter(edge),
+                                        [&](const State2D& state_2d) {
+                                          PoseT pose;
+                                          state2DToPose(state_2d, pose);
+                                          return pose;
+                                        });
+                                    return edge;
+                                  });
+                   return tree;
+                 });
 
   visualization_->updateSearchTreeVisualization(tree_vector);
 }

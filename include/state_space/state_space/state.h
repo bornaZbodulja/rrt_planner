@@ -20,21 +20,29 @@ namespace state_space {
  * @tparam T
  */
 template <typename T>
-struct State {
-  virtual ~State() = default;
-  virtual void operator*(double k) = 0;
-  virtual T operator+(const T& rhs) const = 0;
-  virtual double squaredL2norm() const = 0;
-  virtual double l2norm() const { return std::sqrt(squaredL2norm()); }
+class State {
+ public:
+  void operator*(double k) { derived_cast()->operator*(k); }
 
-  virtual void operator/(double k) final { this->operator*(1 / k); }
+  T operator+(const T& rhs) const { return derived_cast()->operator+(rhs); }
 
-  virtual T operator-(const T& rhs) const final {
+  double squaredL2norm() const { return derived_cast()->squaredL2norm(); }
+
+  double l2norm() { return std::sqrt(squaredL2norm()); }
+
+  void operator/(double k) { this->operator*(1 / k); }
+
+  T operator-(const T& rhs) const {
     T res = rhs;
     res.operator*(-1.0);
     res = this->operator+(res);
     return res;
   }
+
+ private:
+  T* derived_cast() { return (static_cast<T*>(this)); }
+
+  const T* derived_cast() const { return (static_cast<const T*>(this)); }
 };
 
 }  // namespace state_space

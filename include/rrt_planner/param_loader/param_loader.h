@@ -49,7 +49,6 @@ inline void loadParam<unsigned char>(ros::NodeHandle* nh, std::string name,
   loadParam<int>(nh, name, int_value);
   value = static_cast<unsigned char>(int_value);
 }
-
 }  // namespace rrt_planner::param_loader
 
-#endif
+#endif // RRT_PLANNER__PARAM_LOADER__PARAM_LOADER_H_

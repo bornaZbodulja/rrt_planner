@@ -20,22 +20,23 @@ namespace state_space::state_space_hybrid {
 /**
  * @brief Representation of state in hybrid state space
  */
-struct StateHybrid : public State<StateHybrid> {
+class StateHybrid : public State<StateHybrid> {
+ public:
   StateHybrid() = default;
   StateHybrid(double x_in, double y_in, double theta_in)
       : x(x_in), y(y_in), theta(theta_in) {}
 
-  void operator*(double k) override {
+  void operator*(double k) {
     x *= k;
     y *= k;
     theta *= k;
   }
 
-  StateHybrid operator+(const StateHybrid& rhs) const override {
+  StateHybrid operator+(const StateHybrid& rhs) const {
     return StateHybrid{x + rhs.x, y + rhs.y, theta + rhs.theta};
   }
 
-  double squaredL2norm() const override {
+  double squaredL2norm() const {
     const auto d = std::pow(x, 2) + std::pow(y, 2);
 
     // TODO: Implement this to be continuous function

@@ -17,7 +17,9 @@
 #include <ros/publisher.h>
 #include <std_msgs/ColorRGBA.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -25,9 +27,10 @@ namespace rrt_planner::visualization {
 class SearchTreeVisualization {
  public:
   using PoseT = geometry_msgs::Pose;
-  using EdgeT = std::pair<PoseT, PoseT>;
+  using EdgeT = std::vector<PoseT>;
   using TreeT = std::vector<EdgeT>;
   using MarkerT = visualization_msgs::Marker;
+  using MarkerArrayT = visualization_msgs::MarkerArray;
   using ColorT = std_msgs::ColorRGBA;
 
   /**
@@ -35,7 +38,8 @@ class SearchTreeVisualization {
    * @param nh
    * @param tree_identifier
    */
-  SearchTreeVisualization(ros::NodeHandle* nh, std::string tree_identifier,
+  SearchTreeVisualization(ros::NodeHandle* nh,
+                          const std::string& tree_identifier,
                           const ColorT& tree_color);
 
   ~SearchTreeVisualization() = default;
@@ -50,8 +54,13 @@ class SearchTreeVisualization {
   void setTree(const TreeT& search_tree);
 
  private:
+  MarkerT edgeToMarker(const std::string& edge_id, const EdgeT& edge);
+
   void clearSearchTreeVisualization() {
-    tree_.action = visualization_msgs::Marker::DELETE;
+    std::for_each(tree_.markers.begin(), tree_.markers.end(),
+                  [](MarkerT& marker) {
+                    marker.action = visualization_msgs::Marker::DELETE;
+                  });
   }
 
   // Tree id
@@ -59,11 +68,10 @@ class SearchTreeVisualization {
   // Search tree visualization publisher
   ros::Publisher tree_pub_;
   // Visualization of search tree
-  MarkerT tree_;
+  MarkerArrayT tree_;
   // Color of the tree
   ColorT tree_color_;
 };
-
 }  // namespace rrt_planner::visualization
 
-#endif
+#endif  // RRT_PLANNER__VISUALIZATION_PLUGIN__SEARCH_TREE_VISUALIZATION_H_

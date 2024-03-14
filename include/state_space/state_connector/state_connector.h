@@ -12,7 +12,7 @@
 #ifndef STATE_SPACE__STATE_CONNECTOR__STATE_CONNECTOR_H_
 #define STATE_SPACE__STATE_CONNECTOR__STATE_CONNECTOR_H_
 
-#include <nav_utils/nav_utils.h>
+#include <nav_utils/collision_checker.h>
 
 #include <optional>
 #include <vector>
@@ -29,15 +29,10 @@ class StateConnector {
  public:
   using StateVector = std::vector<StateT>;
   using ExpansionResultT = std::optional<StateT>;
+  using CollisionCheckerT = nav_utils::CollisionChecker;
+  using CollisionCheckerPtr = std::shared_ptr<CollisionCheckerT>;
 
-  StateConnector(const StateConnectorParams& params,
-                 const CollisionCheckerPtr& collision_checker)
-      : params_(params), collision_checker_(collision_checker) {}
   virtual ~StateConnector() = default;
-
-  void updateCollisionChecker(const CollisionCheckerPtr& collision_checker) {
-    collision_checker_ = collision_checker;
-  }
 
   /**
    * @brief Expands current state towards target state for max extension states
@@ -76,6 +71,10 @@ class StateConnector {
                                    const StateT& goal_state) const = 0;
 
  protected:
+  StateConnector(StateConnectorParams&& params,
+                 const CollisionCheckerPtr& collision_checker)
+      : params_(std::move(params)), collision_checker_(collision_checker) {}
+
   // State connector parameters
   StateConnectorParams params_;
   // Collision checker pointer

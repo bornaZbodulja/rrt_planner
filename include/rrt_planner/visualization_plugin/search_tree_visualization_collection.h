@@ -69,4 +69,4 @@ class SearchTreeVisualizationCollection {
 };
 }  // namespace rrt_planner::visualization
 
-#endif
+#endif // RRT_PLANNER__VISUALIZATION_PLUGIN__SEARCH_TREE_VISUALIZATION_COLLECTION_H_

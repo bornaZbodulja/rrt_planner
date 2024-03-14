@@ -20,11 +20,10 @@
 namespace rrt_planner::visualization {
 class RRTVisualization : public Visualization {
  public:
-  using Visualization::tree_vis_;
   using TreeVector = Visualization::TreeVector;
 
   RRTVisualization(ros::NodeHandle* nh) : Visualization(nh) {
-    tree_vis_->addTreeVisualization(nh, tree_id_, colorGreen());
+    this->tree_vis_->addTreeVisualization(nh, tree_id_, colorGreen());
   }
 
   void updateSearchTreeVisualization(const TreeVector& trees) override {
@@ -44,4 +43,4 @@ class RRTVisualization : public Visualization {
 };
 }  // namespace rrt_planner::visualization
 
-#endif
+#endif // RRT_PLANNER__VISUALIZATION_PLUGIN__RRT_VISUALIZATION_H_

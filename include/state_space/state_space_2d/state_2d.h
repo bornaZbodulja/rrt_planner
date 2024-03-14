@@ -20,22 +20,21 @@ namespace state_space::state_space_2d {
 /**
  * @brief Representation of state in 2D state space
  */
-struct State2D : public State<State2D> {
+class State2D : public State<State2D> {
+ public:
   State2D() = default;
   explicit State2D(double x_in, double y_in) : x(x_in), y(y_in) {}
 
-  void operator*(double k) override {
+  void operator*(double k) {
     x *= k;
     y *= k;
   }
 
-  State2D operator+(const State2D& rhs) const override {
+  State2D operator+(const State2D& rhs) const {
     return State2D{x + rhs.x, y + rhs.y};
   }
 
-  double squaredL2norm() const override {
-    return std::pow(x, 2) + std::pow(y, 2);
-  }
+  double squaredL2norm() const { return std::pow(x, 2) + std::pow(y, 2); }
 
   double x{0.0}, y{0.0};
 };

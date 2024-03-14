@@ -12,53 +12,46 @@
 #ifndef RRT_PLANNER__ROS_FACTORY__ROS_STATE_SAMPLER_FACTORY_H_
 #define RRT_PLANNER__ROS_FACTORY__ROS_STATE_SAMPLER_FACTORY_H_
 
+#include <nav_utils/collision_checker.h>
+
+#include <memory>
+
+#include "rrt_planner/param_loader/basic_sampler_params_loader.h"
 #include "rrt_planner/param_loader/rgd_params_loader.h"
-#include "rrt_planner/param_loader/sampling_params_loader.h"
+#include "state_space/basic_state_sampler/basic_state_sampler.h"
+#include "state_space/basic_state_sampler/basic_state_sampler_params.h"
 #include "state_space/rgd_state_sampler/rgd_state_sampler.h"
 #include "state_space/state_sampler/sampling_policy.h"
-#include "state_space/state_sampler/state_sampler_params.h"
 #include "state_space/state_sampler_factory/state_sampler_factory.h"
+#include "state_space/state_space/state_space.h"
 
 namespace rrt_planner::ros_factory {
-class ROSStateSamplerFactory {
- public:
-  using SamplingPolicyT = state_space::state_sampler::SamplingPolicy;
-  template <typename StateT>
-  using StateSamplerT = state_space::state_sampler::StateSampler<StateT>;
-  template <typename StateT>
-  using StateSamplerPtr = std::shared_ptr<StateSamplerT<StateT>>;
-  using CommonParamsT = state_space::state_sampler::StateSamplerParams;
-  using StateSamplerFactoryT =
-      state_space::state_sampler_factory::StateSamplerFactory;
-  template <typename StateT>
-  using RGDStateSamplerT =
-      state_space::rgd_state_sampler::RGDStateSampler<StateT>;
-  using RGDParamsT = state_space::rgd_state_sampler::RGDParams;
 
-  ROSStateSamplerFactory() = delete;
+template <typename StateT>
+inline std::unique_ptr<state_space::state_sampler::StateSampler<StateT>>
+createStateSampler(
+    ros::NodeHandle* nh,
+    state_space::state_sampler::SamplingPolicy sampling_policy,
+    const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
+    const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker) {
+  state_space::basic_state_sampler::BasicStateSamplerParams
+      basic_sampler_params = param_loader::loadBasicSamplerParams(nh);
 
-  /**
-   * @brief
-   * @tparam StateT
-   */
-  template <typename StateT>
-  static StateSamplerPtr<StateT> createSampler(SamplingPolicyT sampling_policy,
-                                               unsigned int state_space_size,
-                                               ros::NodeHandle* nh) {
-    auto&& common_params =
-        rrt_planner::param_loader::loadStateSamplerParams(nh, state_space_size);
-
-    switch (sampling_policy) {
-      case SamplingPolicyT::RGD_SAMPLING: {
-        auto&& rgd_params = rrt_planner::param_loader::loadRGDParams(nh);
-        return StateSamplerFactoryT::createRGDSampler<StateT>(
-            std::move(common_params), std::move(rgd_params));
-      }
-      default:
-        return nullptr;
+  switch (sampling_policy) {
+    case state_space::state_sampler::SamplingPolicy::BASIC_SAMPLING:
+      return state_space::state_sampler_factory::createBasicStateSampler(
+          std::move(basic_sampler_params), state_space);
+    case state_space::state_sampler::SamplingPolicy::RGD_SAMPLING: {
+      state_space::rgd_state_sampler::RGDParams rgd_params =
+          param_loader::loadRGDParams(nh);
+      return state_space::state_sampler_factory::createRGDStateSampler(
+          std::move(basic_sampler_params), std::move(rgd_params), state_space,
+          collision_checker);
     }
+    default:
+      return nullptr;
   }
-};
+}
 }  // namespace rrt_planner::ros_factory
 
 #endif

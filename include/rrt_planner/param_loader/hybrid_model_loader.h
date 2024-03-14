@@ -18,22 +18,15 @@
 
 namespace rrt_planner::param_loader {
 
-/**
- * @brief 
- * @param nh 
- * @param costmap_resolution 
- * @return state_space::state_connector_hybrid::HybridModel 
- */
-state_space::state_connector_hybrid::HybridModel loadHybridModel(
-    ros::NodeHandle* nh, double costmap_resolution) {
+inline state_space::state_connector_hybrid::HybridModel loadHybridModel(
+    ros::NodeHandle* nh, double map_resolution) {
   state_space::state_connector_hybrid::HybridModel hybrid_model;
   hybrid_model.hybrid_motion_model = loadHybridMotionModel(nh);
   loadParam<double>(nh, "min_turning_radius", hybrid_model.min_turning_radius);
   // Scaling with costmap resolution
-  hybrid_model.min_turning_radius /= costmap_resolution;
+  hybrid_model.min_turning_radius /= map_resolution;
   return hybrid_model;
 }
-
 }  // namespace rrt_planner::param_loader
 
-#endif
+#endif // RRT_PLANNER__PARAM_LOADER__HYBRID_MODEL_LOADER_H_

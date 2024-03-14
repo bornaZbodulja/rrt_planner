@@ -9,9 +9,12 @@
  *
  */
 
+#ifndef RRT_PLANNER__PLANNER_CORE__PLANNER_UTILITIES__TIMEOUT_HANDLER_H_
+#define RRT_PLANNER__PLANNER_CORE__PLANNER_UTILITIES__TIMEOUT_HANDLER_H_
+
 #include <chrono>
 
-namespace rrt_planner::planner_core {
+namespace rrt_planner::planner_core::planner_utilities {
 /**
  * @brief Class for monitoring planning time
  */
@@ -49,6 +52,9 @@ class TimeoutHandler {
 
   // Timeout in milliseconds
   double timeout_;
-  TimeT start_time_;
+  // Start time
+  TimeT start_time_{std::chrono::system_clock::now()};
 };
-}  // namespace rrt_planner::planner_core
+}  // namespace rrt_planner::planner_core::planner_utilities
+
+#endif

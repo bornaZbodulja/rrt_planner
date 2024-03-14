@@ -28,10 +28,6 @@
 PLUGINLIB_EXPORT_CLASS(rrt_planner::planner_plugin::RRTPluginHybrid,
                        nav_core::BaseGlobalPlanner)
 
-using namespace rrt_planner::param_loader;
-using namespace rrt_planner::ros_factory;
-using namespace rrt_planner::visualization_factory;
-
 namespace rrt_planner::planner_plugin {
 
 void RRTPluginHybrid::initialize(std::string name,
@@ -45,25 +41,25 @@ void RRTPluginHybrid::initialize(std::string name,
 
   collision_checker_ = std::make_shared<CollisionCheckerT>(costmap_ros);
 
-  const auto costmap_resolution = costmap_ros->getCostmap()->getResolution();
-
   // TODO: Expose bin size as parameter (180)
-  const auto space_hybrid = SpaceHybrid(collision_checker_->getSizeX(),
-                                        collision_checker_->getSizeY(), 180);
+  SpaceHybrid space_hybrid =
+      SpaceHybrid(collision_checker_->getMapSizeX(),
+                  collision_checker_->getMapSizeY(), 180);
 
-  state_space_ = std::make_shared<StateSpaceHybrid>(space_hybrid);
-  auto state_connector = ROSStateConnectorFactory::createHybridStateConnector(
-      state_space_, collision_checker_, costmap_resolution, &nh_);
+  state_space_ = std::make_shared<StateSpaceHybrid>(std::move(space_hybrid));
+  StateConnectorHybridPtr state_connector =
+      rrt_planner::ros_factory::createHybridStateConnector(&nh_, state_space_,
+                                                           collision_checker_);
 
-  auto search_policy = loadSearchPolicy(&nh_);
-  auto sampling_policy = loadSamplingPolicy(&nh_);
+  auto search_policy = rrt_planner::param_loader::loadSearchPolicy(&nh_);
+  auto sampling_policy = rrt_planner::param_loader::loadSamplingPolicy(&nh_);
 
-  rrt_planner_ = ROSPlannerFactory::createPlanner<StateHybrid>(
-      search_policy, sampling_policy, state_space_, std::move(state_connector),
-      collision_checker_, costmap_resolution, &nh_);
+  planner_ = rrt_planner::ros_factory::createPlanner<StateHybrid>(
+      &nh_, search_policy, sampling_policy, state_space_, state_connector,
+      collision_checker_);
 
-  visualization_ =
-      VisualizationFactory::createVisualization(search_policy, &nh_);
+  visualization_ = rrt_planner::visualization_factory::createVisualization(
+      &nh_, search_policy);
 
   initialized_ = true;
 }
@@ -122,13 +118,13 @@ bool RRTPluginHybrid::makePlan(const PoseStampedT& start,
            tf2::getYaw(start.pose.orientation), goal.pose.position.x,
            goal.pose.position.y, tf2::getYaw(goal.pose.orientation));
 
-  auto&& plan_hybrid = createHybridPlan(
+  PlanHybridT plan_hybrid = createHybridPlan(
       StateHybrid(static_cast<double>(start_mx), static_cast<double>(start_my),
                   static_cast<double>(start_ang_bin)),
       StateHybrid(static_cast<double>(goal_mx), static_cast<double>(goal_my),
                   static_cast<double>(goal_ang_bin)));
 
-  const auto plan_found = plan_hybrid.has_value();
+  bool plan_found = plan_hybrid.has_value();
 
   if (plan_found) {
     processHybridPlan(plan_hybrid.value(), plan);
@@ -147,13 +143,13 @@ bool RRTPluginHybrid::makePlan(const PoseStampedT& start,
   }
 }
 
-typename RRTPluginHybrid::PlanHybridT RRTPluginHybrid::createHybridPlan(
-    StateHybrid start, StateHybrid goal) {
-  rrt_planner_->initializeSearch();
-  rrt_planner_->setStart(start);
-  rrt_planner_->setGoal(goal);
+RRTPluginHybrid::PlanHybridT RRTPluginHybrid::createHybridPlan(
+    const StateHybrid& start, const StateHybrid& goal) {
+  planner_->initializeSearch();
+  planner_->setStart(start);
+  planner_->setGoal(goal);
 
-  return rrt_planner_->createPath();
+  return planner_->createPath();
 }
 
 void RRTPluginHybrid::processHybridPlan(const StateVectorHybrid& plan_hybrid,
@@ -164,7 +160,8 @@ void RRTPluginHybrid::processHybridPlan(const StateVectorHybrid& plan_hybrid,
   pose.header = nav_utils::prepareHeader("map");
 
   std::transform(plan_hybrid.cbegin(), plan_hybrid.cend(),
-                 std::back_inserter(plan), [&](const auto& state_hybrid) {
+                 std::back_inserter(plan),
+                 [&](const StateHybrid& state_hybrid) {
                    stateHybridToPose(state_hybrid, pose.pose);
                    return pose;
                  });
@@ -172,26 +169,33 @@ void RRTPluginHybrid::processHybridPlan(const StateVectorHybrid& plan_hybrid,
 
 void RRTPluginHybrid::updateVisualization(const PlanT& plan) {
   visualization_->updatePathVisualization(plan);
-  TreeHybridVector&& tree_hybrid_vector = rrt_planner_->getSearchTrees();
+  TreeHybridVector tree_hybrid_vector = planner_->getTrees();
   TreeVector tree_vector;
   tree_vector.reserve(tree_hybrid_vector.size());
 
-  std::for_each(tree_hybrid_vector.cbegin(), tree_hybrid_vector.cend(),
-                [&](const auto& tree_hybrid) {
-                  PoseT child, parent;
-                  TreeT tree;
-                  tree.reserve(tree_hybrid.size());
+  std::transform(
+      tree_hybrid_vector.cbegin(), tree_hybrid_vector.cend(),
+      std::back_inserter(tree_vector), [&](const TreeHybridT& tree_hybrid) {
+        TreeT tree;
+        tree.reserve(tree_hybrid.size());
 
-                  std::transform(
-                      tree_hybrid.cbegin(), tree_hybrid.cend(),
-                      std::back_inserter(tree), [&](const auto& edge_hybrid) {
-                        stateHybridToPose(edge_hybrid.first, child);
-                        stateHybridToPose(edge_hybrid.second, parent);
-                        return EdgeT{child, parent};
-                      });
+        std::transform(
+            tree_hybrid.cbegin(), tree_hybrid.cend(), std::back_inserter(tree),
+            [&](const StateHybridVector& edge_hybrid) {
+              EdgeT edge;
+              edge.reserve(edge_hybrid.size());
 
-                  tree_vector.push_back(std::move(tree));
-                });
+              std::transform(edge_hybrid.cbegin(), edge_hybrid.cend(),
+                             std::back_inserter(edge),
+                             [&](const StateHybrid& state_hybrid) {
+                               PoseT pose;
+                               stateHybridToPose(state_hybrid, pose);
+                               return pose;
+                             });
+              return edge;
+            });
+        return tree;
+      });
 
   visualization_->updateSearchTreeVisualization(tree_vector);
 }

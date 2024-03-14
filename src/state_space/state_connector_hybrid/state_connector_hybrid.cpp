@@ -14,27 +14,27 @@
 namespace state_space::state_connector_hybrid {
 
 StateConnectorHybrid::StateConnectorHybrid(
-    const StateSpacePtr& state_space, const HybridModel& hybrid_model,
-    const ConnectorParamsT& params,
-    const CollisionCheckerPtr& collision_checker)
+    const StateSpacePtr& state_space, HybridModel&& hybrid_model,
+    ConnectorParamsT&& params, const CollisionCheckerPtr& collision_checker)
     : state_space::state_connector::StateConnector<
-          state_space::state_space_hybrid::StateHybrid>(params,
+          state_space::state_space_hybrid::StateHybrid>(std::move(params),
                                                         collision_checker),
       state_space_(state_space),
-      analytic_expander_(std::make_unique<AnalyticMotionHybrid>(hybrid_model)) {
-}
+      analytic_expander_(
+          std::make_unique<AnalyticMotionHybrid>(std::move(hybrid_model))) {}
 
 StateConnectorHybrid::ExpansionResultT StateConnectorHybrid::expandState(
     const StateT& current_state, const StateT& target_state) const {
   return analytic_expander_->tryAnalyticExpand(current_state, target_state,
                                                state_space_.get(), params_,
-                                               collision_checker_);
+                                               collision_checker_.get());
 }
 
 bool StateConnectorHybrid::tryConnectStates(const StateT& start_state,
                                             const StateT& goal_state) const {
-  return analytic_expander_->tryAnalyticConnect(
-      start_state, goal_state, state_space_.get(), params_, collision_checker_);
+  return analytic_expander_->tryAnalyticConnect(start_state, goal_state,
+                                                state_space_.get(), params_,
+                                                collision_checker_.get());
 }
 
 StateConnectorHybrid::StateVector StateConnectorHybrid::connectStates(

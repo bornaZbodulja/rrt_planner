@@ -17,11 +17,11 @@
 
 namespace rrt_planner::param_loader {
 
-state_space::state_connector_hybrid::HybridMotionModel
-loadHybridMotionModel(ros::NodeHandle* nh) {
+inline state_space::state_connector_hybrid::HybridMotionModel loadHybridMotionModel(
+    ros::NodeHandle* nh) {
   std::string motion_model_str;
   loadParam<std::string>(nh, "motion_model", motion_model_str);
-  auto motion_model =
+  state_space::state_connector_hybrid::HybridMotionModel motion_model =
       state_space::state_connector_hybrid::hybridMotionModelFromString(
           motion_model_str);
 
@@ -35,7 +35,6 @@ loadHybridMotionModel(ros::NodeHandle* nh) {
 
   return motion_model;
 }
-
 }  // namespace rrt_planner::param_loader
 
-#endif
+#endif // RRT_PLANNER__PARAM_LOADER__HYBRID_MOTION_MODEL_LOADER_H_
