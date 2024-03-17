@@ -30,7 +30,7 @@ class SearchGraph {
   SearchGraph() = default;
   ~SearchGraph() = default;
 
-  void reserve(unsigned int size) { graph_.reserve(size); }
+  void reserve(std::size_t size) { graph_.reserve(size); }
 
   void clear() {
     // Resetting all nodes before deleting them!!!
@@ -60,4 +60,4 @@ class SearchGraph {
 };  // namespace rrt_planner::planner_core
 }  // namespace rrt_planner::planner_core::planner_entities
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__SEARCH_GRAPH_H_

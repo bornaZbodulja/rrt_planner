@@ -41,8 +41,14 @@ void RRTPlugin2D::initialize(std::string name,
 
   collision_checker_ = std::make_shared<CollisionCheckerT>(costmap_ros);
 
-  Space2D space_2d = Space2D(collision_checker_->getMapSizeX(),
-                             collision_checker_->getMapSizeY());
+  map_info_ =
+      MapInfo(costmap_ros->getCostmap()->getOriginX(),
+              costmap_ros->getCostmap()->getOriginY(),
+              static_cast<double>(costmap_ros->getCostmap()->getSizeInCellsX()),
+              static_cast<double>(costmap_ros->getCostmap()->getSizeInCellsY()),
+              costmap_ros->getCostmap()->getResolution());
+
+  Space2D space_2d = Space2D(map_info_.size.x, map_info_.size.y);
 
   state_space_ = std::make_shared<StateSpace2D>(std::move(space_2d));
 
@@ -198,8 +204,9 @@ void RRTPlugin2D::updateVisualization(const PlanT& plan) {
 }
 
 void RRTPlugin2D::state2DToPose(const State2D& state_2d, PoseT& pose) {
-  collision_checker_->mapToWorld(static_cast<unsigned int>(state_2d.x),
-                                 static_cast<unsigned int>(state_2d.y),
-                                 pose.position.x, pose.position.y);
+  pose.position.x =
+      map_info_.origin.x + map_info_.resolution * (state_2d.x + 0.5);
+  pose.position.y =
+      map_info_.origin.y + map_info_.resolution * (state_2d.y + 0.5);
 }
 }  // namespace rrt_planner::planner_plugin

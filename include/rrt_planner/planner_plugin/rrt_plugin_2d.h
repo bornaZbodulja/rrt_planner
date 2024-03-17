@@ -26,9 +26,10 @@
 #include <vector>
 
 #include "rrt_planner/planner_core/planner/planner.h"
+#include "rrt_planner/planner_plugin/map_info.h"
 #include "rrt_planner/visualization_plugin/visualization.h"
-#include "state_space/state_connector_2d/state_connector_2d.h"
 #include "state_space/state_connector/state_connector.h"
+#include "state_space/state_connector_2d/state_connector_2d.h"
 #include "state_space/state_space_2d/space_2d.h"
 #include "state_space/state_space_2d/state_2d.h"
 #include "state_space/state_space_2d/state_space_2d.h"
@@ -42,7 +43,8 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
   using StateVector2D = std::vector<State2D>;
   using StateSpace2D = state_space::state_space_2d::StateSpace2D;
   using StateSpace2DPtr = std::shared_ptr<StateSpace2D>;
-  using StateConnector2D = state_space::state_connector::StateConnector<State2D>;
+  using StateConnector2D =
+      state_space::state_connector::StateConnector<State2D>;
   using StateConnector2DPtr = std::shared_ptr<StateConnector2D>;
   using RRTPlanner2D = rrt_planner::planner_core::planner::Planner<State2D>;
   using RRTPlanner2DPtr = std::unique_ptr<RRTPlanner2D>;
@@ -129,6 +131,8 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
   StateSpace2DPtr state_space_;
   // Collision checker pointer
   CollisionCheckerPtr collision_checker_;
+  // Map info
+  MapInfo map_info_;
 };
 }  // namespace rrt_planner::planner_plugin
 

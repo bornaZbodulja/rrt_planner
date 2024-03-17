@@ -11,10 +11,11 @@
 
 #include "state_space/state_connector_hybrid/analytic_motion_hybrid.h"
 
+#include <nav_utils/geometry_utils.h>
 #include <ompl/base/spaces/DubinsStateSpace.h>
 #include <ompl/base/spaces/ReedsSheppStateSpace.h>
 
-#include "nav_utils/geometry_utils.h"
+#include <algorithm>
 
 namespace state_space::state_connector_hybrid {
 
@@ -48,16 +49,20 @@ AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
   stateToOMPLState(from, start, state_space);
   stateToOMPLState(to, target, state_space);
 
-  const auto intervals = computeConnectionStatesNum(from, to);
-  const auto iterations = (connection_params.max_extension_states > intervals)
-                              ? intervals
-                              : connection_params.max_extension_states;
+  int intervals = computeConnectionStatesNum(from, to);
+  int iterations = std::min(connection_params.max_extension_states, intervals);
   std::vector<double> reals;
+
+  ROS_INFO("Start state: %.3f, %.3f, %.3f", start.x, start.y, start.theta);
+  ROS_INFO("Target state: %.3f, %.3f, %.3f", target.x, target.y, target.theta);
 
   for (double i = 1.0; i <= iterations; i++) {
     ompl_state_space_->interpolate(from(), to(), i / intervals, s());
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
+
+    ROS_INFO("Interpolated state: %.3f, %.3f, %.3f", reals[0], reals[1],
+             reals[2]);
 
     if (collision_checker->poseInCollision(
             static_cast<unsigned int>(reals[0]),
@@ -85,7 +90,7 @@ bool AnalyticMotionHybrid::tryAnalyticConnect(
   stateToOMPLState(from, start, state_space);
   stateToOMPLState(to, goal, state_space);
 
-  const auto iterations = computeConnectionStatesNum(from, to);
+  int iterations = computeConnectionStatesNum(from, to);
   std::vector<double> reals;
 
   for (double i = 1.0; i <= iterations; i++) {
@@ -117,7 +122,7 @@ AnalyticMotionHybrid::StateVector AnalyticMotionHybrid::getAnalyticPath(
   stateToOMPLState(from, start, state_space);
   stateToOMPLState(to, goal, state_space);
 
-  const auto intervals = computeConnectionStatesNum(from, to);
+  int intervals = computeConnectionStatesNum(from, to);
   StateVector path;
   path.reserve(intervals + 1);
   std::vector<double> reals;
@@ -151,7 +156,7 @@ double AnalyticMotionHybrid::getAnalyticPathLength(
 
 int AnalyticMotionHybrid::computeConnectionStatesNum(
     ompl::base::ScopedState<>& start, ompl::base::ScopedState<>& goal) const {
-  const auto d = getAnalyticStateDistance(start, goal);
+  double d = getAnalyticStateDistance(start, goal);
   static const double sqrt_2 = std::sqrt(2.0);
   return std::floor(d / sqrt_2);
 }

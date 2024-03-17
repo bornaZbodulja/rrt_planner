@@ -47,7 +47,7 @@ class SearchTree {
     tree_.clear();
   }
 
-  void reserve(unsigned int size) { tree_.reserve(size); }
+  void reserve(std::size_t size) { tree_.reserve(size); }
 
   void addVertex(const NodePtr& node) { tree_.push_back(node); }
 
@@ -113,14 +113,14 @@ class SearchTree {
 
     std::for_each(tree_.cbegin(), tree_.cend(), [&](const NodePtr& node) {
       if (node != nullptr && node->parent != nullptr) {
-        edges.emplace_back(node->getIndex(), node->parent->getIndex());
+        edges.emplace_back(node->parent->getIndex(), node->getIndex());
       }
     });
 
     return edges;
   }
 
- protected:
+ private:
   // Root node pointer
   NodePtr root_node_{nullptr};
   // Target node pointer

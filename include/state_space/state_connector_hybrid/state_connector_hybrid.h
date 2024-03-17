@@ -39,8 +39,8 @@ class StateConnectorHybrid
       StateT>::collision_checker_;
   using state_space::state_connector::StateConnector<StateT>::params_;
 
-  StateConnectorHybrid(const StateSpacePtr& state_space,
-                       HybridModel&& hybrid_model, ConnectorParamsT&& params,
+  StateConnectorHybrid(HybridModel&& hybrid_model, ConnectorParamsT&& params,
+                       const StateSpacePtr& state_space,
                        const CollisionCheckerPtr& collision_checker);
 
   ExpansionResultT expandState(const StateT& current_state,

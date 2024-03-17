@@ -11,7 +11,7 @@ RRTPlugin2D:
   max_expansion_iterations: 100000 # Maximum number of search tree expansions
   max_planning_timeout: 5.0 # Maximum allowed planning time
   sampling_policy: "RGD_SAMPLING" # RGD_SAMPLING
-  search_policy: "RRT" #RRT, BIDIRECTIONAL_RRT, RRT_STAR
+  search_policy: "BIDIRECTIONAL_RRT_STAR" #RRT, BIDIRECTIONAL_RRT, RRT_STAR, BIDIRECTIONAL_RRT_STAR
   RGD:
     increment_step: 0.5 # Increment step for random gradient descent (between 0.0 and 1.0)
     stop_cost: 180 # Stop cost random gradient descent

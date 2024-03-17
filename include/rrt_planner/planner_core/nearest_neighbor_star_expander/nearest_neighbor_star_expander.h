@@ -83,7 +83,7 @@ class NearestNeighborStarExpander
       return new_node;
     }
 
-    // Get near nodes for new node and select parent node for new node among+
+    // Get near nodes for new node and select parent node for new node among
     // them
     NodeVector near_nodes = getNearNodes(new_node->getIndex(), tree);
     NodePtr parent_node = selectBestParent(new_node, near_nodes);

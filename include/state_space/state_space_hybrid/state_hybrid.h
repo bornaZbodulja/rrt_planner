@@ -37,10 +37,11 @@ class StateHybrid : public State<StateHybrid> {
   }
 
   double squaredL2norm() const {
-    const auto d = std::pow(x, 2) + std::pow(y, 2);
+    double d = std::pow(x, 2) + std::pow(y, 2);
+    constexpr double kSwitchThreshold = 1.0;
 
     // TODO: Implement this to be continuous function
-    if (d > 1.0) {
+    if (d > kSwitchThreshold) {
       return d + (1 / d) * std::abs(theta);
     } else {
       return d + std::abs(theta);

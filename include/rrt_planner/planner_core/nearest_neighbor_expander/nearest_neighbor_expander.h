@@ -151,13 +151,14 @@ class NearestNeighborExpander
    */
   NodePtr backTracking(const NodePtr& new_node, const NodePtr& parent_node) {
     NodePtr current_anc = parent_node;
+    bool should_continue{true};
 
-    while (current_anc->parent != nullptr) {
+    while (current_anc->parent != nullptr && should_continue) {
       if (state_connector_->tryConnectStates(current_anc->parent->state,
                                              new_node->state)) {
         current_anc = current_anc->parent;
       } else {
-        break;
+        should_continue = false;
       }
     }
 
@@ -184,4 +185,4 @@ class NearestNeighborExpander
 };
 }  // namespace rrt_planner::planner_core::nearest_neighbor_expander
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_CORE__NEAREST_NEIGHBOR_EXPANDER__NEAREST_NEIGHBOR_EXPANDER_H_

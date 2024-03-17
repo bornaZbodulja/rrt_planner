@@ -56,7 +56,7 @@ createHybridStateConnector(
           nh, collision_checker->getMapResolution());
   return std::make_shared<
       state_space::state_connector_hybrid::StateConnectorHybrid>(
-      state_space, std::move(hybrid_model), std::move(connector_params),
+      std::move(hybrid_model), std::move(connector_params), state_space,
       collision_checker);
 }
 }  // namespace rrt_planner::ros_factory

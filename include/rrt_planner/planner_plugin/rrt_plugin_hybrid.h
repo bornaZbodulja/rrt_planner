@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "rrt_planner/planner_core/planner/planner.h"
+#include "rrt_planner/planner_plugin/map_info.h"
 #include "rrt_planner/visualization_plugin/visualization.h"
 #include "state_space/state_connector/state_connector.h"
 #include "state_space/state_space_hybrid/space_hybrid.h"
@@ -128,6 +129,8 @@ class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
   StateSpaceHybridPtr state_space_;
   // Collision checker pointer
   CollisionCheckerPtr collision_checker_;
+  // Map info
+  MapInfo map_info_;
 };
 }  // namespace rrt_planner::planner_plugin
 

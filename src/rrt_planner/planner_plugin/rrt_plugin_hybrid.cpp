@@ -41,10 +41,16 @@ void RRTPluginHybrid::initialize(std::string name,
 
   collision_checker_ = std::make_shared<CollisionCheckerT>(costmap_ros);
 
+  map_info_ =
+      MapInfo(costmap_ros->getCostmap()->getOriginX(),
+              costmap_ros->getCostmap()->getOriginY(),
+              static_cast<double>(costmap_ros->getCostmap()->getSizeInCellsX()),
+              static_cast<double>(costmap_ros->getCostmap()->getSizeInCellsY()),
+              costmap_ros->getCostmap()->getResolution());
+
   // TODO: Expose bin size as parameter (180)
   SpaceHybrid space_hybrid =
-      SpaceHybrid(collision_checker_->getMapSizeX(),
-                  collision_checker_->getMapSizeY(), 180);
+      SpaceHybrid(map_info_.size.x, map_info_.size.y, 180);
 
   state_space_ = std::make_shared<StateSpaceHybrid>(std::move(space_hybrid));
   StateConnectorHybridPtr state_connector =
@@ -202,9 +208,10 @@ void RRTPluginHybrid::updateVisualization(const PlanT& plan) {
 
 void RRTPluginHybrid::stateHybridToPose(const StateHybrid& state_hybrid,
                                         PoseT& pose) {
-  collision_checker_->mapToWorld(static_cast<unsigned int>(state_hybrid.x),
-                                 static_cast<unsigned int>(state_hybrid.y),
-                                 pose.position.x, pose.position.y);
+  pose.position.x =
+      map_info_.origin.x + map_info_.resolution * (state_hybrid.x + 0.5);
+  pose.position.y =
+      map_info_.origin.y + map_info_.resolution * (state_hybrid.y + 0.5);
   pose.orientation = tf2::toMsg(
       tf2::Quaternion{tf2::Vector3(0, 0, 1),
                       state_space_->getAngleFromBin(

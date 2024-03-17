@@ -14,8 +14,9 @@
 namespace state_space::state_connector_hybrid {
 
 StateConnectorHybrid::StateConnectorHybrid(
-    const StateSpacePtr& state_space, HybridModel&& hybrid_model,
-    ConnectorParamsT&& params, const CollisionCheckerPtr& collision_checker)
+    HybridModel&& hybrid_model, ConnectorParamsT&& params,
+    const StateSpacePtr& state_space,
+    const CollisionCheckerPtr& collision_checker)
     : state_space::state_connector::StateConnector<
           state_space::state_space_hybrid::StateHybrid>(std::move(params),
                                                         collision_checker),

@@ -78,9 +78,7 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
    * @return double
    * TODO: Make this method use double instead of unsigned int
    */
-  double getAngleFromBin(unsigned int bin_idx) {
-    return bin_idx * space_.angle_bin;
-  }
+  double getAngleFromBin(double bin_idx) { return bin_idx * space_.angle_bin; }
 
  protected:
   SpaceHybrid space_;
