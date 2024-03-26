@@ -30,7 +30,6 @@
 #include "rrt_planner/visualization_plugin/visualization.h"
 #include "state_space/state_connector/state_connector.h"
 #include "state_space/state_connector_2d/state_connector_2d.h"
-#include "state_space/state_space_2d/space_2d.h"
 #include "state_space/state_space_2d/state_2d.h"
 #include "state_space/state_space_2d/state_space_2d.h"
 
@@ -38,29 +37,6 @@ namespace rrt_planner::planner_plugin {
 class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
  public:
   using State2D = state_space::state_space_2d::State2D;
-  using State2DVector = std::vector<State2D>;
-  using Space2D = state_space::state_space_2d::Space2D;
-  using StateVector2D = std::vector<State2D>;
-  using StateSpace2D = state_space::state_space_2d::StateSpace2D;
-  using StateSpace2DPtr = std::shared_ptr<StateSpace2D>;
-  using StateConnector2D =
-      state_space::state_connector::StateConnector<State2D>;
-  using StateConnector2DPtr = std::shared_ptr<StateConnector2D>;
-  using RRTPlanner2D = rrt_planner::planner_core::planner::Planner<State2D>;
-  using RRTPlanner2DPtr = std::unique_ptr<RRTPlanner2D>;
-  using VisualizationT = rrt_planner::visualization::Visualization;
-  using VisualizationPtr = std::unique_ptr<VisualizationT>;
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = std::shared_ptr<CollisionCheckerT>;
-  using PoseT = geometry_msgs::Pose;
-  using PoseStampedT = geometry_msgs::PoseStamped;
-  using PlanT = std::vector<PoseStampedT>;
-  using Plan2DT = std::optional<StateVector2D>;
-  using Tree2DT = std::vector<State2DVector>;
-  using Tree2DVector = std::vector<Tree2DT>;
-  using EdgeT = std::vector<PoseT>;
-  using TreeT = std::vector<EdgeT>;
-  using TreeVector = std::vector<TreeT>;
 
   RRTPlugin2D() = default;
 
@@ -80,17 +56,19 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
    * @return true
    * @return false
    */
-  bool makePlan(const PoseStampedT& start, const PoseStampedT& goal,
-                PlanT& plan) override;
+  bool makePlan(const geometry_msgs::PoseStamped& start,
+                const geometry_msgs::PoseStamped& goal,
+                std::vector<geometry_msgs::PoseStamped>& plan) override;
 
  private:
   /**
    * @brief
    * @param start
    * @param goal
-   * @return Plan2DT
+   * @return std::optional<std::vector<State2D>>
    */
-  Plan2DT create2DPlan(const State2D& start, const State2D& goal);
+  std::optional<std::vector<State2D>> create2DPlan(const State2D& start,
+                                                   const State2D& goal);
 
   /**
    * @brief
@@ -99,8 +77,10 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
    * @param goal
    * @param plan
    */
-  void process2DPlan(const StateVector2D& plan_2d, const PoseStampedT& start,
-                     const PoseStampedT& goal, PlanT& plan);
+  void process2DPlan(const std::vector<State2D>& plan_2d,
+                     const geometry_msgs::PoseStamped& start,
+                     const geometry_msgs::PoseStamped& goal,
+                     std::vector<geometry_msgs::PoseStamped>& plan);
 
   void publishVisualization() const { visualization_->publishVisualization(); }
 
@@ -110,27 +90,28 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
    * @brief
    * @param plan
    */
-  void updateVisualization(const PlanT& plan);
+  void updateVisualization(const std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
    * @brief
    * @param state_2d
    * @param pose
    */
-  void state2DToPose(const State2D& state_2d, PoseT& pose);
+  void state2DToPose(const State2D& state_2d, geometry_msgs::Pose& pose);
 
   // Whether planner has already been initialized
   bool initialized_{false};
   // Private node handle
   ros::NodeHandle nh_;
   // Visualization plugin pointer
-  VisualizationPtr visualization_;
+  std::unique_ptr<rrt_planner::visualization::Visualization> visualization_;
   // RRT planner pointer
-  RRTPlanner2DPtr planner_;
+  std::unique_ptr<rrt_planner::planner_core::planner::Planner<State2D>>
+      planner_;
   // 2D state space pointer
-  StateSpace2DPtr state_space_;
+  std::shared_ptr<state_space::state_space_2d::StateSpace2D> state_space_;
   // Collision checker pointer
-  CollisionCheckerPtr collision_checker_;
+  std::shared_ptr<nav_utils::CollisionChecker> collision_checker_;
   // Map info
   MapInfo map_info_;
 };

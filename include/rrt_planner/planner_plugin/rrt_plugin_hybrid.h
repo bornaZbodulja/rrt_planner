@@ -29,7 +29,6 @@
 #include "rrt_planner/planner_plugin/map_info.h"
 #include "rrt_planner/visualization_plugin/visualization.h"
 #include "state_space/state_connector/state_connector.h"
-#include "state_space/state_space_hybrid/space_hybrid.h"
 #include "state_space/state_space_hybrid/state_hybrid.h"
 #include "state_space/state_space_hybrid/state_space_hybrid.h"
 
@@ -37,30 +36,6 @@ namespace rrt_planner::planner_plugin {
 class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
  public:
   using StateHybrid = state_space::state_space_hybrid::StateHybrid;
-  using StateHybridVector = std::vector<StateHybrid>;
-  using SpaceHybrid = state_space::state_space_hybrid::SpaceHybrid;
-  using StateVectorHybrid = std::vector<StateHybrid>;
-  using StateSpaceHybrid = state_space::state_space_hybrid::StateSpaceHybrid;
-  using StateSpaceHybridPtr = std::shared_ptr<StateSpaceHybrid>;
-  using StateConnectorHybrid =
-      state_space::state_connector::StateConnector<StateHybrid>;
-  using StateConnectorHybridPtr = std::shared_ptr<StateConnectorHybrid>;
-  using RRTPlannerHybrid =
-      rrt_planner::planner_core::planner::Planner<StateHybrid>;
-  using RRTPlannerHybridPtr = std::unique_ptr<RRTPlannerHybrid>;
-  using VisualizationT = rrt_planner::visualization::Visualization;
-  using VisualizationPtr = std::unique_ptr<VisualizationT>;
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = std::shared_ptr<CollisionCheckerT>;
-  using PoseT = geometry_msgs::Pose;
-  using PoseStampedT = geometry_msgs::PoseStamped;
-  using PlanT = std::vector<PoseStampedT>;
-  using PlanHybridT = std::optional<StateVectorHybrid>;
-  using TreeHybridT = std::vector<StateHybridVector>;
-  using TreeHybridVector = std::vector<TreeHybridT>;
-  using EdgeT = std::vector<PoseT>;
-  using TreeT = std::vector<EdgeT>;
-  using TreeVector = std::vector<TreeT>;
 
   RRTPluginHybrid() = default;
 
@@ -80,25 +55,27 @@ class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
    * @return true
    * @return false
    */
-  bool makePlan(const PoseStampedT& start, const PoseStampedT& goal,
-                PlanT& plan) override;
+  bool makePlan(const geometry_msgs::PoseStamped& start,
+                const geometry_msgs::PoseStamped& goal,
+                std::vector<geometry_msgs::PoseStamped>& plan) override;
 
  private:
   /**
    * @brief
    * @param start
    * @param goal
-   * @return PlanHybridT
+   * @return std::optional<std::vector<StateHybrid>>
    */
-  PlanHybridT createHybridPlan(const StateHybrid& start,
-                               const StateHybrid& goal);
+  std::optional<std::vector<StateHybrid>> createHybridPlan(
+      const StateHybrid& start, const StateHybrid& goal);
 
   /**
    * @brief
    * @param plan_hybrid
    * @param plan
    */
-  void processHybridPlan(const StateVectorHybrid& plan_hybrid, PlanT& plan);
+  void processHybridPlan(const std::vector<StateHybrid>& plan_hybrid,
+                         std::vector<geometry_msgs::PoseStamped>& plan);
 
   void publishVisualization() const { visualization_->publishVisualization(); }
 
@@ -108,27 +85,30 @@ class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
    * @brief
    * @param plan
    */
-  void updateVisualization(const PlanT& plan);
+  void updateVisualization(const std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
    * @brief
    * @param state_hybrid
    * @param pose
    */
-  void stateHybridToPose(const StateHybrid& state_hybrid, PoseT& pose);
+  void stateHybridToPose(const StateHybrid& state_hybrid,
+                         geometry_msgs::Pose& pose);
 
   // Whether planner has already been initialized
   bool initialized_{false};
   // Private node handle
   ros::NodeHandle nh_;
   // Visualization plugin pointer
-  VisualizationPtr visualization_;
+  std::unique_ptr<rrt_planner::visualization::Visualization> visualization_;
   // RRT planner pointer
-  RRTPlannerHybridPtr planner_;
+  std::unique_ptr<rrt_planner::planner_core::planner::Planner<StateHybrid>>
+      planner_;
   // Hybrid state space pointer
-  StateSpaceHybridPtr state_space_;
+  std::shared_ptr<state_space::state_space_hybrid::StateSpaceHybrid>
+      state_space_;
   // Collision checker pointer
-  CollisionCheckerPtr collision_checker_;
+  std::shared_ptr<nav_utils::CollisionChecker> collision_checker_;
   // Map info
   MapInfo map_info_;
 };
