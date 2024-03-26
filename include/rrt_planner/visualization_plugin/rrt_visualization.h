@@ -12,7 +12,10 @@
 #ifndef RRT_PLANNER__VISUALIZATION_PLUGIN__RRT_VISUALIZATION_H_
 #define RRT_PLANNER__VISUALIZATION_PLUGIN__RRT_VISUALIZATION_H_
 
+#include <geometry_msgs/Pose.h>
 #include <ros/console.h>
+
+#include <vector>
 
 #include "rrt_planner/visualization_plugin/visualization.h"
 #include "rrt_planner/visualization_plugin/visualization_utilities.h"
@@ -20,13 +23,15 @@
 namespace rrt_planner::visualization {
 class RRTVisualization : public Visualization {
  public:
-  using TreeVector = Visualization::TreeVector;
-
   RRTVisualization(ros::NodeHandle* nh) : Visualization(nh) {
     this->tree_vis_->addTreeVisualization(nh, tree_id_, colorGreen());
   }
 
-  void updateSearchTreeVisualization(const TreeVector& trees) override {
+  ~RRTVisualization() override = default;
+
+  void updateSearchTreeVisualization(
+      const std::vector<std::vector<std::vector<geometry_msgs::Pose>>>& trees)
+      override {
     if (trees.size() != 1) {
       ROS_WARN(
           "[RRTVisualization] Given number of search tree to visualize (%d) "
@@ -43,4 +48,4 @@ class RRTVisualization : public Visualization {
 };
 }  // namespace rrt_planner::visualization
 
-#endif // RRT_PLANNER__VISUALIZATION_PLUGIN__RRT_VISUALIZATION_H_
+#endif  // RRT_PLANNER__VISUALIZATION_PLUGIN__RRT_VISUALIZATION_H_

@@ -12,7 +12,7 @@
 #ifndef RRT_PLANNER__VISUALIZATION_PLUGIN__SEARCH_TREE_VISUALIZATION_H_
 #define RRT_PLANNER__VISUALIZATION_PLUGIN__SEARCH_TREE_VISUALIZATION_H_
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
 #include <ros/node_handle.h>
 #include <ros/publisher.h>
 #include <std_msgs/ColorRGBA.h>
@@ -26,13 +26,6 @@
 namespace rrt_planner::visualization {
 class SearchTreeVisualization {
  public:
-  using PoseT = geometry_msgs::Pose;
-  using EdgeT = std::vector<PoseT>;
-  using TreeT = std::vector<EdgeT>;
-  using MarkerT = visualization_msgs::Marker;
-  using MarkerArrayT = visualization_msgs::MarkerArray;
-  using ColorT = std_msgs::ColorRGBA;
-
   /**
    * @brief
    * @param nh
@@ -40,7 +33,7 @@ class SearchTreeVisualization {
    */
   SearchTreeVisualization(ros::NodeHandle* nh,
                           const std::string& tree_identifier,
-                          const ColorT& tree_color);
+                          const std_msgs::ColorRGBA& tree_color);
 
   ~SearchTreeVisualization() = default;
 
@@ -51,14 +44,16 @@ class SearchTreeVisualization {
     publishVisualization();
   }
 
-  void setTree(const TreeT& search_tree);
+  void setTree(
+      const std::vector<std::vector<geometry_msgs::Pose>>& search_tree);
 
  private:
-  MarkerT edgeToMarker(const std::string& edge_id, const EdgeT& edge);
+  visualization_msgs::Marker edgeToMarker(
+      const std::string& edge_id, const std::vector<geometry_msgs::Pose>& edge);
 
   void clearSearchTreeVisualization() {
     std::for_each(tree_.markers.begin(), tree_.markers.end(),
-                  [](MarkerT& marker) {
+                  [](visualization_msgs::Marker& marker) {
                     marker.action = visualization_msgs::Marker::DELETE;
                   });
   }
@@ -68,9 +63,9 @@ class SearchTreeVisualization {
   // Search tree visualization publisher
   ros::Publisher tree_pub_;
   // Visualization of search tree
-  MarkerArrayT tree_;
+  visualization_msgs::MarkerArray tree_;
   // Color of the tree
-  ColorT tree_color_;
+  std_msgs::ColorRGBA tree_color_;
 };
 }  // namespace rrt_planner::visualization
 

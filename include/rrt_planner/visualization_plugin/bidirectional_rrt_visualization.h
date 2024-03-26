@@ -12,8 +12,11 @@
 #ifndef RRT_PLANNER__VISUALIZATION_PLUGIN__BIDIRECTIONAL_RRT_VISUALIZATION_H_
 #define RRT_PLANNER__VISUALIZATION_PLUGIN__BIDIRECTIONAL_RRT_VISUALIZATION_H_
 
+#include <geometry_msgs/Pose.h>
 #include <ros/console.h>
 #include <std_msgs/ColorRGBA.h>
+
+#include <vector>
 
 #include "rrt_planner/visualization_plugin/visualization.h"
 #include "rrt_planner/visualization_plugin/visualization_utilities.h"
@@ -21,20 +24,21 @@
 namespace rrt_planner::visualization {
 class BidirectionalRRTVisualization : public Visualization {
  public:
-  using Visualization::tree_vis_;
-  using TreeVector = Visualization::TreeVector;
-  using ColorT = std_msgs::ColorRGBA;
-
   enum class TreeId { ROOT_TREE = 0, TARGET_TREE = 1 };
 
   BidirectionalRRTVisualization(ros::NodeHandle* nh) : Visualization(nh) {
-    tree_vis_->addTreeVisualization(nh, treeIdToString(TreeId::ROOT_TREE),
-                                    treeColorMapper(TreeId::ROOT_TREE));
-    tree_vis_->addTreeVisualization(nh, treeIdToString(TreeId::TARGET_TREE),
-                                    treeColorMapper(TreeId::TARGET_TREE));
+    this->tree_vis_->addTreeVisualization(nh, treeIdToString(TreeId::ROOT_TREE),
+                                          treeColorMapper(TreeId::ROOT_TREE));
+    this->tree_vis_->addTreeVisualization(nh,
+                                          treeIdToString(TreeId::TARGET_TREE),
+                                          treeColorMapper(TreeId::TARGET_TREE));
   }
 
-  void updateSearchTreeVisualization(const TreeVector& trees) override {
+  ~BidirectionalRRTVisualization() override = default;
+
+  void updateSearchTreeVisualization(
+      const std::vector<std::vector<std::vector<geometry_msgs::Pose>>>& trees)
+      override {
     if (trees.size() != 2) {
       ROS_WARN(
           "[BidirectionalRRTVisualization] Given number of search trees to "
@@ -43,10 +47,10 @@ class BidirectionalRRTVisualization : public Visualization {
       return;
     }
 
-    tree_vis_->setTreeVisualization(treeIdToString(TreeId::ROOT_TREE),
-                                    trees[0]);
-    tree_vis_->setTreeVisualization(treeIdToString(TreeId::TARGET_TREE),
-                                    trees[1]);
+    this->tree_vis_->setTreeVisualization(treeIdToString(TreeId::ROOT_TREE),
+                                          trees[0]);
+    this->tree_vis_->setTreeVisualization(treeIdToString(TreeId::TARGET_TREE),
+                                          trees[1]);
   }
 
  private:
@@ -61,7 +65,7 @@ class BidirectionalRRTVisualization : public Visualization {
     __builtin_unreachable();
   }
 
-  ColorT treeColorMapper(TreeId id) {
+  std_msgs::ColorRGBA treeColorMapper(TreeId id) {
     switch (id) {
       case TreeId::ROOT_TREE:
         return colorGreen();

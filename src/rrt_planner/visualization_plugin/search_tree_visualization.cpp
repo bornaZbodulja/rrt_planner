@@ -17,27 +17,28 @@ namespace rrt_planner::visualization {
 
 SearchTreeVisualization::SearchTreeVisualization(
     ros::NodeHandle* nh, const std::string& tree_identifier,
-    const ColorT& tree_color)
+    const std_msgs::ColorRGBA& tree_color)
     : tree_id_(tree_identifier),
-      tree_pub_(nh->advertise<MarkerArrayT>("search_tree/" + tree_identifier, 1,
-                                            false)),
+      tree_pub_(nh->advertise<visualization_msgs::MarkerArray>(
+          "search_tree/" + tree_identifier, 1, false)),
       tree_color_(tree_color) {}
 
-void SearchTreeVisualization::setTree(const TreeT& search_tree) {
+void SearchTreeVisualization::setTree(
+    const std::vector<std::vector<geometry_msgs::Pose>>& search_tree) {
   tree_.markers.clear();
   tree_.markers.reserve(search_tree.size());
 
   unsigned int idx = 0;
   std::transform(search_tree.cbegin(), search_tree.cend(),
                  std::back_inserter(tree_.markers),
-                 [this, &idx](const EdgeT& edge) {
+                 [this, &idx](const std::vector<geometry_msgs::Pose>& edge) {
                    return edgeToMarker("edge_" + std::to_string(idx++), edge);
                  });
 }
 
-SearchTreeVisualization::MarkerT SearchTreeVisualization::edgeToMarker(
-    const std::string& edge_id, const EdgeT& edge) {
-  MarkerT edge_marker;
+visualization_msgs::Marker SearchTreeVisualization::edgeToMarker(
+    const std::string& edge_id, const std::vector<geometry_msgs::Pose>& edge) {
+  visualization_msgs::Marker edge_marker;
   edge_marker.header = nav_utils::prepareHeader("map");
   edge_marker.ns = tree_id_ + "/" + edge_id;
   edge_marker.type = visualization_msgs::Marker::LINE_STRIP;
@@ -49,7 +50,7 @@ SearchTreeVisualization::MarkerT SearchTreeVisualization::edgeToMarker(
 
   std::transform(edge.cbegin(), edge.cend(),
                  std::back_inserter(edge_marker.points),
-                 [](const PoseT& pose) { return pose.position; });
+                 [](const geometry_msgs::Pose& pose) { return pose.position; });
   return edge_marker;
 }
 }  // namespace rrt_planner::visualization

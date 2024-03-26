@@ -24,16 +24,12 @@
 namespace rrt_planner::visualization {
 class PathVisualization {
  public:
-  using PoseT = geometry_msgs::PoseStamped;
-  using PathT = nav_msgs::Path;
-  using PlanT = std::vector<PoseT>;
-
   /**
    * @brief
    * @param nh
    */
   PathVisualization(ros::NodeHandle* nh)
-      : path_pub_(nh->advertise<PathT>("path", 1, false)) {}
+      : path_pub_(nh->advertise<nav_msgs::Path>("path", 1, false)) {}
 
   ~PathVisualization() = default;
 
@@ -44,7 +40,7 @@ class PathVisualization {
     publishVisualization();
   }
 
-  void setPath(const PlanT& plan) {
+  void setPath(const std::vector<geometry_msgs::PoseStamped>& plan) {
     clearPath();
     if (plan.empty()) {
       return;
@@ -65,7 +61,7 @@ class PathVisualization {
   // Path publisher
   ros::Publisher path_pub_;
   // Visualization of planned path
-  PathT path_;
+  nav_msgs::Path path_;
 };
 }  // namespace rrt_planner::visualization
 
