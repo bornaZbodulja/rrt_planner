@@ -23,10 +23,6 @@ namespace rrt_planner::planner_core::planner_entities {
 template <typename StateT>
 class Node {
  public:
-  using NodePtr = Node*;
-  using NodeVector = std::vector<NodePtr>;
-  using StateVector = std::vector<StateT>;
-
   Node(unsigned int index)
       : parent(nullptr),
         index_(index),
@@ -53,18 +49,18 @@ class Node {
 
   bool operator==(const Node& rhs) const { return index_ == rhs.getIndex(); }
 
-  void rewireNode(const NodePtr& new_parent, double accumulated_cost) {
+  void rewireNode(const Node* new_parent, double accumulated_cost) {
     parent = new_parent;
     accumulated_cost_ = accumulated_cost;
   }
 
   /**
    * @brief Backtracks path to root node
-   * @return NodeVector
+   * @return std::vector<StateT>
    */
-  StateVector backTracePath() {
-    StateVector path;
-    NodePtr current_node = this;
+  std::vector<StateT> backTracePath() {
+    std::vector<StateT> path;
+    Node* current_node = this;
 
     while (current_node != nullptr) {
       path.push_back(current_node->state);
@@ -75,7 +71,7 @@ class Node {
   };
 
   // Parent node
-  NodePtr parent{nullptr};
+  Node* parent{nullptr};
   // State
   StateT state;
 

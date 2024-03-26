@@ -27,13 +27,6 @@ template <typename StateT>
 class Expander {
  public:
   using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
-  using NodePtr = NodeT*;
-  using SearchTreeT =
-      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>;
-  using SearchTreePtr = SearchTreeT*;
-  using SearchGraphT =
-      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>;
-  using SearchGraphPtr = SearchGraphT*;
 
   virtual ~Expander() = default;
 
@@ -42,14 +35,17 @@ class Expander {
    * @param expansion_index
    * @param tree
    * @param graph
-   * @return NodePtr
+   * @return Node
    */
-  virtual NodePtr expandTree(unsigned int expansion_index, SearchTreePtr tree,
-                             SearchGraphPtr graph) = 0;
+  virtual NodeT* expandTree(
+      unsigned int expansion_index,
+      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>* tree,
+      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>*
+          graph) = 0;
 
  protected:
   Expander() = default;
 };
 }  // namespace rrt_planner::planner_core::expander
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_CORE__EXPANDER__EXPANDER_H_

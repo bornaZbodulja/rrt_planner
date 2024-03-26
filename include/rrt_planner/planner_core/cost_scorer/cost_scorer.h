@@ -24,17 +24,13 @@ namespace rrt_planner::planner_core::cost_scorer {
 template <typename StateT>
 class CostScorer {
  public:
-  using StateSpaceT = state_space::StateSpace<StateT>;
-  using StateSpacePtr = std::shared_ptr<StateSpaceT>;
-  using StateConnectorT = state_space::state_connector::StateConnector<StateT>;
-  using StateConnectorPtr = std::shared_ptr<StateConnectorT>;
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = std::shared_ptr<CollisionCheckerT>;
-
-  CostScorer(CostScorerParams&& cost_scorer_params,
-             const StateSpacePtr& state_space,
-             const StateConnectorPtr& state_connector,
-             const CollisionCheckerPtr& collision_checker)
+  CostScorer(
+      CostScorerParams&& cost_scorer_params,
+      const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
+      const std::shared_ptr<
+          state_space::state_connector::StateConnector<StateT>>&
+          state_connector,
+      const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker)
       : params_(std::move(cost_scorer_params)),
         state_space_(state_space),
         state_connector_(state_connector),
@@ -63,11 +59,12 @@ class CostScorer {
   // Cost scoring parameters
   CostScorerParams params_;
   // State space pointer
-  StateSpacePtr state_space_;
+  std::shared_ptr<state_space::StateSpace<StateT>> state_space_;
   // State connector pointer
-  StateConnectorPtr state_connector_;
+  std::shared_ptr<state_space::state_connector::StateConnector<StateT>>
+      state_connector_;
   // Collision checker pointer
-  CollisionCheckerPtr collision_checker_;
+  std::shared_ptr<nav_utils::CollisionChecker> collision_checker_;
 };
 }  // namespace rrt_planner::planner_core::cost_scorer
 

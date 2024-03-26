@@ -16,6 +16,7 @@
 
 #include "rrt_planner/planner_core/cost_scorer/cost_scorer.h"
 #include "rrt_planner/planner_core/expander/expander.h"
+#include "rrt_planner/planner_core/planner_entities/node.h"
 #include "rrt_planner/planner_core/planner_entities/search_graph.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
 #include "state_space/state_connector/state_connector.h"
@@ -30,17 +31,7 @@ template <typename StateT>
 class NearestNeighborExpander
     : public rrt_planner::planner_core::expander::Expander<StateT> {
  public:
-  using ExpanderT = rrt_planner::planner_core::expander::Expander<StateT>;
-  using NodePtr = typename ExpanderT::NodePtr;
-  using StateSpaceT = state_space::StateSpace<StateT>;
-  using StateSpacePtr = std::shared_ptr<StateSpaceT>;
-  using StateConnectorT = state_space::state_connector::StateConnector<StateT>;
-  using StateConnectorPtr = std::shared_ptr<StateConnectorT>;
-  using SearchTreePtr = typename ExpanderT::SearchTreePtr;
-  using SearchGraphPtr = typename ExpanderT::SearchGraphPtr;
-  using CostScorerT =
-      rrt_planner::planner_core::cost_scorer::CostScorer<StateT>;
-  using CostScorerPtr = std::unique_ptr<CostScorerT>;
+  using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
 
   /**
    * @brief Regular expander constructor
@@ -48,10 +39,14 @@ class NearestNeighborExpander
    * @param state_space State space pointer
    * @param state_connector State connector pointer
    */
-  NearestNeighborExpander(CostScorerPtr&& cost_scorer,
-                          const StateSpacePtr& state_space,
-                          const StateConnectorPtr& state_connector)
-      : ExpanderT(),
+  NearestNeighborExpander(
+      std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<
+          StateT>>&& cost_scorer,
+      const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
+      const std::shared_ptr<
+          state_space::state_connector::StateConnector<StateT>>&
+          state_connector)
+      : rrt_planner::planner_core::expander::Expander<StateT>(),
         cost_scorer_(std::move(cost_scorer)),
         state_space_(state_space),
         state_connector_(state_connector) {}
@@ -64,14 +59,17 @@ class NearestNeighborExpander
    * expansion
    * @param tree Search tree pointer
    * @param graph Search graph pointer
-   * @return NodePtr
+   * @return NodeT*
    */
-  NodePtr expandTree(unsigned int expansion_index, SearchTreePtr tree,
-                     SearchGraphPtr graph) override {
+  NodeT* expandTree(
+      unsigned int expansion_index,
+      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>* tree,
+      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>* graph)
+      override {
     // Get closest node(state) to indexed state in state space
-    NodePtr closest_node = tree->getClosestNode(expansion_index);
+    NodeT* closest_node = tree->getClosestNode(expansion_index);
     // Get new node for expansion
-    NodePtr new_node = getNewNode(expansion_index, closest_node, graph);
+    NodeT* new_node = getNewNode(expansion_index, closest_node, graph);
 
     if (new_node == nullptr) {
       return nullptr;
@@ -93,10 +91,12 @@ class NearestNeighborExpander
    * @param expansion_index Given expansion index
    * @param closest_node Closest node pointer
    * @param graph Search graph pointer
-   * @return NodePtr
+   * @return NodeT
    */
-  NodePtr getNewNode(unsigned int expansion_index, const NodePtr& closest_node,
-                     SearchGraphPtr graph) {
+  NodeT* getNewNode(
+      unsigned int expansion_index, const NodeT* closest_node,
+      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>* const
+          graph) {
     if (closest_node == nullptr) {
       return nullptr;
     }
@@ -110,8 +110,7 @@ class NearestNeighborExpander
     }
 
     // Return node which corresponds to new state
-    NodePtr new_node =
-        graph->getNode(state_space_->getIndex(new_state.value()));
+    NodeT* new_node = graph->getNode(state_space_->getIndex(new_state.value()));
     new_node->state = new_state.value();
     return new_node;
   }
@@ -124,7 +123,9 @@ class NearestNeighborExpander
    * @param parent_node Parent node of new node
    * @param tree Search tree pointer
    */
-  void updateNode(NodePtr new_node, NodePtr parent_node, SearchTreePtr tree) {
+  void updateNode(
+      NodeT* new_node, NodeT* parent_node,
+      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>* tree) {
     // Backtrack through closest node ancestors
     parent_node = backTracking(new_node, parent_node);
 
@@ -147,10 +148,10 @@ class NearestNeighborExpander
    * one which yields valid connection to new node as parent
    * @param new_node Newly added node to search tree
    * @param parent_node Current parent node of new node
-   * @return NodePtr
+   * @return NodeT
    */
-  NodePtr backTracking(const NodePtr& new_node, const NodePtr& parent_node) {
-    NodePtr current_anc = parent_node;
+  NodeT* backTracking(NodeT* new_node, NodeT* parent_node) {
+    NodeT* current_anc = parent_node;
     bool should_continue{true};
 
     while (current_anc->parent != nullptr && should_continue) {
@@ -165,8 +166,8 @@ class NearestNeighborExpander
     return current_anc;
   }
 
-  double computeAccumulatedCost(const NodePtr& parent_node,
-                                const NodePtr& child_node) const {
+  double computeAccumulatedCost(const NodeT* parent_node,
+                                const NodeT* child_node) const {
     return parent_node->getAccumulatedCost() +
            getTraversingCost(parent_node->state, child_node->state);
   }
@@ -177,11 +178,13 @@ class NearestNeighborExpander
   }
 
   // Cost scorer pointer
-  CostScorerPtr cost_scorer_;
+  std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>
+      cost_scorer_;
   // State space pointer
-  StateSpacePtr state_space_;
+  std::shared_ptr<state_space::StateSpace<StateT>> state_space_;
   // State connector pointer
-  StateConnectorPtr state_connector_;
+  std::shared_ptr<state_space::state_connector::StateConnector<StateT>>
+      state_connector_;
 };
 }  // namespace rrt_planner::planner_core::nearest_neighbor_expander
 

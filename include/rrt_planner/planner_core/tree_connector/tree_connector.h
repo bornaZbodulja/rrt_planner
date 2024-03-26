@@ -24,10 +24,6 @@ template <typename StateT>
 class TreeConnector {
  public:
   using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
-  using NodePtr = NodeT*;
-  using SearchTreeT =
-      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>;
-  using SearchTreePtr = SearchTreeT*;
 
   virtual ~TreeConnector() = default;
 
@@ -39,8 +35,10 @@ class TreeConnector {
    * @return ConnectionResultT If connection is successful, returns pointer to
    * closest node in second tree, otherwise returns null pointer
    */
-  virtual NodePtr tryConnectTrees(const NodePtr& node,
-                                  const SearchTreePtr& tree) = 0;
+  virtual NodeT* tryConnectTrees(
+      const NodeT* node,
+      const rrt_planner::planner_core::planner_entities::SearchTree<NodeT>*
+          tree) = 0;
 
  protected:
   TreeConnector() = default;

@@ -53,16 +53,10 @@ AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
   int iterations = std::min(connection_params.max_extension_states, intervals);
   std::vector<double> reals;
 
-  ROS_INFO("Start state: %.3f, %.3f, %.3f", start.x, start.y, start.theta);
-  ROS_INFO("Target state: %.3f, %.3f, %.3f", target.x, target.y, target.theta);
-
   for (double i = 1.0; i <= iterations; i++) {
     ompl_state_space_->interpolate(from(), to(), i / intervals, s());
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
-
-    ROS_INFO("Interpolated state: %.3f, %.3f, %.3f", reals[0], reals[1],
-             reals[2]);
 
     if (collision_checker->poseInCollision(
             static_cast<unsigned int>(reals[0]),

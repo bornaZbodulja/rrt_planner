@@ -24,9 +24,6 @@ namespace rrt_planner::planner_core::planner_entities {
 template <typename NodeT>
 class SearchGraph {
  public:
-  using NodePtr = NodeT*;
-  using NodeGraph = std::unordered_map<unsigned int, NodeT>;
-
   SearchGraph() = default;
   ~SearchGraph() = default;
 
@@ -42,9 +39,9 @@ class SearchGraph {
   /**
    * @brief Gets node from graph at given index
    * @param index Given index
-   * @return NodePtr Pointer to node at given index
+   * @return NodeT* Pointer to node at given index
    */
-  NodePtr getNode(unsigned int index) {
+  NodeT* getNode(unsigned int index) {
     auto it = graph_.find(index);
 
     if (it == graph_.end()) {
@@ -56,7 +53,7 @@ class SearchGraph {
   }
 
  private:
-  NodeGraph graph_;
+  std::unordered_map<unsigned int, NodeT> graph_;
 };  // namespace rrt_planner::planner_core
 }  // namespace rrt_planner::planner_core::planner_entities
 

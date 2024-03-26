@@ -18,6 +18,11 @@
 #include "rrt_planner/planner_core/cost_scorer/cost_scorer.h"
 #include "rrt_planner/planner_core/nearest_neighbor_expander/nearest_neighbor_expander.h"
 #include "rrt_planner/planner_core/nearest_neighbor_star_expander/nearest_neighbor_star_expander_params.h"
+#include "rrt_planner/planner_core/planner_entities/node.h"
+#include "rrt_planner/planner_core/planner_entities/search_graph.h"
+#include "rrt_planner/planner_core/planner_entities/search_tree.h"
+#include "state_space/state_connector/state_connector.h"
+#include "state_space/state_space/state_space.h"
 
 namespace rrt_planner::planner_core::nearest_neighbor_star_expander {
 /**
@@ -29,18 +34,9 @@ class NearestNeighborStarExpander
     : public rrt_planner::planner_core::nearest_neighbor_expander::
           NearestNeighborExpander<StateT> {
  public:
+  using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
   using NearestNeighborExpanderT = rrt_planner::planner_core::
       nearest_neighbor_expander::NearestNeighborExpander<StateT>;
-  using NodePtr = typename NearestNeighborExpanderT::NodePtr;
-  using NodeVector = std::vector<NodePtr>;
-  using StateSpacePtr = typename NearestNeighborExpanderT::StateSpacePtr;
-  using StateConnectorPtr =
-      typename NearestNeighborExpanderT::StateConnectorPtr;
-  using SearchTreePtr = typename NearestNeighborExpanderT::SearchTreePtr;
-  using SearchGraphPtr = typename NearestNeighborExpanderT::SearchGraphPtr;
-  using CostScorerT =
-      rrt_planner::planner_core::cost_scorer::CostScorer<StateT>;
-  using CostScorerPtr = std::unique_ptr<CostScorerT>;
 
   /**
    * @brief Star expander constructor
@@ -51,8 +47,13 @@ class NearestNeighborStarExpander
    */
   NearestNeighborStarExpander(
       NearestNeighborStarExpanderParams&& star_expander_params,
-      CostScorerPtr&& cost_scorer, const StateSpacePtr& state_space,
-      const StateConnectorPtr& state_connector)
+      std::unique_ptr<
+          rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>&&
+          cost_scorer,
+      const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
+      const std::shared_ptr<
+          state_space::state_connector::StateConnector<StateT>>&
+          state_connector)
       : NearestNeighborExpanderT(std::move(cost_scorer), state_space,
                                  state_connector),
         star_expander_params_(std::move(star_expander_params)) {}
@@ -64,15 +65,18 @@ class NearestNeighborStarExpander
    * @param expansion_index Given expansion index
    * @param tree Search tree pointer
    * @param graph Search graph pointer
-   * @return NodePtr
+   * @return NodeT*
    */
-  NodePtr expandTree(unsigned int expansion_index, SearchTreePtr tree,
-                     SearchGraphPtr graph) override {
+  NodeT* expandTree(
+      unsigned int expansion_index,
+      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>* tree,
+      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>* graph)
+      override {
     // Get closest node(state) to indexed state in state space
-    NodePtr closest_node = tree->getClosestNode(expansion_index);
+    NodeT* closest_node = tree->getClosestNode(expansion_index);
     // Get new node for expansion
-    NodePtr new_node = NearestNeighborExpanderT::getNewNode(
-        expansion_index, closest_node, graph);
+    NodeT* new_node = NearestNeighborExpanderT::getNewNode(expansion_index,
+                                                           closest_node, graph);
 
     if (new_node == nullptr) {
       return nullptr;
@@ -85,8 +89,8 @@ class NearestNeighborStarExpander
 
     // Get near nodes for new node and select parent node for new node among
     // them
-    NodeVector near_nodes = getNearNodes(new_node->getIndex(), tree);
-    NodePtr parent_node = selectBestParent(new_node, near_nodes);
+    std::vector<NodeT*> near_nodes = getNearNodes(new_node->getIndex(), tree);
+    NodeT* parent_node = selectBestParent(new_node, near_nodes);
 
     // If parent node wasn't found among near nodes, use closest node as parent
     // node
@@ -109,20 +113,20 @@ class NearestNeighborStarExpander
    * node
    * @param child_node Child node
    * @param potential_parents Vector of potential parents
-   * @return NodePtr
+   * @return NodeT*
    */
-  virtual NodePtr selectBestParent(const NodePtr& child_node,
-                                   const NodeVector& potential_parents) {
+  virtual NodeT* selectBestParent(
+      const NodeT* child_node, const std::vector<NodeT*>& potential_parents) {
     if (child_node == nullptr || potential_parents.empty()) {
       return nullptr;
     }
 
-    NodePtr best_parent{nullptr};
+    NodeT* best_parent{nullptr};
     double min_cost{std::numeric_limits<double>::max()};
     double current_cost{0.0};
 
-    std::for_each(potential_parents.cbegin(), potential_parents.cend(),
-                  [&](const NodePtr& potential_parent) {
+    std::for_each(potential_parents.begin(), potential_parents.end(),
+                  [&](NodeT* potential_parent) {
                     current_cost =
                         NearestNeighborExpanderT::computeAccumulatedCost(
                             potential_parent, child_node);
@@ -145,8 +149,8 @@ class NearestNeighborStarExpander
    * @param potential_children Vector of nodes to check if lower cost approach
    * can be made
    */
-  virtual void rewireNodes(const NodePtr& potential_parent,
-                           NodeVector& potential_children) {
+  virtual void rewireNodes(NodeT* potential_parent,
+                           std::vector<NodeT*>& potential_children) {
     if (potential_parent == nullptr || potential_children.empty()) {
       return;
     }
@@ -155,7 +159,7 @@ class NearestNeighborStarExpander
 
     std::for_each(
         potential_children.begin(), potential_children.end(),
-        [&](NodePtr potential_child) {
+        [&](NodeT*& potential_child) {
           new_approach_cost = NearestNeighborExpanderT::computeAccumulatedCost(
               potential_parent, potential_child);
           if (new_approach_cost < potential_child->getAccumulatedCost() &&
@@ -172,10 +176,13 @@ class NearestNeighborStarExpander
    * tree
    * @param index Index(state) for which near nodes are to be found
    * @param tree Search tree pointer
-   * @return NodeVector Vector of near nodes for given index in given search
-   * tree
+   * @return std::vector<NodeT> Vector of near nodes for given index in given
+   * search tree
    */
-  NodeVector getNearNodes(unsigned int index, const SearchTreePtr& tree) const {
+  std::vector<NodeT*> getNearNodes(
+      unsigned int index,
+      const rrt_planner::planner_core::planner_entities::SearchTree<
+          NodeT>* const tree) const {
     return tree->getNearNodes(index, star_expander_params_.near_distance);
   }
 
@@ -184,4 +191,4 @@ class NearestNeighborStarExpander
 };
 }  // namespace rrt_planner::planner_core::nearest_neighbor_star_expander
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_CORE__NEAREST_NEIGHBOR_STAR_EXPANDER__NEAREST_NEIGHBOR_STAR_EXPANDER_H_

@@ -12,10 +12,11 @@
 #ifndef RRT_PLANNER__PLANNER_CORE__NEAREST_NEIGHBOR_TREE_CONNECTOR__NEAREST_NEIGHBOR_TREE_CONNECTOR_H_
 #define RRT_PLANNER__PLANNER_CORE__NEAREST_NEIGHBOR_TREE_CONNECTOR__NEAREST_NEIGHBOR_TREE_CONNECTOR_H_
 
-#include <optional>
 #include <memory>
 
 #include "rrt_planner/planner_core/nearest_neighbor_tree_connector/nearest_neighbor_tree_connector_params.h"
+#include "rrt_planner/planner_core/planner_entities/node.h"
+#include "rrt_planner/planner_core/planner_entities/search_tree.h"
 #include "rrt_planner/planner_core/tree_connector/tree_connector.h"
 #include "state_space/state_connector/state_connector.h"
 
@@ -24,30 +25,29 @@ template <typename StateT>
 class NearestNeighborTreeConnector
     : public rrt_planner::planner_core::tree_connector::TreeConnector<StateT> {
  public:
-  using TreeConnectorT =
-      rrt_planner::planner_core::tree_connector::TreeConnector<StateT>;
-  using NodePtr = typename TreeConnectorT::NodePtr;
-  using SearchTreePtr = typename TreeConnectorT::SearchTreePtr;
-  using StateConnectorT = state_space::state_connector::StateConnector<StateT>;
-  using StateConnectorPtr = std::shared_ptr<StateConnectorT>;
+  using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
 
   NearestNeighborTreeConnector(
       NearestNeighborTreeConnectorParams&& tree_connector_params,
-      const StateConnectorPtr& state_connector)
-      : TreeConnectorT(),
+      const std::shared_ptr<
+          state_space::state_connector::StateConnector<StateT>>&
+          state_connector)
+      : rrt_planner::planner_core::tree_connector::TreeConnector<StateT>(),
         tree_connector_params_(std::move(tree_connector_params)),
         state_connector_(state_connector) {}
 
   ~NearestNeighborTreeConnector() override = default;
 
-  NodePtr tryConnectTrees(const NodePtr& node,
-                          const SearchTreePtr& tree) override {
+  NodeT* tryConnectTrees(
+      const NodeT* node,
+      const rrt_planner::planner_core::planner_entities::SearchTree<NodeT>*
+          tree) override {
     if (node == nullptr) {
       return nullptr;
     }
 
     // Find closest node in the second tree
-    NodePtr closest_node = tree->getClosestNode(node->getIndex());
+    NodeT* closest_node = tree->getClosestNode(node->getIndex());
 
     if (closest_node == nullptr) {
       return nullptr;
@@ -73,7 +73,8 @@ class NearestNeighborTreeConnector
   // Nearest neighbor tree connector parameters
   NearestNeighborTreeConnectorParams tree_connector_params_;
   // State connector pointer
-  StateConnectorPtr state_connector_;
+  std::shared_ptr<state_space::state_connector::StateConnector<StateT>>
+      state_connector_;
 };
 }  // namespace rrt_planner::planner_core::nearest_neighbor_tree_connector
 

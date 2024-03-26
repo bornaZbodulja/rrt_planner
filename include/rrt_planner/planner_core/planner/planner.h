@@ -33,30 +33,13 @@ template <typename StateT>
 class Planner {
  public:
   using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
-  using NodePtr = NodeT*;
-  using StateVector = std::vector<StateT>;
-  using SearchPolicyT = rrt_planner::planner_core::planner::SearchPolicy;
-  using SearchGraphT =
-      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>;
-  using SearchGraphPtr = std::unique_ptr<SearchGraphT>;
-  using TimeoutHandlerT =
-      rrt_planner::planner_core::planner_utilities::TimeoutHandler;
-  using TimeoutHandlerPtr = std::unique_ptr<TimeoutHandlerT>;
-  using PlanningResultT = std::optional<std::vector<StateT>>;
-  using TreeT = std::vector<StateVector>;
-  using TreeVectorT = std::vector<TreeT>;
 
-  virtual ~Planner() {
-    start_ = nullptr;
-    goal_ = nullptr;
-  }
+  virtual ~Planner() = default;
 
   /**
    * @brief Initializes search by clearing memory from previous search
    */
   virtual void initializeSearch() {
-    start_ = nullptr;
-    goal_ = nullptr;
     graph_->clear();
     iterations_counter_ = 0;
   }
@@ -75,29 +58,31 @@ class Planner {
 
   /**
    * @brief Tries to plan a path from setted start to goal
-   * @return PlanningResultT
+   * @return std::optional<std::vector<StateT>>
    */
-  virtual PlanningResultT createPath() = 0;
+  virtual std::optional<std::vector<StateT>> createPath() = 0;
 
   /**
    * @brief Returns search trees for visualization
-   * @return TreeVectorT
+   * @return std::vector<std::vector<StateT>>
    */
-  virtual TreeVectorT getTrees() const = 0;
+  virtual std::vector<std::vector<std::vector<StateT>>> getTrees() const = 0;
 
  protected:
-  Planner(SearchPolicyT search_policy, SearchParams&& search_params)
+  Planner(rrt_planner::planner_core::planner::SearchPolicy search_policy,
+          SearchParams&& search_params)
       : search_params_(std::move(search_params)),
-        graph_(std::make_unique<SearchGraphT>()),
-        timeout_handler_(std::make_unique<TimeoutHandlerT>(
-            search_params_.max_planning_time)),
+        graph_(std::make_unique<rrt_planner::planner_core::planner_entities::
+                                    SearchGraph<NodeT>>()),
+        timeout_handler_(
+            std::make_unique<
+                rrt_planner::planner_core::planner_utilities::TimeoutHandler>(
+                search_params_.max_planning_time)),
         search_policy_(search_policy) {
     graph_->reserve(search_params_.max_expansion_iterations);
   }
 
-  NodePtr getNodeFromGraph(unsigned int index) {
-    return graph_->getNode(index);
-  }
+  NodeT* getNodeFromGraph(unsigned int index) { return graph_->getNode(index); }
 
   void setPlanningStartTime() { timeout_handler_->setStartTime(); }
 
@@ -135,20 +120,19 @@ class Planner {
         getElapsedTime());
   }
 
-  // Start node pointer
-  NodePtr start_{nullptr};
-  // Goal node pointer
-  NodePtr goal_{nullptr};
   // Search parameters
   SearchParams search_params_;
   // Search graph pointer
-  SearchGraphPtr graph_;
+  std::unique_ptr<
+      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>>
+      graph_;
 
  private:
   // Planning timeout handler
-  TimeoutHandlerPtr timeout_handler_;
+  std::unique_ptr<rrt_planner::planner_core::planner_utilities::TimeoutHandler>
+      timeout_handler_;
   // Search policy
-  SearchPolicyT search_policy_;
+  rrt_planner::planner_core::planner::SearchPolicy search_policy_;
   // Planning expansions iterations counter
   int iterations_counter_{0};
 };

@@ -11,21 +11,22 @@
 
 #include "rrt_planner/planner_core/planner_implementations/rrt.h"
 
+#include <functional>
+
 #include "state_space/state_space_2d/state_2d.h"
 #include "state_space/state_space_hybrid/state_hybrid.h"
 
 namespace rrt_planner::planner_core::planner_implementations {
 template <typename StateT>
-typename RRT<StateT>::PlanningResultT RRT<StateT>::createPath() {
+std::optional<std::vector<StateT>> RRT<StateT>::createPath() {
   unsigned int expansion_index;
-  unsigned int target_index = this->goal_->getIndex();
-  NodePtr new_node{nullptr};
+  NodeT* new_node{nullptr};
 
-  PlannerT::setPlanningStartTime();
+  BasePlannerT::setPlanningStartTime();
 
-  while (!PlannerT::planningExpired()) {
+  while (!BasePlannerT::planningExpired()) {
     // 1. Get new index for tree expansion
-    expansion_index = state_sampler_->generateTreeExpansionIndex(target_index);
+    expansion_index = state_sampler_->generateTreeExpansionIndex(goal_index_);
 
     // 2. Extend search tree with new index
     new_node = expander_->expandTree(expansion_index, start_tree_.get(),
@@ -33,54 +34,15 @@ typename RRT<StateT>::PlanningResultT RRT<StateT>::createPath() {
 
     // 3. If expansion was successful, check if new node is target
     if (new_node != nullptr && isGoal(new_node)) {
-      PlannerT::logSuccessfulPathCreation();
-      return std::make_optional<StateVector>(preparePath(new_node));
+      BasePlannerT::logSuccessfulPathCreation();
+      return std::make_optional<std::vector<StateT>>(
+          rrt_planner::planner_core::planner_utilities::
+              backtrackPathFromNodeToRoot(new_node, state_connector_.get()));
     }
   }
 
-  PlannerT::logUnsuccessfulPathCreation();
+  BasePlannerT::logUnsuccessfulPathCreation();
   return std::nullopt;
-}
-
-template <typename StateT>
-typename RRT<StateT>::StateVector RRT<StateT>::preparePath(NodePtr node) {
-  StateVector raw_path = node->backTracePath();
-  std::reverse(raw_path.begin(), raw_path.end());
-
-  if (raw_path.size() < 2) {
-    return raw_path;
-  }
-
-  StateVector interpolated_path, path_segment;
-
-  for (auto first_it = raw_path.begin(),
-            second_it = std::next(raw_path.begin());
-       second_it != raw_path.end(); first_it++, second_it++) {
-    path_segment = state_connector_->connectStates(*first_it, *second_it);
-    std::move(path_segment.begin(), path_segment.end(),
-              std::back_inserter(interpolated_path));
-  }
-
-  return interpolated_path;
-}
-
-template <typename StateT>
-typename RRT<StateT>::TreeT RRT<StateT>::transformSearchTree(
-    const SearchTreePtr& tree) const {
-  TreeT transformed_tree;
-  std::vector<std::pair<unsigned int, unsigned int>> edges =
-      tree->getTreeEdges();
-  transformed_tree.reserve(edges.size());
-
-  std::transform(edges.cbegin(), edges.cend(),
-                 std::back_inserter(transformed_tree),
-                 [this](const std::pair<unsigned int, unsigned int>& edge) {
-                   return state_connector_->connectStates(
-                       state_space_->getState(edge.first),
-                       state_space_->getState(edge.second));
-                 });
-
-  return transformed_tree;
 }
 }  // namespace rrt_planner::planner_core::planner_implementations
 

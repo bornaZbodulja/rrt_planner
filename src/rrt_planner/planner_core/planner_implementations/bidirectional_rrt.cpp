@@ -16,31 +16,27 @@
 
 namespace rrt_planner::planner_core::planner_implementations {
 template <typename StateT>
-typename BidirectionalRRT<StateT>::PlanningResultT
-BidirectionalRRT<StateT>::createPath() {
+std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
   unsigned int expansion_index;
-  unsigned int start_index = this->start_->getIndex();
-  unsigned int goal_index = this->goal_->getIndex();
   bool expanding_start_tree{true};
-  NodePtr new_node{nullptr};
-  NodePtr closest_node{nullptr};
+  NodeT* new_node{nullptr};
+  NodeT* closest_node{nullptr};
 
-  PlannerT::setPlanningStartTime();
+  BasePlannerT::setPlanningStartTime();
 
-  while (!PlannerT::planningExpired()) {
+  while (!BasePlannerT::planningExpired()) {
     // 1. Get new index for tree expansion
     expansion_index =
         expanding_start_tree
-            ? this->state_sampler_->generateTreeExpansionIndex(goal_index)
-            : this->state_sampler_->generateTreeExpansionIndex(start_index);
+            ? state_sampler_->generateTreeExpansionIndex(goal_index_)
+            : state_sampler_->generateTreeExpansionIndex(start_index_);
 
     // 2. Extend search tree with new index
-    new_node =
-        expanding_start_tree
-            ? this->expander_->expandTree(
-                  expansion_index, this->start_tree_.get(), this->graph_.get())
-            : this->expander_->expandTree(expansion_index, goal_tree_.get(),
-                                          this->graph_.get());
+    new_node = expanding_start_tree
+                   ? expander_->expandTree(expansion_index, start_tree_.get(),
+                                           this->graph_.get())
+                   : expander_->expandTree(expansion_index, goal_tree_.get(),
+                                           this->graph_.get());
 
     // 3. If expansion was successful, check if new node can be connected to the
     // other tree
@@ -48,47 +44,50 @@ BidirectionalRRT<StateT>::createPath() {
       closest_node =
           expanding_start_tree
               ? tree_connector_->tryConnectTrees(new_node, goal_tree_.get())
-              : tree_connector_->tryConnectTrees(new_node,
-                                                 this->start_tree_.get());
+              : tree_connector_->tryConnectTrees(new_node, start_tree_.get());
 
       if (closest_node != nullptr) {
-        StateVector path = preparePath(new_node, closest_node);
+        std::vector<StateT> path = preparePath(new_node, closest_node);
 
         if (!expanding_start_tree) {
           std::reverse(path.begin(), path.end());
         }
 
-        PlannerT::logSuccessfulPathCreation();
-        return std::make_optional<StateVector>(path);
+        BasePlannerT::logSuccessfulPathCreation();
+        return std::make_optional<std::vector<StateT>>(path);
       }
-    } 
+    }
 
     // 4. Switch to other tree
     expanding_start_tree = !expanding_start_tree;
   }
 
-  PlannerT::logUnsuccessfulPathCreation();
+  BasePlannerT::logUnsuccessfulPathCreation();
   return std::nullopt;
 }
 
 template <typename StateT>
-typename BidirectionalRRT<StateT>::StateVector
-BidirectionalRRT<StateT>::preparePath(NodePtr node_a, NodePtr node_b) {
-  StateVector current_segment, full_path;
+std::vector<StateT> BidirectionalRRT<StateT>::preparePath(NodeT* node_a,
+                                                          NodeT* node_b) {
+  std::vector<StateT> current_segment, full_path;
 
   // Backtracking to root for first tree
-  current_segment = RRTBaseT::preparePath(node_a);
+  current_segment =
+      rrt_planner::planner_core::planner_utilities::backtrackPathFromNodeToRoot(
+          node_a, state_connector_.get());
   std::move(current_segment.begin(), current_segment.end(),
             std::back_inserter(full_path));
 
   // Connection between trees
   current_segment =
-      this->state_connector_->connectStates(node_a->state, node_b->state);
+      state_connector_->connectStates(node_a->state, node_b->state);
   std::move(current_segment.begin(), current_segment.end(),
             std::back_inserter(full_path));
 
   // Backtracking to root for second tree
-  current_segment = RRTBaseT::preparePath(node_b);
+  current_segment =
+      rrt_planner::planner_core::planner_utilities::backtrackPathFromNodeToRoot(
+          node_b, state_connector_.get());
   std::reverse(current_segment.begin(), current_segment.end());
   std::move(current_segment.begin(), current_segment.end(),
             std::back_inserter(full_path));
