@@ -45,7 +45,7 @@ class NearestNeighborStarExpander
    * @param state_space State space pointer
    * @param state_connector State connector pointer
    */
-  NearestNeighborStarExpander(
+  explicit NearestNeighborStarExpander(
       NearestNeighborStarExpanderParams&& star_expander_params,
       std::unique_ptr<
           rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>&&
@@ -72,19 +72,12 @@ class NearestNeighborStarExpander
       rrt_planner::planner_core::planner_entities::SearchTree<NodeT>* tree,
       rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>* graph)
       override {
-    // Get closest node(state) to indexed state in state space
-    NodeT* closest_node = tree->getClosestNode(expansion_index);
     // Get new node for expansion
-    NodeT* new_node = NearestNeighborExpanderT::getNewNode(expansion_index,
-                                                           closest_node, graph);
+    NodeT* new_node =
+        NearestNeighborExpanderT::expandTree(expansion_index, tree, graph);
 
     if (new_node == nullptr) {
       return nullptr;
-    }
-
-    // If node is visited and not in tree, target is reached
-    if (new_node->isVisited() && !tree->isNodeInTree(new_node)) {
-      return new_node;
     }
 
     // Get near nodes for new node and select parent node for new node among
@@ -92,13 +85,14 @@ class NearestNeighborStarExpander
     std::vector<NodeT*> near_nodes = getNearNodes(new_node->getIndex(), tree);
     NodeT* parent_node = selectBestParent(new_node, near_nodes);
 
-    // If parent node wasn't found among near nodes, use closest node as parent
-    // node
-    if (parent_node == nullptr) {
-      parent_node = closest_node;
+    // If new parent node was found among near nodes, update parent and
+    // accumulated cost for the node
+    if (parent_node != nullptr) {
+      new_node->parent = parent_node;
+      new_node->setAccumulatedCost(
+          NearestNeighborExpanderT::computeAccumulatedCost(parent_node,
+                                                           new_node));
     }
-
-    NearestNeighborExpanderT::updateNode(new_node, parent_node, tree);
 
     if (star_expander_params_.rewire_tree) {
       rewireNodes(new_node, near_nodes);
@@ -107,33 +101,34 @@ class NearestNeighborStarExpander
     return new_node;
   }
 
- protected:
+ private:
   /**
-   * @brief Chooses parent which yields lowest accumulated cost towards child
-   * node
+   * @brief Selects parent which yields lowest accumulated cost towards child
+   * node, if none of the parents can yield lower cost than current, nullptr is
+   * returned
    * @param child_node Child node
    * @param potential_parents Vector of potential parents
    * @return NodeT*
    */
-  virtual NodeT* selectBestParent(
-      const NodeT* child_node, const std::vector<NodeT*>& potential_parents) {
+  NodeT* selectBestParent(const NodeT* child_node,
+                          const std::vector<NodeT*>& potential_parents) {
     if (child_node == nullptr || potential_parents.empty()) {
       return nullptr;
     }
 
     NodeT* best_parent{nullptr};
-    double min_cost{std::numeric_limits<double>::max()};
-    double current_cost{0.0};
+    double new_approach_cost{std::numeric_limits<double>::max()};
+    double current_cost{child_node->getAccumulatedCost()};
 
     std::for_each(potential_parents.begin(), potential_parents.end(),
                   [&](NodeT* potential_parent) {
-                    current_cost =
+                    new_approach_cost =
                         NearestNeighborExpanderT::computeAccumulatedCost(
                             potential_parent, child_node);
-                    if (current_cost < min_cost &&
+                    if (new_approach_cost < current_cost &&
                         this->state_connector_->tryConnectStates(
                             potential_parent->state, child_node->state)) {
-                      min_cost = current_cost;
+                      current_cost = new_approach_cost;
                       best_parent = potential_parent;
                     }
                   });
@@ -149,8 +144,8 @@ class NearestNeighborStarExpander
    * @param potential_children Vector of nodes to check if lower cost approach
    * can be made
    */
-  virtual void rewireNodes(NodeT* potential_parent,
-                           std::vector<NodeT*>& potential_children) {
+  void rewireNodes(NodeT* potential_parent,
+                   std::vector<NodeT*>& potential_children) {
     if (potential_parent == nullptr || potential_children.empty()) {
       return;
     }

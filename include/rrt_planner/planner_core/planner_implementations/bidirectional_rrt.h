@@ -19,11 +19,12 @@
 #include <vector>
 
 #include "rrt_planner/planner_core/expander/expander.h"
-#include "rrt_planner/planner_core/planner/planner.h"
-#include "rrt_planner/planner_core/planner/search_params.h"
-#include "rrt_planner/planner_core/planner/search_policy.h"
 #include "rrt_planner/planner_core/planner_entities/node.h"
+#include "rrt_planner/planner_core/planner_entities/search_graph.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
+#include "rrt_planner/planner_core/planner_implementations/rrt_core.h"
+#include "rrt_planner/planner_core/planner_implementations/search_params.h"
+#include "rrt_planner/planner_core/planner_implementations/search_policy.h"
 #include "rrt_planner/planner_core/planner_utilities/entities_utilities.h"
 #include "rrt_planner/planner_core/tree_connector/tree_connector.h"
 #include "state_space/state_connector/state_connector.h"
@@ -32,17 +33,17 @@
 
 namespace rrt_planner::planner_core::planner_implementations {
 template <typename StateT>
-class BidirectionalRRT
-    : public rrt_planner::planner_core::planner::Planner<StateT> {
+class BidirectionalRRT : public RRTCore<StateT> {
  public:
-  using BasePlannerT = rrt_planner::planner_core::planner::Planner<StateT>;
   using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
   using SearchTreeT =
       rrt_planner::planner_core::planner_entities::SearchTree<NodeT>;
 
   BidirectionalRRT(
-      rrt_planner::planner_core::planner::SearchPolicy search_policy,
-      rrt_planner::planner_core::planner::SearchParams&& search_params,
+      rrt_planner::planner_core::planner_implementations::SearchPolicy
+          search_policy,
+      rrt_planner::planner_core::planner_implementations::SearchParams&&
+          search_params,
       const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
       const std::shared_ptr<
           state_space::state_connector::StateConnector<StateT>>&
@@ -54,18 +55,21 @@ class BidirectionalRRT
           tree_connector,
       std::unique_ptr<state_space::state_sampler::StateSampler<StateT>>&&
           state_sampler)
-      : BasePlannerT(search_policy, std::move(search_params)),
+      : RRTCore<StateT>(search_policy, std::move(search_params)),
         state_space_(state_space),
         state_connector_(state_connector),
         expander_(std::move(expander)),
         tree_connector_(std::move(tree_connector)),
         state_sampler_(std::move(state_sampler)),
+        graph_(std::make_unique<rrt_planner::planner_core::planner_entities::
+                                    SearchGraph<NodeT>>()),
         start_tree_(
             rrt_planner::planner_core::planner_utilities::createSearchTree<
                 StateT>(state_space_.get())),
         goal_tree_(
             rrt_planner::planner_core::planner_utilities::createSearchTree<
                 StateT>(state_space_.get())) {
+    graph_->reserve(this->search_params_.max_expansion_iterations);
     start_tree_->reserve(this->search_params_.max_expansion_iterations);
     goal_tree_->reserve(this->search_params_.max_expansion_iterations);
   }
@@ -73,7 +77,8 @@ class BidirectionalRRT
   ~BidirectionalRRT() override = default;
 
   void initializeSearch() override {
-    BasePlannerT::initializeSearch();
+    RRTCore<StateT>::initializeSearch();
+    graph_->clear();
     start_tree_->clear();
     goal_tree_->clear();
     start_index_ = std::numeric_limits<unsigned int>::max();
@@ -81,8 +86,7 @@ class BidirectionalRRT
   }
 
   void setStart(const StateT& start_state) override {
-    NodeT* start =
-        BasePlannerT::getNodeFromGraph(state_space_->getIndex(start_state));
+    NodeT* start = graph_->getNode(state_space_->getIndex(start_state));
     start->state = start_state;
     start->setAccumulatedCost(0.0);
     start->visited();
@@ -92,8 +96,7 @@ class BidirectionalRRT
   }
 
   void setGoal(const StateT& goal_state) override {
-    NodeT* goal =
-        BasePlannerT::getNodeFromGraph(state_space_->getIndex(goal_state));
+    NodeT* goal = graph_->getNode(state_space_->getIndex(goal_state));
     goal->state = goal_state;
     goal->setAccumulatedCost(0.0);
     goal->visited();
@@ -111,7 +114,7 @@ class BidirectionalRRT
                 goal_tree_.get(), state_space_.get(), state_connector_.get())};
   }
 
- protected:
+ private:
   /**
    * @brief Backtraces path from given tree nodes to root tree nodes and creates
    * creates connection between trees
@@ -136,12 +139,14 @@ class BidirectionalRRT
   // State sampler pointer
   std::unique_ptr<state_space::state_sampler::StateSampler<StateT>>
       state_sampler_;
+  // Search graph pointer
+  std::unique_ptr<
+      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>>
+      graph_;
   // Start search tree pointer
   std::unique_ptr<SearchTreeT> start_tree_;
   // Goal search tree pointer
-  std::unique_ptr<
-      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>>
-      goal_tree_;
+  std::unique_ptr<SearchTreeT> goal_tree_;
   // Start index
   unsigned int start_index_{std::numeric_limits<unsigned int>::max()};
   // Goal index

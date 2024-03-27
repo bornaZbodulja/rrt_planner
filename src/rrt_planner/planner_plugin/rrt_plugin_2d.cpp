@@ -20,7 +20,7 @@
 
 #include "rrt_planner/param_loader/sampling_policy_loader.h"
 #include "rrt_planner/param_loader/search_policy_loader.h"
-#include "rrt_planner/planner_core/planner/search_policy.h"
+#include "rrt_planner/planner_core/planner_implementations/search_policy.h"
 #include "rrt_planner/ros_factory/ros_planner_factory.h"
 #include "rrt_planner/ros_factory/ros_state_connector_factory.h"
 #include "rrt_planner/visualization_factory/visualization_factory.h"
@@ -57,8 +57,8 @@ void RRTPlugin2D::initialize(std::string name,
   state_space_ = std::make_shared<state_space::state_space_2d::StateSpace2D>(
       std::move(space_2d));
 
-  rrt_planner::planner_core::planner::SearchPolicy search_policy =
-      rrt_planner::param_loader::loadSearchPolicy(&nh_);
+  rrt_planner::planner_core::planner_implementations::SearchPolicy
+      search_policy = rrt_planner::param_loader::loadSearchPolicy(&nh_);
   state_space::state_sampler::SamplingPolicy sampling_policy =
       rrt_planner::param_loader::loadSamplingPolicy(&nh_);
   std::shared_ptr<state_space::state_connector::StateConnector<State2D>>

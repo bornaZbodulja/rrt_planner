@@ -36,21 +36,21 @@ class CostScorer {
         state_connector_(state_connector),
         collision_checker_(collision_checker) {}
 
-  virtual ~CostScorer() = default;
+  ~CostScorer() = default;
 
-  virtual double operator()(const StateT& parent_state,
+  double operator()(const StateT& parent_state,
                             const StateT& child_state) const {
     return computeStateCost(child_state) +
            computeTraversalCost(parent_state, child_state);
   }
 
- protected:
-  virtual double computeStateCost(const StateT& state) const {
+ private:
+  double computeStateCost(const StateT& state) const {
     return params_.cost_penalty *
            state_space_->getStateCost(state, collision_checker_.get());
   }
 
-  virtual double computeTraversalCost(const StateT& parent_state,
+  double computeTraversalCost(const StateT& parent_state,
                                       const StateT& child_state) const {
     return params_.traversal_penalty *
            state_connector_->getStatesDistance(parent_state, child_state);

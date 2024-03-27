@@ -13,14 +13,15 @@
 #define RRT_PLANNER__PARAM_LOADER__SEARCH_PARAMS_LOADER_H_
 
 #include "rrt_planner/param_loader/param_loader.h"
-#include "rrt_planner/planner_core/planner/search_params.h"
-#include "rrt_planner/planner_core/planner/search_policy.h"
+#include "rrt_planner/planner_core/planner_implementations/search_params.h"
+#include "rrt_planner/planner_core/planner_implementations/search_policy.h"
 
 namespace rrt_planner::param_loader {
 
-inline rrt_planner::planner_core::planner::SearchParams loadSearchParams(
-    ros::NodeHandle* nh) {
-  rrt_planner::planner_core::planner::SearchParams search_params;
+inline rrt_planner::planner_core::planner_implementations::SearchParams
+loadSearchParams(ros::NodeHandle* nh) {
+  rrt_planner::planner_core::planner_implementations::SearchParams
+      search_params;
   loadParam<int>(nh, "max_expansion_iterations",
                  search_params.max_expansion_iterations);
   loadParam<double>(nh, "max_planning_timeout",

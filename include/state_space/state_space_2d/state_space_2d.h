@@ -56,7 +56,7 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
                                       static_cast<unsigned int>(state.y));
   }
 
- protected:
+ private:
   Space2D space_;
 };
 

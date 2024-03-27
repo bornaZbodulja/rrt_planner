@@ -39,7 +39,7 @@ class NearestNeighborExpander
    * @param state_space State space pointer
    * @param state_connector State connector pointer
    */
-  NearestNeighborExpander(
+  explicit NearestNeighborExpander(
       std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<
           StateT>>&& cost_scorer,
       const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
@@ -85,7 +85,7 @@ class NearestNeighborExpander
     return new_node;
   }
 
- protected:
+ private:
   /**
    * @brief Generates new node for expansion based on expansion index
    * @param expansion_index Given expansion index
@@ -166,15 +166,16 @@ class NearestNeighborExpander
     return current_anc;
   }
 
+  double getTraversingCost(const StateT& parent_state,
+                           const StateT& child_state) const {
+    return (*cost_scorer_)(parent_state, child_state);
+  }
+
+ protected:
   double computeAccumulatedCost(const NodeT* parent_node,
                                 const NodeT* child_node) const {
     return parent_node->getAccumulatedCost() +
            getTraversingCost(parent_node->state, child_node->state);
-  }
-
-  double getTraversingCost(const StateT& parent_state,
-                           const StateT& child_state) const {
-    return (*cost_scorer_)(parent_state, child_state);
   }
 
   // Cost scorer pointer

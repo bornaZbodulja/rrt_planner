@@ -80,7 +80,7 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
     return bin_idx * space_.angle_bin;
   }
 
- protected:
+ private:
   SpaceHybrid space_;
 };
 

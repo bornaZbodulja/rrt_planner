@@ -1,7 +1,7 @@
 /**
  * @file search_policy.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief Defines possible search policies for planner
+ * @brief Defines possible search policies for RRT planner
  * @version 0.1
  * @date 2023-09-25
  *
@@ -9,14 +9,14 @@
  *
  */
 
-#ifndef RRT_PLANNER__PLANNER_CORE__PLANNER__SEARCH_POLICY_H_
-#define RRT_PLANNER__PLANNER_CORE__PLANNER__SEARCH_POLICY_H_
+#ifndef RRT_PLANNER__PLANNER_CORE__PLANNER_IMPLEMENTATIONS__SEARCH_POLICY_H_
+#define RRT_PLANNER__PLANNER_CORE__PLANNER_IMPLEMENTATIONS__SEARCH_POLICY_H_
 
 #include <string>
 
-namespace rrt_planner::planner_core::planner {
+namespace rrt_planner::planner_core::planner_implementations {
 /**
- * @brief Representation of possible search policies for planner
+ * @brief Representation of possible search policies for RRT planner
  */
 enum class SearchPolicy {
   UNKNOWN = 0,
@@ -54,6 +54,6 @@ inline SearchPolicy searchPolicyFromString(const std::string& search_policy) {
     return SearchPolicy::UNKNOWN;
   }
 }
-}  // namespace rrt_planner::planner_core::planner
+}  // namespace rrt_planner::planner_core::planner_implementations
 
-#endif  // RRT_PLANNER__PLANNER_CORE__PLANNER__SEARCH_POLICY_H_
+#endif  // RRT_PLANNER__PLANNER_CORE__PLANNER_IMPLEMENTATIONS__SEARCH_POLICY_H_

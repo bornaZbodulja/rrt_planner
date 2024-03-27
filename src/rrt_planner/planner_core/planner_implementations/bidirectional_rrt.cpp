@@ -22,9 +22,9 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
   NodeT* new_node{nullptr};
   NodeT* closest_node{nullptr};
 
-  BasePlannerT::setPlanningStartTime();
+  RRTCore<StateT>::setPlanningStartTime();
 
-  while (!BasePlannerT::planningExpired()) {
+  while (!RRTCore<StateT>::planningExpired()) {
     // 1. Get new index for tree expansion
     expansion_index =
         expanding_start_tree
@@ -34,9 +34,9 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
     // 2. Extend search tree with new index
     new_node = expanding_start_tree
                    ? expander_->expandTree(expansion_index, start_tree_.get(),
-                                           this->graph_.get())
+                                           graph_.get())
                    : expander_->expandTree(expansion_index, goal_tree_.get(),
-                                           this->graph_.get());
+                                           graph_.get());
 
     // 3. If expansion was successful, check if new node can be connected to the
     // other tree
@@ -53,7 +53,7 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
           std::reverse(path.begin(), path.end());
         }
 
-        BasePlannerT::logSuccessfulPathCreation();
+        RRTCore<StateT>::logSuccessfulPathCreation();
         return std::make_optional<std::vector<StateT>>(path);
       }
     }
@@ -62,7 +62,7 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
     expanding_start_tree = !expanding_start_tree;
   }
 
-  BasePlannerT::logUnsuccessfulPathCreation();
+  RRTCore<StateT>::logUnsuccessfulPathCreation();
   return std::nullopt;
 }
 

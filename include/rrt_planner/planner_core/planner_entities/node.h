@@ -75,7 +75,7 @@ class Node {
   // State
   StateT state;
 
- protected:
+ private:
   // Index of node in state space
   unsigned int index_;
   // Whether node was initialized

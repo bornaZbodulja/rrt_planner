@@ -22,13 +22,13 @@
 #include "rrt_planner/planner_core/nearest_neighbor_star_expander/nearest_neighbor_star_expander_params.h"
 #include "rrt_planner/planner_core/nearest_neighbor_tree_connector/nearest_neighbor_tree_connector_params.h"
 #include "rrt_planner/planner_core/planner/planner.h"
-#include "rrt_planner/planner_core/planner/search_params.h"
-#include "rrt_planner/planner_core/planner/search_policy.h"
 #include "rrt_planner/planner_core/planner_factory/cost_scorer_factory.h"
 #include "rrt_planner/planner_core/planner_factory/expander_factory.h"
 #include "rrt_planner/planner_core/planner_factory/tree_connector_factory.h"
 #include "rrt_planner/planner_core/planner_implementations/bidirectional_rrt.h"
 #include "rrt_planner/planner_core/planner_implementations/rrt.h"
+#include "rrt_planner/planner_core/planner_implementations/search_params.h"
+#include "rrt_planner/planner_core/planner_implementations/search_policy.h"
 #include "rrt_planner/planner_core/tree_connector/tree_connector.h"
 #include "state_space/state_connector/state_connector.h"
 #include "state_space/state_sampler/state_sampler.h"
@@ -39,7 +39,8 @@ namespace rrt_planner::planner_core::planner_factory {
 template <typename StateT>
 std::unique_ptr<rrt_planner::planner_core::planner::Planner<StateT>>
 createRRTPlanner(
-    rrt_planner::planner_core::planner::SearchParams&& search_params,
+    rrt_planner::planner_core::planner_implementations::SearchParams&&
+        search_params,
     rrt_planner::planner_core::cost_scorer::CostScorerParams&&
         cost_scorer_params,
     const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
@@ -55,7 +56,7 @@ createRRTPlanner(
           state_space, state_connector);
   return std::make_unique<
       rrt_planner::planner_core::planner_implementations::RRT<StateT>>(
-      rrt_planner::planner_core::planner::SearchPolicy::RRT,
+      rrt_planner::planner_core::planner_implementations::SearchPolicy::RRT,
       std::move(search_params), state_space, state_connector,
       std::move(expander), std::move(state_sampler));
 }
@@ -63,7 +64,8 @@ createRRTPlanner(
 template <typename StateT>
 std::unique_ptr<rrt_planner::planner_core::planner::Planner<StateT>>
 createRRTStarPlanner(
-    rrt_planner::planner_core::planner::SearchParams&& search_params,
+    rrt_planner::planner_core::planner_implementations::SearchParams&&
+        search_params,
     rrt_planner::planner_core::cost_scorer::CostScorerParams&&
         cost_scorer_params,
     rrt_planner::planner_core::nearest_neighbor_star_expander::
@@ -82,7 +84,8 @@ createRRTStarPlanner(
           state_space, state_connector);
   return std::make_unique<
       rrt_planner::planner_core::planner_implementations::RRT<StateT>>(
-      rrt_planner::planner_core::planner::SearchPolicy::RRT_STAR,
+      rrt_planner::planner_core::planner_implementations::SearchPolicy::
+          RRT_STAR,
       std::move(search_params), state_space, state_connector,
       std::move(expander), std::move(state_sampler));
 }
@@ -90,7 +93,8 @@ createRRTStarPlanner(
 template <typename StateT>
 std::unique_ptr<rrt_planner::planner_core::planner::Planner<StateT>>
 createBidirectionalRRTPlanner(
-    rrt_planner::planner_core::planner::SearchParams&& search_params,
+    rrt_planner::planner_core::planner_implementations::SearchParams&&
+        search_params,
     rrt_planner::planner_core::cost_scorer::CostScorerParams&&
         cost_scorer_params,
     rrt_planner::planner_core::nearest_neighbor_tree_connector::
@@ -112,7 +116,8 @@ createBidirectionalRRTPlanner(
           std::move(tree_connector_params), state_connector);
   return std::make_unique<rrt_planner::planner_core::planner_implementations::
                               BidirectionalRRT<StateT>>(
-      rrt_planner::planner_core::planner::SearchPolicy::BIDIRECTIONAL_RRT,
+      rrt_planner::planner_core::planner_implementations::SearchPolicy::
+          BIDIRECTIONAL_RRT,
       std::move(search_params), state_space, state_connector,
       std::move(expander), std::move(tree_connector), std::move(state_sampler));
 }
@@ -120,7 +125,8 @@ createBidirectionalRRTPlanner(
 template <typename StateT>
 std::unique_ptr<rrt_planner::planner_core::planner::Planner<StateT>>
 createBidirectionalRRTStarPlanner(
-    rrt_planner::planner_core::planner::SearchParams&& search_params,
+    rrt_planner::planner_core::planner_implementations::SearchParams&&
+        search_params,
     rrt_planner::planner_core::cost_scorer::CostScorerParams&&
         cost_scorer_params,
     rrt_planner::planner_core::nearest_neighbor_star_expander::
@@ -145,7 +151,8 @@ createBidirectionalRRTStarPlanner(
           std::move(tree_connector_params), state_connector);
   return std::make_unique<rrt_planner::planner_core::planner_implementations::
                               BidirectionalRRT<StateT>>(
-      rrt_planner::planner_core::planner::SearchPolicy::BIDIRECTIONAL_RRT_STAR,
+      rrt_planner::planner_core::planner_implementations::SearchPolicy::
+          BIDIRECTIONAL_RRT_STAR,
       std::move(search_params), state_space, state_connector,
       std::move(expander), std::move(tree_connector), std::move(state_sampler));
 }

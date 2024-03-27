@@ -22,9 +22,9 @@
 #include "rrt_planner/param_loader/nearest_neighbor_tree_connector_params_loader.h"
 #include "rrt_planner/param_loader/search_params_loader.h"
 #include "rrt_planner/planner_core/planner/planner.h"
-#include "rrt_planner/planner_core/planner/search_params.h"
-#include "rrt_planner/planner_core/planner/search_policy.h"
 #include "rrt_planner/planner_core/planner_factory/planner_factory.h"
+#include "rrt_planner/planner_core/planner_implementations/search_params.h"
+#include "rrt_planner/planner_core/planner_implementations/search_policy.h"
 #include "rrt_planner/ros_factory/ros_state_sampler_factory.h"
 #include "state_space/state_connector/state_connector.h"
 #include "state_space/state_sampler/sampling_policy.h"
@@ -36,14 +36,15 @@ template <typename StateT>
 std::unique_ptr<rrt_planner::planner_core::planner::Planner<StateT>>
 createPlanner(
     ros::NodeHandle* nh,
-    rrt_planner::planner_core::planner::SearchPolicy search_policy,
+    rrt_planner::planner_core::planner_implementations::SearchPolicy
+        search_policy,
     state_space::state_sampler::SamplingPolicy sampling_policy,
     const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
     const std::shared_ptr<state_space::state_connector::StateConnector<StateT>>&
         state_connector,
     const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker) {
-  rrt_planner::planner_core::planner::SearchParams search_params =
-      rrt_planner::param_loader::loadSearchParams(nh);
+  rrt_planner::planner_core::planner_implementations::SearchParams
+      search_params = rrt_planner::param_loader::loadSearchParams(nh);
   rrt_planner::planner_core::cost_scorer::CostScorerParams cost_scorer_params =
       rrt_planner::param_loader::loadCostScorerParams(nh);
   std::unique_ptr<state_space::state_sampler::StateSampler<StateT>>
@@ -51,11 +52,12 @@ createPlanner(
           nh, sampling_policy, state_space, collision_checker);
 
   switch (search_policy) {
-    case rrt_planner::planner_core::planner::SearchPolicy::RRT:
+    case rrt_planner::planner_core::planner_implementations::SearchPolicy::RRT:
       return rrt_planner::planner_core::planner_factory::createRRTPlanner(
           std::move(search_params), std::move(cost_scorer_params), state_space,
           state_connector, std::move(state_sampler), collision_checker);
-    case rrt_planner::planner_core::planner::SearchPolicy::RRT_STAR: {
+    case rrt_planner::planner_core::planner_implementations::SearchPolicy::
+        RRT_STAR: {
       rrt_planner::planner_core::nearest_neighbor_star_expander::
           NearestNeighborStarExpanderParams
               nearest_neighbor_star_expander_params =
@@ -66,7 +68,8 @@ createPlanner(
           std::move(nearest_neighbor_star_expander_params), state_space,
           state_connector, std::move(state_sampler), collision_checker);
     }
-    case rrt_planner::planner_core::planner::SearchPolicy::BIDIRECTIONAL_RRT: {
+    case rrt_planner::planner_core::planner_implementations::SearchPolicy::
+        BIDIRECTIONAL_RRT: {
       rrt_planner::planner_core::nearest_neighbor_tree_connector::
           NearestNeighborTreeConnectorParams
               nearest_neighbor_tree_connector_params = rrt_planner::
@@ -78,7 +81,7 @@ createPlanner(
               std::move(nearest_neighbor_tree_connector_params), state_space,
               state_connector, std::move(state_sampler), collision_checker);
     }
-    case rrt_planner::planner_core::planner::SearchPolicy::
+    case rrt_planner::planner_core::planner_implementations::SearchPolicy::
         BIDIRECTIONAL_RRT_STAR: {
       rrt_planner::planner_core::nearest_neighbor_tree_connector::
           NearestNeighborTreeConnectorParams

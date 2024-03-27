@@ -22,26 +22,26 @@ std::optional<std::vector<StateT>> RRT<StateT>::createPath() {
   unsigned int expansion_index;
   NodeT* new_node{nullptr};
 
-  BasePlannerT::setPlanningStartTime();
+  RRTCore<StateT>::setPlanningStartTime();
 
-  while (!BasePlannerT::planningExpired()) {
+  while (!RRTCore<StateT>::planningExpired()) {
     // 1. Get new index for tree expansion
     expansion_index = state_sampler_->generateTreeExpansionIndex(goal_index_);
 
     // 2. Extend search tree with new index
-    new_node = expander_->expandTree(expansion_index, start_tree_.get(),
-                                     this->graph_.get());
+    new_node =
+        expander_->expandTree(expansion_index, start_tree_.get(), graph_.get());
 
     // 3. If expansion was successful, check if new node is target
     if (new_node != nullptr && isGoal(new_node)) {
-      BasePlannerT::logSuccessfulPathCreation();
+      RRTCore<StateT>::logSuccessfulPathCreation();
       return std::make_optional<std::vector<StateT>>(
           rrt_planner::planner_core::planner_utilities::
               backtrackPathFromNodeToRoot(new_node, state_connector_.get()));
     }
   }
 
-  BasePlannerT::logUnsuccessfulPathCreation();
+  RRTCore<StateT>::logUnsuccessfulPathCreation();
   return std::nullopt;
 }
 }  // namespace rrt_planner::planner_core::planner_implementations

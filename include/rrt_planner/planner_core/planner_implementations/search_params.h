@@ -9,10 +9,10 @@
  *
  */
 
-#ifndef RRT_PLANNER__PLANNER_CORE__SEARCH_PARAMS_H_
-#define RRT_PLANNER__PLANNER_CORE__SEARCH_PARAMS_H_
+#ifndef RRT_PLANNER__PLANNER_CORE__PLANNER_IMPLEMENTATIONS__SEARCH_PARAMS_H_
+#define RRT_PLANNER__PLANNER_CORE__PLANNER_IMPLEMENTATIONS__SEARCH_PARAMS_H_
 
-namespace rrt_planner::planner_core::planner {
+namespace rrt_planner::planner_core::planner_implementations {
 /**
  * @brief Representation of planning search parameters
  */
@@ -22,7 +22,6 @@ struct SearchParams {
   // Maximum allowed planning time
   double max_planning_time{0.0};
 };
+}  // namespace rrt_planner::planner_core::planner_implementations
 
-}  // namespace rrt_planner::planner_core
-
-#endif
+#endif  // RRT_PLANNER__PLANNER_CORE__PLANNER_IMPLEMENTATIONS__SEARCH_PARAMS_H_

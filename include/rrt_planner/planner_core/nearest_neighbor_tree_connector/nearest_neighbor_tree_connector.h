@@ -69,7 +69,7 @@ class NearestNeighborTreeConnector
     return closest_node;
   }
 
- protected:
+ private:
   // Nearest neighbor tree connector parameters
   NearestNeighborTreeConnectorParams tree_connector_params_;
   // State connector pointer
