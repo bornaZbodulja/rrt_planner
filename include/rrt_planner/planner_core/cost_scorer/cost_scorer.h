@@ -24,7 +24,7 @@ namespace rrt_planner::planner_core::cost_scorer {
 template <typename StateT>
 class CostScorer {
  public:
-  CostScorer(
+  explicit CostScorer(
       CostScorerParams&& cost_scorer_params,
       const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
       const std::shared_ptr<

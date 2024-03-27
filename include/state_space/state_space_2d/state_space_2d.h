@@ -23,9 +23,6 @@
 namespace state_space::state_space_2d {
 class StateSpace2D : public state_space::StateSpace<State2D> {
  public:
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = CollisionCheckerT*;
-
   StateSpace2D(Space2D&& space_in) : space_(std::move(space_in)) {}
   StateSpace2D(unsigned int size_x_in, unsigned int size_y_in)
       : space_{size_x_in, size_y_in} {}
@@ -52,8 +49,9 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
     return space_.size_x * space_.size_y;
   }
 
-  double getStateCost(const State2D& state,
-                      const CollisionCheckerPtr& collision_checker) const {
+  double getStateCost(
+      const State2D& state,
+      const nav_utils::CollisionChecker* const collision_checker) const {
     return collision_checker->getCost(static_cast<unsigned int>(state.x),
                                       static_cast<unsigned int>(state.y));
   }

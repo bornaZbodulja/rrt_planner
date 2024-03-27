@@ -28,11 +28,10 @@ template <typename StateT>
 inline std::unique_ptr<state_space::state_sampler::StateSampler<StateT>>
 createBasicStateSampler(
     state_space::basic_state_sampler::BasicStateSamplerParams&&
-        basic_state_sampler_params,
-    const std::shared_ptr<state_space::StateSpace<StateT>>& state_space) {
+        basic_state_sampler_params) {
   return std::make_unique<
       state_space::basic_state_sampler::BasicStateSampler<StateT>>(
-      std::move(basic_state_sampler_params), state_space);
+      std::move(basic_state_sampler_params));
 }
 
 template <typename StateT>

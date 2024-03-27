@@ -22,9 +22,6 @@ namespace state_space {
 template <typename StateT>
 class StateSpace {
  public:
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = CollisionCheckerT*;
-
   virtual ~StateSpace() = default;
 
   /**
@@ -69,7 +66,7 @@ class StateSpace {
    */
   virtual double getStateCost(
       const StateT& state,
-      const CollisionCheckerPtr& collision_checker) const = 0;
+      const nav_utils::CollisionChecker* const collision_checker) const = 0;
 };
 
 }  // namespace state_space

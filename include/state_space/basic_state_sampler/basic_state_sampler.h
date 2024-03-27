@@ -23,15 +23,10 @@ template <typename StateT>
 class BasicStateSampler
     : public state_space::state_sampler::StateSampler<StateT> {
  public:
-  using StateSamplerT = state_space::state_sampler::StateSampler<StateT>;
-  using StateSpaceT = state_space::StateSpace<StateT>;
-  using StateSpacePtr = std::shared_ptr<StateSpaceT>;
-
-  BasicStateSampler(BasicStateSamplerParams&& basic_state_sampler_params,
-                    const StateSpacePtr& state_space)
-      : StateSamplerT(),
+  explicit BasicStateSampler(
+      BasicStateSamplerParams&& basic_state_sampler_params)
+      : state_space::state_sampler::StateSampler<StateT>(),
         basic_state_sampler_params_(std::move(basic_state_sampler_params)),
-        state_space_(state_space),
         gen_(std::minstd_rand(std::random_device{}())),
         dist_(std::uniform_real_distribution<double>(0.0, 1.0)) {}
 
@@ -47,21 +42,18 @@ class BasicStateSampler
     return generateRandomIndexInStateSpace();
   }
 
- protected:
+ private:
   /**
    * @brief
    * @return unsigned int
    */
   unsigned int generateRandomIndexInStateSpace() const {
-    constexpr unsigned int min_index = 0;
-    return std::experimental::randint(min_index,
-                                      state_space_->getStateSpaceSize());
+    return std::experimental::randint<unsigned int>(
+        0, basic_state_sampler_params_.state_space_size);
   }
 
   // Sampler parameters
   BasicStateSamplerParams basic_state_sampler_params_;
-  // State space pointer
-  StateSpacePtr state_space_;
   // Utils for random numer generation
   std::minstd_rand gen_;
   std::uniform_real_distribution<double> dist_;

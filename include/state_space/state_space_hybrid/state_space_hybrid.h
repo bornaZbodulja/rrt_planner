@@ -23,9 +23,6 @@
 namespace state_space::state_space_hybrid {
 class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
  public:
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = CollisionCheckerT*;
-
   StateSpaceHybrid(SpaceHybrid&& space_in) : space_(std::move(space_in)) {}
   StateSpaceHybrid(unsigned int size_x_in, unsigned int size_y_in,
                    unsigned int dim_3_in)
@@ -57,8 +54,9 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
     return space_.size_x * space_.size_y * space_.dim_3;
   }
 
-  double getStateCost(const StateHybrid& state,
-                      const CollisionCheckerPtr& collision_checker) const {
+  double getStateCost(
+      const StateHybrid& state,
+      const nav_utils::CollisionChecker* const collision_checker) const {
     return collision_checker->getCost(static_cast<unsigned int>(state.x),
                                       static_cast<unsigned int>(state.y));
   }

@@ -32,13 +32,6 @@ template <typename StateT>
 class RGDStateSampler
     : public state_space::basic_state_sampler::BasicStateSampler<StateT> {
  public:
-  using BasicStateSamplerT =
-      state_space::basic_state_sampler::BasicStateSampler<StateT>;
-  using BasicStateSamplerParamsT =
-      state_space::basic_state_sampler::BasicStateSamplerParams;
-  using StateSpacePtr = typename BasicStateSamplerT::StateSpacePtr;
-  using CollisionCheckerPtr = std::shared_ptr<nav_utils::CollisionChecker>;
-
   /**
    * @brief RGD state sampler constructor
    * @param sampler_params Basic state sampler parameters
@@ -46,11 +39,16 @@ class RGDStateSampler
    * @param state_space State space pointer
    * @param collision_checker Collision checker pointer
    */
-  RGDStateSampler(BasicStateSamplerParamsT&& basic_state_sampler_params,
-                  RGDParams&& rgd_params, const StateSpacePtr& state_space,
-                  const CollisionCheckerPtr& collision_checker)
-      : BasicStateSamplerT(std::move(basic_state_sampler_params), state_space),
-        rgd_params_(std::move(rgd_params)),
+  explicit RGDStateSampler(
+      state_space::basic_state_sampler::BasicStateSamplerParams&&
+          basic_state_sampler_params,
+      RGDParams&& rgd_params,
+      const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
+      const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker)
+      : state_space::basic_state_sampler::BasicStateSampler<StateT>(
+            std::move(basic_state_sampler_params)),
+        rgd_(std::make_unique<RGD<StateT>>(std::move(rgd_params))),
+        state_space_(state_space),
         collision_checker_(collision_checker) {}
 
   ~RGDStateSampler() override = default;
@@ -62,25 +60,24 @@ class RGDStateSampler
    */
   unsigned int generateTreeExpansionIndex(unsigned int target_index) override {
     unsigned int new_index =
-        BasicStateSamplerT::generateTreeExpansionIndex(target_index);
+        state_space::basic_state_sampler::BasicStateSampler<
+            StateT>::generateTreeExpansionIndex(target_index);
 
     if (new_index == target_index) {
       return new_index;
     }
 
-    return rgd_.gradientDescent(
-        new_index, target_index, this->state_space_.get(),
-        rgd_params_.increment_step, rgd_params_.stop_cost,
-        rgd_params_.iterations, this->collision_checker_.get());
+    return (*rgd_)(new_index, target_index, state_space_.get(),
+                   collision_checker_.get());
   }
 
- protected:
-  // RGD parameters
-  RGDParams rgd_params_;
+ private:
   // Random gradient descent
-  RGD<StateT> rgd_;
+  std::unique_ptr<RGD<StateT>> rgd_;
+  // State space pointer
+  std::shared_ptr<state_space::StateSpace<StateT>> state_space_;
   // Collision checker pointer
-  CollisionCheckerPtr collision_checker_;
+  std::shared_ptr<nav_utils::CollisionChecker> collision_checker_;
 };
 
 }  // namespace state_space::rgd_state_sampler

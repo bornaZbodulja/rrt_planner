@@ -14,6 +14,7 @@
 
 #include <nav_utils/collision_checker.h>
 
+#include "state_space/rgd_state_sampler/rgd_params.h"
 #include "state_space/state_space/state_space.h"
 
 namespace state_space::rgd_state_sampler {
@@ -24,32 +25,23 @@ namespace state_space::rgd_state_sampler {
 template <typename StateT>
 class RGD {
  public:
-  using StateSpaceT = state_space::StateSpace<StateT>;
-  using StateSpacePtr = StateSpaceT*;
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = CollisionCheckerT*;
+  explicit RGD(RGDParams&& rgd_params) : rgd_params_(std::move(rgd_params)) {}
 
-  RGD() = default;
   ~RGD() = default;
 
   /**
-   * @brief Gradient descent towards target node
+   * @brief Gradient descent towards target index
    * @param random_index Randomly generated index in state space
    * @param target_index Index of target node
    * @param state_space State space pointer
-   * @param increment_step Increment step of the descent
-   * @param stop_cost Stop cost for the descent
-   * @param iterations Iterations of the descent
    * @param collision_checker Collision checker pointer
    * @return unsigned int
    */
-  unsigned int gradientDescent(unsigned int random_index,
-                               unsigned int target_index,
-                               const StateSpacePtr state_space,
-                               double increment_step, unsigned char stop_cost,
-                               int iterations,
-                               const CollisionCheckerPtr& collision_checker) {
-    if (iterations <= 0) {
+  unsigned int operator()(
+      unsigned int random_index, unsigned int target_index,
+      const state_space::StateSpace<StateT>* const state_space,
+      const nav_utils::CollisionChecker* const collision_checker) {
+    if (rgd_params_.iterations <= 0) {
       return random_index;
     }
 
@@ -58,20 +50,24 @@ class RGD {
 
     StateT mid_state;
 
-    for (int i = 0; i < iterations; i++) {
+    for (int i = 0; i < rgd_params_.iterations; i++) {
       if (state_space->getStateCost(rand_state, collision_checker) >
-          stop_cost) {
+          rgd_params_.stop_cost) {
         break;
       }
 
       mid_state = target_state - rand_state;
-      mid_state.operator*(increment_step / mid_state.l2norm());
+      mid_state.operator*(rgd_params_.increment_step / mid_state.l2norm());
       rand_state = rand_state + mid_state;
       state_space->normalizeState(rand_state);
     }
 
     return state_space->getIndex(rand_state);
   }
+
+ private:
+  // RGD parameters
+  RGDParams rgd_params_;
 };
 
 }  // namespace state_space::rgd_state_sampler
