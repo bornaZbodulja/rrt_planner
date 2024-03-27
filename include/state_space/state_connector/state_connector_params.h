@@ -27,6 +27,7 @@ struct StateConnectorParams {
         lethal_cost(lethal_cost_in),
         max_extension_states(max_extension_states_in) {}
 
+  
   bool allow_unknown{false};
   unsigned char lethal_cost{0};
   int max_extension_states{std::numeric_limits<int>::max()};

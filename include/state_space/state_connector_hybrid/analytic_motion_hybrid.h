@@ -34,16 +34,15 @@ namespace state_space::state_connector_hybrid {
  */
 class AnalyticMotionHybrid {
  public:
-  using StateT = state_space::state_space_hybrid::StateHybrid;
-  using StateSpaceT = state_space::state_space_hybrid::StateSpaceHybrid;
-  using StateSpacePtr = StateSpaceT*;
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = CollisionCheckerT*;
-  using StateVector = std::vector<StateT>;
-  using ExpansionResultT = std::optional<StateT>;
-  using ConnectionParamsT = state_space::state_connector::StateConnectorParams;
+  using StateHybrid = state_space::state_space_hybrid::StateHybrid;
 
-  explicit AnalyticMotionHybrid(HybridModel&& hybrid_model);
+  explicit AnalyticMotionHybrid(
+      HybridModel&& hybrid_model,
+      state_space::state_connector::StateConnectorParams&& connector_params,
+      const std::shared_ptr<state_space::state_space_hybrid::StateSpaceHybrid>&
+          state_space,
+      const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker);
+
   ~AnalyticMotionHybrid() = default;
 
   /**
@@ -53,13 +52,10 @@ class AnalyticMotionHybrid {
    * @param state_space
    * @param connection_params
    * @param collision_checker
-   * @return ExpansionResultT
+   * @return std::optional<StateHybrid>
    */
-  ExpansionResultT tryAnalyticExpand(
-      const StateT& start, const StateT& target,
-      const StateSpacePtr& state_space,
-      const ConnectionParamsT& connection_params,
-      const CollisionCheckerPtr& collision_checker) const;
+  std::optional<StateHybrid> tryAnalyticExpand(const StateHybrid& start,
+                                               const StateHybrid& target) const;
 
   /**
    * @brief
@@ -71,20 +67,18 @@ class AnalyticMotionHybrid {
    * @return true
    * @return false
    */
-  bool tryAnalyticConnect(const StateT& start, const StateT& goal,
-                          const StateSpacePtr state_space,
-                          const ConnectionParamsT& connection_params,
-                          const CollisionCheckerPtr& collision_checker) const;
+  bool tryAnalyticConnect(const StateHybrid& start,
+                          const StateHybrid& goal) const;
 
   /**
    * @brief
    * @param start
    * @param goal
    * @param state_space
-   * @return StateVector
+   * @return std::vector<StateHybrid>
    */
-  StateVector getAnalyticPath(const StateT& start, const StateT& goal,
-                              const StateSpacePtr& state_space) const;
+  std::vector<StateHybrid> getAnalyticPath(const StateHybrid& start,
+                                           const StateHybrid& goal) const;
 
   /**
    * @brief
@@ -93,8 +87,8 @@ class AnalyticMotionHybrid {
    * @param state_space
    * @return double
    */
-  double getAnalyticPathLength(const StateT& start, const StateT& goal,
-                               const StateSpacePtr& state_space) const;
+  double getAnalyticPathLength(const StateHybrid& start,
+                               const StateHybrid& goal) const;
 
  private:
   bool isMotionModelValid() const {
@@ -121,16 +115,30 @@ class AnalyticMotionHybrid {
    * @brief Populates OMPL state from hybrid state
    * @param ompl_state
    * @param state
-   * @param state_space
    */
-  void stateToOMPLState(ompl::base::ScopedState<>& ompl_state,
-                        const StateT& state,
-                        const StateSpacePtr& state_space) const;
+  void StateHybridToOMPLState(ompl::base::ScopedState<>& ompl_state,
+                              const StateHybrid& state) const;
 
-  // OMPL state space pointer
-  ompl::base::StateSpacePtr ompl_state_space_;
+  /**
+   * @brief
+   * @param x X coordinate
+   * @param y Y coordinate
+   * @param yaw Orientation
+   * @return True if pose is in collision, false otherwise
+   */
+  bool poseInCollision(double x, double y, double yaw) const;
+
   // Hybrid model for analytic motion
   HybridModel hybrid_model_;
+  // Connector parameters
+  state_space::state_connector::StateConnectorParams connector_params_;
+  // State space pointer
+  std::shared_ptr<state_space::state_space_hybrid::StateSpaceHybrid>
+      state_space_;
+  // Collision checker pointer
+  std::shared_ptr<nav_utils::CollisionChecker> collision_checker_;
+  // OMPL state space pointer
+  ompl::base::StateSpacePtr ompl_state_space_;
 };
 
 }  // namespace state_space::state_connector_hybrid

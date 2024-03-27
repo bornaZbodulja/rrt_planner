@@ -1,7 +1,7 @@
 /**
  * @file state_connector_2d.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief
+ * @brief State connector 2D implementation
  * @version 0.1
  * @date 2023-09-17
  *
@@ -11,6 +11,8 @@
 
 #ifndef STATE_SPACE__STATE_CONNECTOR_2D__STATE_CONNECTOR_2D_H_
 #define STATE_SPACE__STATE_CONNECTOR_2D__STATE_CONNECTOR_2D_H_
+
+#include <nav_utils/collision_checker.h>
 
 #include <memory>
 #include <optional>
@@ -25,35 +27,43 @@ namespace state_space::state_connector_2d {
 class StateConnector2D : public state_space::state_connector::StateConnector<
                              state_space::state_space_2d::State2D> {
  public:
-  using StateT = state_space::state_space_2d::State2D;
-  using StateVector = std::vector<StateT>;
-  using LineExpanderPtr = std::unique_ptr<LineConnector>;
-  using ExpansionResultT = std::optional<StateT>;
-  using ConnectorParamsT = state_space::state_connector::StateConnectorParams;
-  using state_space::state_connector::StateConnector<
-      StateT>::collision_checker_;
-  using state_space::state_connector::StateConnector<StateT>::params_;
+  using State2D = state_space::state_space_2d::State2D;
 
-  StateConnector2D(ConnectorParamsT&& params,
-                   const CollisionCheckerPtr& collision_checker);
+  StateConnector2D(
+      state_space::state_connector::StateConnectorParams&& params,
+      const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker)
+      : state_space::state_connector::StateConnector<
+            state_space::state_space_2d::State2D>(),
+        line_connector_(std::make_unique<LineConnector>(std::move(params),
+                                                        collision_checker)) {}
 
-  ExpansionResultT expandState(const StateT& current_state,
-                               const StateT& target_state) const override;
+  ~StateConnector2D() override = default;
 
-  bool tryConnectStates(const StateT& start_state,
-                        const StateT& goal_state) const override;
+  std::optional<State2D> expandState(
+      const State2D& current_state,
+      const State2D& target_state) const override {
+    return line_connector_->tryLineExpand(current_state, target_state);
+  }
 
-  StateVector connectStates(const StateT& start_state,
-                            const StateT& goal_state) const override;
+  bool tryConnectStates(const State2D& start_state,
+                        const State2D& goal_state) const override {
+    return line_connector_->tryConnectStates(start_state, goal_state);
+  }
 
-  double getStatesDistance(const StateT& start_state,
-                           const StateT& goal_state) const override;
+  std::vector<State2D> connectStates(const State2D& start_state,
+                                     const State2D& goal_state) const override {
+    return line_connector_->getLinePath(start_state, goal_state);
+  }
 
- protected:
-  // Line expander pointer
-  LineExpanderPtr line_expander_;
+  double getStatesDistance(const State2D& start_state,
+                           const State2D& goal_state) const override {
+    return line_connector_->getLinePathLength(start_state, goal_state);
+  }
+
+ private:
+  // Line connector pointer
+  std::unique_ptr<LineConnector> line_connector_;
 };
-
 }  // namespace state_space::state_connector_2d
 
-#endif
+#endif  // STATE_SPACE__STATE_CONNECTOR_2D__STATE_CONNECTOR_2D_H_

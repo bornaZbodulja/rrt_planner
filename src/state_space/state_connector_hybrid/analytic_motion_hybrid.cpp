@@ -19,8 +19,16 @@
 
 namespace state_space::state_connector_hybrid {
 
-AnalyticMotionHybrid::AnalyticMotionHybrid(HybridModel&& hybrid_model)
-    : hybrid_model_(std::move(hybrid_model)) {
+AnalyticMotionHybrid::AnalyticMotionHybrid(
+    HybridModel&& hybrid_model,
+    state_space::state_connector::StateConnectorParams&& connector_params,
+    const std::shared_ptr<state_space::state_space_hybrid::StateSpaceHybrid>&
+        state_space,
+    const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker)
+    : hybrid_model_(std::move(hybrid_model)),
+      connector_params_(std::move(connector_params)),
+      state_space_(state_space),
+      collision_checker_(collision_checker) {
   switch (hybrid_model_.hybrid_motion_model) {
     case HybridMotionModel::DUBINS:
       ompl_state_space_ = std::make_unique<ompl::base::DubinsStateSpace>(
@@ -35,10 +43,9 @@ AnalyticMotionHybrid::AnalyticMotionHybrid(HybridModel&& hybrid_model)
   }
 }
 
-AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
-    const StateT& start, const StateT& target, const StateSpacePtr& state_space,
-    const ConnectionParamsT& connection_params,
-    const CollisionCheckerPtr& collision_checker) const {
+std::optional<AnalyticMotionHybrid::StateHybrid>
+AnalyticMotionHybrid::tryAnalyticExpand(
+    const StateHybrid& start, const StateHybrid& target) const {
   if (!isMotionModelValid()) {
     return std::nullopt;
   }
@@ -46,11 +53,11 @@ AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
   static ompl::base::ScopedState<> from(ompl_state_space_),
       to(ompl_state_space_), s(ompl_state_space_);
 
-  stateToOMPLState(from, start, state_space);
-  stateToOMPLState(to, target, state_space);
+  StateHybridToOMPLState(from, start);
+  StateHybridToOMPLState(to, target);
 
   int intervals = computeConnectionStatesNum(from, to);
-  int iterations = std::min(connection_params.max_extension_states, intervals);
+  int iterations = std::min(connector_params_.max_extension_states, intervals);
   std::vector<double> reals;
 
   for (double i = 1.0; i <= iterations; i++) {
@@ -58,22 +65,17 @@ AnalyticMotionHybrid::ExpansionResultT AnalyticMotionHybrid::tryAnalyticExpand(
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
 
-    if (collision_checker->poseInCollision(
-            static_cast<unsigned int>(reals[0]),
-            static_cast<unsigned int>(reals[1]), reals[2],
-            connection_params.lethal_cost, connection_params.allow_unknown)) {
+    if (poseInCollision(reals[0], reals[1], reals[2])) {
       return std::nullopt;
     }
   }
 
-  return std::make_optional<StateT>(
-      reals[0], reals[1], state_space->getClosestAngularBin(reals[2]));
+  return std::make_optional<StateHybrid>(
+      reals[0], reals[1], state_space_->getClosestAngularBin(reals[2]));
 }
 
 bool AnalyticMotionHybrid::tryAnalyticConnect(
-    const StateT& start, const StateT& goal, const StateSpacePtr state_space,
-    const ConnectionParamsT& connection_params,
-    const CollisionCheckerPtr& collision_checker) const {
+    const StateHybrid& start, const StateHybrid& goal) const {
   if (!isMotionModelValid()) {
     return false;
   }
@@ -81,8 +83,8 @@ bool AnalyticMotionHybrid::tryAnalyticConnect(
   static ompl::base::ScopedState<> from(ompl_state_space_),
       to(ompl_state_space_), s(ompl_state_space_);
 
-  stateToOMPLState(from, start, state_space);
-  stateToOMPLState(to, goal, state_space);
+  StateHybridToOMPLState(from, start);
+  StateHybridToOMPLState(to, goal);
 
   int iterations = computeConnectionStatesNum(from, to);
   std::vector<double> reals;
@@ -92,10 +94,7 @@ bool AnalyticMotionHybrid::tryAnalyticConnect(
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
 
-    if (collision_checker->poseInCollision(
-            static_cast<unsigned int>(reals[0]),
-            static_cast<unsigned int>(reals[1]), reals[2],
-            connection_params.lethal_cost, connection_params.allow_unknown)) {
+    if (poseInCollision(reals[0], reals[1], reals[2])) {
       return false;
     }
   }
@@ -103,9 +102,9 @@ bool AnalyticMotionHybrid::tryAnalyticConnect(
   return true;
 }
 
-AnalyticMotionHybrid::StateVector AnalyticMotionHybrid::getAnalyticPath(
-    const StateT& start, const StateT& goal,
-    const StateSpacePtr& state_space) const {
+std::vector<AnalyticMotionHybrid::StateHybrid>
+AnalyticMotionHybrid::getAnalyticPath(const StateHybrid& start,
+                                      const StateHybrid& goal) const {
   if (!isMotionModelValid()) {
     return {};
   }
@@ -113,11 +112,11 @@ AnalyticMotionHybrid::StateVector AnalyticMotionHybrid::getAnalyticPath(
   static ompl::base::ScopedState<> from(ompl_state_space_),
       to(ompl_state_space_), s(ompl_state_space_);
 
-  stateToOMPLState(from, start, state_space);
-  stateToOMPLState(to, goal, state_space);
+  StateHybridToOMPLState(from, start);
+  StateHybridToOMPLState(to, goal);
 
   int intervals = computeConnectionStatesNum(from, to);
-  StateVector path;
+  std::vector<StateHybrid> path;
   path.reserve(intervals + 1);
   std::vector<double> reals;
 
@@ -126,15 +125,14 @@ AnalyticMotionHybrid::StateVector AnalyticMotionHybrid::getAnalyticPath(
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
     path.emplace_back(reals[0], reals[1],
-                      state_space->getClosestAngularBin(reals[2]));
+                      state_space_->getClosestAngularBin(reals[2]));
   }
 
   return path;
 }
 
 double AnalyticMotionHybrid::getAnalyticPathLength(
-    const StateT& start, const StateT& goal,
-    const StateSpacePtr& state_space) const {
+    const StateHybrid& start, const StateHybrid& goal) const {
   if (!isMotionModelValid()) {
     std::numeric_limits<double>::max();
   }
@@ -142,8 +140,8 @@ double AnalyticMotionHybrid::getAnalyticPathLength(
   static ompl::base::ScopedState<> from(ompl_state_space_),
       to(ompl_state_space_);
 
-  stateToOMPLState(from, start, state_space);
-  stateToOMPLState(to, goal, state_space);
+  StateHybridToOMPLState(from, start);
+  StateHybridToOMPLState(to, goal);
 
   return getAnalyticStateDistance(from, to);
 }
@@ -155,11 +153,17 @@ int AnalyticMotionHybrid::computeConnectionStatesNum(
   return std::floor(d / sqrt_2);
 }
 
-void AnalyticMotionHybrid::stateToOMPLState(
-    ompl::base::ScopedState<>& ompl_state, const StateT& state,
-    const StateSpacePtr& state_space) const {
+void AnalyticMotionHybrid::StateHybridToOMPLState(
+    ompl::base::ScopedState<>& ompl_state, const StateHybrid& state) const {
   ompl_state[0] = state.x;
   ompl_state[1] = state.y;
-  ompl_state[2] = state_space->getAngleFromBin(state.theta);
+  ompl_state[2] = state_space_->getAngleFromBin(state.theta);
+}
+
+bool AnalyticMotionHybrid::poseInCollision(double x, double y,
+                                           double yaw) const {
+  return collision_checker_->poseInCollision(
+      static_cast<unsigned int>(x), static_cast<unsigned int>(y), yaw,
+      connector_params_.lethal_cost, connector_params_.allow_unknown);
 }
 }  // namespace state_space::state_connector_hybrid

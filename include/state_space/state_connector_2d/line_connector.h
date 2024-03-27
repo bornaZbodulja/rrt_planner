@@ -25,15 +25,14 @@ namespace state_space::state_connector_2d {
 
 class LineConnector {
  public:
-  using StateT = state_space::state_space_2d::State2D;
-  using StateVector = std::vector<StateT>;
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = CollisionCheckerT*;
-  using LineIteratorT = nav_utils::LineIterator;
-  using ExpansionResultT = std::optional<StateT>;
-  using ConnectionParamsT = state_space::state_connector::StateConnectorParams;
+  using State2D = state_space::state_space_2d::State2D;
 
-  LineConnector() = default;
+  explicit LineConnector(
+      state_space::state_connector::StateConnectorParams&& connection_params,
+      std::shared_ptr<nav_utils::CollisionChecker> collision_checker)
+      : connector_params_(std::move(connection_params)),
+        collision_checker_(collision_checker) {}
+
   ~LineConnector() = default;
 
   /**
@@ -44,9 +43,8 @@ class LineConnector {
    * @param collision_checker
    * @return ExpansionResultT
    */
-  ExpansionResultT tryLineExpand(const StateT& start, const StateT& target,
-                                 const ConnectionParamsT& connection_params,
-                                 const CollisionCheckerPtr& collision_checker) const;
+  std::optional<State2D> tryLineExpand(const State2D& start,
+                                       const State2D& target) const;
 
   /**
    * @brief
@@ -57,17 +55,29 @@ class LineConnector {
    * @return true
    * @return false
    */
-  bool tryConnectStates(const StateT& start, const StateT& goal,
-                        const ConnectionParamsT& connection_params,
-                        const CollisionCheckerPtr& collision_checker) const;
+  bool tryConnectStates(const State2D& start, const State2D& goal) const;
 
-  StateVector getLinePath(const StateT& start, const StateT& goal) const;
+  std::vector<State2D> getLinePath(const State2D& start,
+                                   const State2D& goal) const;
 
-  double getLinePathLength(const StateT& start, const StateT& goal) const;
+  double getLinePathLength(const State2D& start, const State2D& goal) const;
 
  private:
-  LineIteratorT createLineIterator(const StateT& start,
-                                   const StateT& goal) const;
+  nav_utils::LineIterator createLineIterator(const State2D& start,
+                                             const State2D& goal) const;
+
+  /**
+   * @brief Check if point is in collision
+   * @param x X coordinate
+   * @param y Y coordinate
+   * @return True if point is in collision, false otherwise
+   */
+  bool pointInCollision(unsigned int x, unsigned int y) const;
+
+  // Connector parameters
+  state_space::state_connector::StateConnectorParams connector_params_;
+  // Collision checker pointer
+  std::shared_ptr<nav_utils::CollisionChecker> collision_checker_;
 };
 
 }  // namespace state_space::state_connector_2d

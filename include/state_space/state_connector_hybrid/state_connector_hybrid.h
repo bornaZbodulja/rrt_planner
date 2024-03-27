@@ -1,7 +1,7 @@
 /**
  * @file state_connector_hybrid.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief
+ * @brief State connector hybrid implementation
  * @version 0.1
  * @date 2023-09-17
  *
@@ -11,6 +11,8 @@
 
 #ifndef STATE_SPACE__STATE_CONNECTOR_HYBRID__STATE_CONNECTOR_HYBRID_H_
 #define STATE_SPACE__STATE_CONNECTOR_HYBRID__STATE_CONNECTOR_HYBRID_H_
+
+#include <nav_utils/collision_checker.h>
 
 #include <memory>
 #include <optional>
@@ -28,38 +30,45 @@ class StateConnectorHybrid
     : public state_space::state_connector::StateConnector<
           state_space::state_space_hybrid::StateHybrid> {
  public:
-  using StateT = state_space::state_space_hybrid::StateHybrid;
-  using StateSpaceT = state_space::state_space_hybrid::StateSpaceHybrid;
-  using StateSpacePtr = std::shared_ptr<StateSpaceT>;
-  using StateVector = std::vector<StateT>;
-  using AnalyticExpanderPtr = std::unique_ptr<AnalyticMotionHybrid>;
-  using ExpansionResultT = std::optional<StateT>;
-  using ConnectorParamsT = state_space::state_connector::StateConnectorParams;
-  using state_space::state_connector::StateConnector<
-      StateT>::collision_checker_;
-  using state_space::state_connector::StateConnector<StateT>::params_;
+  using StateHybrid = state_space::state_space_hybrid::StateHybrid;
 
-  StateConnectorHybrid(HybridModel&& hybrid_model, ConnectorParamsT&& params,
-                       const StateSpacePtr& state_space,
-                       const CollisionCheckerPtr& collision_checker);
+  StateConnectorHybrid(
+      HybridModel&& hybrid_model,
+      state_space::state_connector::StateConnectorParams&& params,
+      const std::shared_ptr<state_space::state_space_hybrid::StateSpaceHybrid>&
+          state_space,
+      const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker)
+      : analytic_connector_(std::make_unique<AnalyticMotionHybrid>(
+            std::move(hybrid_model), std::move(params), state_space,
+            collision_checker)) {}
 
-  ExpansionResultT expandState(const StateT& current_state,
-                               const StateT& target_state) const override;
+  ~StateConnectorHybrid() override = default;
 
-  bool tryConnectStates(const StateT& start_state,
-                        const StateT& goal_state) const override;
+  std::optional<StateHybrid> expandState(
+      const StateHybrid& current_state,
+      const StateHybrid& target_state) const override {
+    return analytic_connector_->tryAnalyticExpand(current_state, target_state);
+  }
 
-  StateVector connectStates(const StateT& start_state,
-                            const StateT& goal_state) const override;
+  bool tryConnectStates(const StateHybrid& start_state,
+                        const StateHybrid& goal_state) const override {
+    return analytic_connector_->tryAnalyticConnect(start_state, goal_state);
+  }
 
-  double getStatesDistance(const StateT& start_state,
-                           const StateT& goal_state) const override;
+  std::vector<StateHybrid> connectStates(
+      const StateHybrid& start_state,
+      const StateHybrid& goal_state) const override {
+    return analytic_connector_->getAnalyticPath(start_state, goal_state);
+  }
 
- protected:
-  // State space pointer
-  StateSpacePtr state_space_;
-  // Analytic expander pointer
-  AnalyticExpanderPtr analytic_expander_;
+  double getStatesDistance(const StateHybrid& start_state,
+                           const StateHybrid& goal_state) const override {
+    return analytic_connector_->getAnalyticPathLength(start_state, goal_state);
+  }
+
+ private:
+  // Analytic connector pointer
+  std::unique_ptr<AnalyticMotionHybrid> analytic_connector_;
 };
 
 }  // namespace state_space::state_connector_hybrid

@@ -60,9 +60,7 @@ add_library(${library_name}_2d SHARED
   src/rrt_planner/planner_core/planner_implementations/bidirectional_rrt.cpp
   src/rrt_planner/visualization_plugin/search_tree_visualization.cpp
   src/state_space/state_connector_2d/line_connector.cpp
-  src/state_space/state_connector_2d/state_connector_2d.cpp
   src/state_space/state_connector_hybrid/analytic_motion_hybrid.cpp
-  src/state_space/state_connector_hybrid/state_connector_hybrid.cpp
 )
 
 add_library(${library_name}_hybrid SHARED
@@ -71,9 +69,7 @@ add_library(${library_name}_hybrid SHARED
   src/rrt_planner/planner_core/planner_implementations/bidirectional_rrt.cpp
   src/rrt_planner/visualization_plugin/search_tree_visualization.cpp
   src/state_space/state_connector_2d/line_connector.cpp
-  src/state_space/state_connector_2d/state_connector_2d.cpp
   src/state_space/state_connector_hybrid/analytic_motion_hybrid.cpp
-  src/state_space/state_connector_hybrid/state_connector_hybrid.cpp
 )
 
 # target_link_libraries(${library_name}_2d ${nav_utils_LIBRARIES} ${catkin_LIBRARIES})

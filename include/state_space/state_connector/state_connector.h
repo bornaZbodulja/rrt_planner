@@ -12,12 +12,8 @@
 #ifndef STATE_SPACE__STATE_CONNECTOR__STATE_CONNECTOR_H_
 #define STATE_SPACE__STATE_CONNECTOR__STATE_CONNECTOR_H_
 
-#include <nav_utils/collision_checker.h>
-
 #include <optional>
 #include <vector>
-
-#include "state_space/state_connector/state_connector_params.h"
 
 namespace state_space::state_connector {
 /**
@@ -27,21 +23,16 @@ namespace state_space::state_connector {
 template <typename StateT>
 class StateConnector {
  public:
-  using StateVector = std::vector<StateT>;
-  using ExpansionResultT = std::optional<StateT>;
-  using CollisionCheckerT = nav_utils::CollisionChecker;
-  using CollisionCheckerPtr = std::shared_ptr<CollisionCheckerT>;
-
   virtual ~StateConnector() = default;
 
   /**
    * @brief Expands current state towards target state for max extension states
    * @param current_state
    * @param target_state
-   * @return ExpansionResultT
+   * @return std::optional<StateT>
    */
-  virtual ExpansionResultT expandState(const StateT& current_state,
-                                       const StateT& target_state) const = 0;
+  virtual std::optional<StateT> expandState(
+      const StateT& current_state, const StateT& target_state) const = 0;
 
   /**
    * @brief Tries connecting start and goal state
@@ -56,10 +47,10 @@ class StateConnector {
    * @brief Returns path connecting start and goal state
    * @param start_state
    * @param goal_state
-   * @return StateVector
+   * @return std::vector<StateT>
    */
-  virtual StateVector connectStates(const StateT& start_state,
-                                    const StateT& goal_state) const = 0;
+  virtual std::vector<StateT> connectStates(const StateT& start_state,
+                                            const StateT& goal_state) const = 0;
 
   /**
    * @brief Returns length of path connecting two states
@@ -71,16 +62,8 @@ class StateConnector {
                                    const StateT& goal_state) const = 0;
 
  protected:
-  StateConnector(StateConnectorParams&& params,
-                 const CollisionCheckerPtr& collision_checker)
-      : params_(std::move(params)), collision_checker_(collision_checker) {}
-
-  // State connector parameters
-  StateConnectorParams params_;
-  // Collision checker pointer
-  CollisionCheckerPtr collision_checker_;
+  StateConnector() = default;
 };
-
 }  // namespace state_space::state_connector
 
-#endif
+#endif  // STATE_SPACE__STATE_CONNECTOR__STATE_CONNECTOR_H_

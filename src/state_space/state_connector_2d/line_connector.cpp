@@ -13,48 +13,41 @@
 
 namespace state_space::state_connector_2d {
 
-LineConnector::ExpansionResultT LineConnector::tryLineExpand(
-    const StateT& start, const StateT& target,
-    const ConnectionParamsT& connection_params,
-    const CollisionCheckerPtr& collision_checker) const {
-  LineIteratorT line_iterator = createLineIterator(start, target);
+std::optional<LineConnector::State2D> LineConnector::tryLineExpand(
+    const State2D& start, const State2D& target) const {
+  nav_utils::LineIterator line_iterator = createLineIterator(start, target);
   // skip start position
   line_iterator.advance();
 
   // TODO: Simplify this
-
   int iteration{0};
 
   while (line_iterator.isValid() &&
-         iteration < connection_params.max_extension_states) {
-    if (collision_checker->pointInCollision(
-            line_iterator.getCurrentX(), line_iterator.getCurrentY(),
-            connection_params.lethal_cost, connection_params.allow_unknown)) {
+         iteration < connector_params_.max_extension_states) {
+    if (pointInCollision(line_iterator.getCurrentX(),
+                         line_iterator.getCurrentY())) {
       return std::nullopt;
     }
     iteration++;
     line_iterator.advance();
   }
 
-  return std::make_optional<StateT>(
+  return std::make_optional<State2D>(
       static_cast<double>(line_iterator.getPreviousX()),
       static_cast<double>(line_iterator.getPreviousY()));
 }
 
-bool LineConnector::tryConnectStates(
-    const StateT& start, const StateT& goal,
-    const ConnectionParamsT& connection_params,
-    const CollisionCheckerPtr& collision_checker) const {
-  LineIteratorT line_iterator = createLineIterator(start, goal);
+bool LineConnector::tryConnectStates(const State2D& start,
+                                     const State2D& goal) const {
+  nav_utils::LineIterator line_iterator = createLineIterator(start, goal);
   // skip start position
   line_iterator.advance();
 
   // TODO: Simplify this
 
   while (line_iterator.isValid()) {
-    if (collision_checker->pointInCollision(
-            line_iterator.getCurrentX(), line_iterator.getCurrentY(),
-            connection_params.lethal_cost, connection_params.allow_unknown)) {
+    if (pointInCollision(line_iterator.getCurrentX(),
+                         line_iterator.getCurrentY())) {
       return false;
     }
     line_iterator.advance();
@@ -63,11 +56,11 @@ bool LineConnector::tryConnectStates(
   return true;
 }
 
-LineConnector::StateVector LineConnector::getLinePath(
-    const StateT& start, const StateT& goal) const {
-  StateVector path;
+std::vector<LineConnector::State2D> LineConnector::getLinePath(
+    const State2D& start, const State2D& goal) const {
+  std::vector<State2D> path;
 
-  LineIteratorT line_iterator = createLineIterator(start, goal);
+  nav_utils::LineIterator line_iterator = createLineIterator(start, goal);
   // skip start position
   line_iterator.advance();
 
@@ -80,14 +73,20 @@ LineConnector::StateVector LineConnector::getLinePath(
   return path;
 }
 
-double LineConnector::getLinePathLength(const StateT& start,
-                                        const StateT& goal) const {
+double LineConnector::getLinePathLength(const State2D& start,
+                                        const State2D& goal) const {
   return std::hypot(goal.x - start.x, goal.y - start.y);
 }
 
-typename LineConnector::LineIteratorT LineConnector::createLineIterator(
-    const StateT& start, const StateT& goal) const {
-  return LineIteratorT{static_cast<int>(start.x), static_cast<int>(start.y),
-                       static_cast<int>(goal.x), static_cast<int>(goal.y)};
+nav_utils::LineIterator LineConnector::createLineIterator(
+    const State2D& start, const State2D& goal) const {
+  return nav_utils::LineIterator{
+      static_cast<int>(start.x), static_cast<int>(start.y),
+      static_cast<int>(goal.x), static_cast<int>(goal.y)};
+}
+
+bool LineConnector::pointInCollision(unsigned int x, unsigned int y) const {
+  return collision_checker_->pointInCollision(
+      x, y, connector_params_.lethal_cost, connector_params_.allow_unknown);
 }
 }  // namespace state_space::state_connector_2d
