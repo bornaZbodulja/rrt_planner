@@ -45,12 +45,12 @@ class RRTCore : public rrt_planner::planner_core::planner::Planner<StateT> {
         timeout_handler_(
             std::make_unique<
                 rrt_planner::planner_core::planner_utilities::TimeoutHandler>(
-                search_params_.max_planning_time)),
+                search_params.max_planning_time)),
         search_params_(std::move(search_params)) {}
 
   void setPlanningStartTime() { timeout_handler_->setStartTime(); }
 
-  bool planningExpired() const {
+  bool planningExpired() {
     return isPlanningTimeoutReached() || reachedMaximumIterations();
   }
 
@@ -81,8 +81,8 @@ class RRTCore : public rrt_planner::planner_core::planner::Planner<StateT> {
     return timeout_handler_->timeoutReached();
   }
 
-  bool reachedMaximumIterations() const {
-    return iterations_counter_ >= search_params_.max_expansion_iterations;
+  bool reachedMaximumIterations() {
+    return iterations_counter_++ >= search_params_.max_expansion_iterations;
   }
 
   // Search policy
