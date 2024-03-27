@@ -28,7 +28,8 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
       : space_{size_x_in, size_y_in} {}
 
   unsigned int getIndex(const State2D& state) const override {
-    return state.y * space_.size_x + state.x;
+    return static_cast<unsigned int>(state.y) * space_.size_x +
+           static_cast<unsigned int>(state.x);
   }
 
   State2D getState(unsigned int index) const override {
@@ -59,7 +60,6 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
  private:
   Space2D space_;
 };
-
 }  // namespace state_space::state_space_2d
 
-#endif
+#endif  // STATE_SPACE__STATE_SPACE__STATE_SPACE_2D_H_

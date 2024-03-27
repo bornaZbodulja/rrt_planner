@@ -23,7 +23,7 @@ namespace state_space::state_space_hybrid {
 class StateHybrid : public State<StateHybrid> {
  public:
   StateHybrid() = default;
-  StateHybrid(double x_in, double y_in, double theta_in)
+  explicit StateHybrid(double x_in, double y_in, double theta_in)
       : x(x_in), y(y_in), theta(theta_in) {}
 
   void operator*(double k) {

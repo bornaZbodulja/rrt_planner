@@ -29,14 +29,16 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
       : space_{size_x_in, size_y_in, dim_3_in} {}
 
   unsigned int getIndex(const StateHybrid& state) const override {
-    return state.theta + state.x * space_.dim_3 +
-           state.y * space_.size_x * space_.dim_3;
+    return static_cast<unsigned int>(state.theta) +
+           static_cast<unsigned int>(state.x) * space_.dim_3 +
+           static_cast<unsigned int>(state.y) * space_.size_x * space_.dim_3;
   }
 
   StateHybrid getState(unsigned int index) const override {
-    return StateHybrid((index / space_.dim_3) % space_.size_x,
-                       index / (space_.dim_3 * space_.size_x),
-                       index % space_.dim_3);
+    return StateHybrid(
+        static_cast<double>((index / space_.dim_3) % space_.size_x),
+        static_cast<double>(index / (space_.dim_3 * space_.size_x)),
+        static_cast<double>(index % space_.dim_3));
   }
 
   void normalizeState(StateHybrid& state) const override {
@@ -83,7 +85,6 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
  private:
   SpaceHybrid space_;
 };
-
 }  // namespace state_space::state_space_hybrid
 
-#endif
+#endif  // STATE_SPACE__STATE_SPACE_HYBRID__STATE_SPACE_HYBRID_H_
