@@ -39,7 +39,7 @@ class CostScorer {
   ~CostScorer() = default;
 
   double operator()(const StateT& parent_state,
-                            const StateT& child_state) const {
+                    const StateT& child_state) const {
     return computeStateCost(child_state) +
            computeTraversalCost(parent_state, child_state);
   }
@@ -51,7 +51,7 @@ class CostScorer {
   }
 
   double computeTraversalCost(const StateT& parent_state,
-                                      const StateT& child_state) const {
+                              const StateT& child_state) const {
     return params_.traversal_penalty *
            state_connector_->getStatesDistance(parent_state, child_state);
   }

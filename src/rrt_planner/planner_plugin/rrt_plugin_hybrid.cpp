@@ -89,22 +89,12 @@ bool RRTPluginHybrid::makePlan(const geometry_msgs::PoseStamped& start,
 
   plan.clear();
 
-  unsigned int start_mx, start_my, start_ang_bin;
-  unsigned int goal_mx, goal_my, goal_ang_bin;
-
   if (collision_checker_->poseInCollision(start)) {
     ROS_WARN(
         "Start pose: (%.3f, %.3f, %.3f) in collision, returning planning "
         "failure!",
         start.pose.position.x, start.pose.position.y,
         tf2::getYaw(start.pose.orientation));
-    return false;
-  }
-
-  if (!collision_checker_->worldToMap(
-          start.pose.position.x, start.pose.position.y, start_mx, start_my)) {
-    ROS_WARN(
-        "Unable to set start pose for planning, returning planning failure!");
     return false;
   }
 
@@ -117,28 +107,17 @@ bool RRTPluginHybrid::makePlan(const geometry_msgs::PoseStamped& start,
     return false;
   }
 
-  if (!collision_checker_->worldToMap(goal.pose.position.x,
-                                      goal.pose.position.y, goal_mx, goal_my)) {
-    ROS_WARN(
-        "Unable to set goal pose for planning, returning planning failure!");
-    return false;
-  }
-
-  start_ang_bin =
-      state_space_->getClosestAngularBin(tf2::getYaw(start.pose.orientation));
-  goal_ang_bin =
-      state_space_->getClosestAngularBin(tf2::getYaw(goal.pose.orientation));
+  StateHybrid start_state, goal_state;
+  poseToStateHybrid(start.pose, start_state);
+  poseToStateHybrid(goal.pose, goal_state);
 
   ROS_INFO("Planning from start pose: (%f, %f, %f) to goal pose: (%f, %f, %f).",
            start.pose.position.x, start.pose.position.y,
            tf2::getYaw(start.pose.orientation), goal.pose.position.x,
            goal.pose.position.y, tf2::getYaw(goal.pose.orientation));
 
-  std::optional<std::vector<StateHybrid>> plan_hybrid = createHybridPlan(
-      StateHybrid(static_cast<double>(start_mx), static_cast<double>(start_my),
-                  static_cast<double>(start_ang_bin)),
-      StateHybrid(static_cast<double>(goal_mx), static_cast<double>(goal_my),
-                  static_cast<double>(goal_ang_bin)));
+  std::optional<std::vector<StateHybrid>> plan_hybrid =
+      createHybridPlan(start_state, goal_state);
 
   bool plan_found = plan_hybrid.has_value();
 
@@ -223,13 +202,21 @@ void RRTPluginHybrid::updateVisualization(
 
 void RRTPluginHybrid::stateHybridToPose(const StateHybrid& state_hybrid,
                                         geometry_msgs::Pose& pose) {
-  pose.position.x =
-      map_info_.origin.x + map_info_.resolution * (state_hybrid.x + 0.5);
-  pose.position.y =
-      map_info_.origin.y + map_info_.resolution * (state_hybrid.y + 0.5);
+  pose.position.x = map_info_.origin.x + map_info_.resolution * state_hybrid.x;
+  pose.position.y = map_info_.origin.y + map_info_.resolution * state_hybrid.y;
   pose.orientation = tf2::toMsg(
       tf2::Quaternion{tf2::Vector3(0, 0, 1),
-                      state_space_->getAngleFromBin(
-                          static_cast<unsigned int>(state_hybrid.theta))});
+                      state_space_->getAngleFromBin(state_hybrid.theta)});
+}
+
+void RRTPluginHybrid::poseToStateHybrid(const geometry_msgs::Pose& pose,
+                                        StateHybrid& state_hybrid) {
+  state_hybrid.x =
+      (pose.position.x - map_info_.origin.x) / map_info_.resolution;
+  state_hybrid.y =
+      (pose.position.y - map_info_.origin.y) / map_info_.resolution;
+  double yaw = tf2::getYaw(pose.orientation);
+  nav_utils::normalizeAngle(yaw);
+  state_hybrid.theta = state_space_->getAngularBin(yaw);
 }
 }  // namespace rrt_planner::planner_plugin

@@ -44,8 +44,8 @@ AnalyticMotionHybrid::AnalyticMotionHybrid(
 }
 
 std::optional<AnalyticMotionHybrid::StateHybrid>
-AnalyticMotionHybrid::tryAnalyticExpand(
-    const StateHybrid& start, const StateHybrid& target) const {
+AnalyticMotionHybrid::tryAnalyticExpand(const StateHybrid& start,
+                                        const StateHybrid& target) const {
   if (!isMotionModelValid()) {
     return std::nullopt;
   }
@@ -60,7 +60,7 @@ AnalyticMotionHybrid::tryAnalyticExpand(
   int iterations = std::min(connector_params_.max_extension_states, intervals);
   std::vector<double> reals;
 
-  for (double i = 1.0; i <= iterations; i++) {
+  for (double i = 0.0; i <= iterations; i++) {
     ompl_state_space_->interpolate(from(), to(), i / intervals, s());
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
@@ -70,12 +70,12 @@ AnalyticMotionHybrid::tryAnalyticExpand(
     }
   }
 
-  return std::make_optional<StateHybrid>(
-      reals[0], reals[1], state_space_->getClosestAngularBin(reals[2]));
+  return std::make_optional<StateHybrid>(reals[0], reals[1],
+                                         state_space_->getAngularBin(reals[2]));
 }
 
-bool AnalyticMotionHybrid::tryAnalyticConnect(
-    const StateHybrid& start, const StateHybrid& goal) const {
+bool AnalyticMotionHybrid::tryAnalyticConnect(const StateHybrid& start,
+                                              const StateHybrid& goal) const {
   if (!isMotionModelValid()) {
     return false;
   }
@@ -89,7 +89,7 @@ bool AnalyticMotionHybrid::tryAnalyticConnect(
   int iterations = computeConnectionStatesNum(from, to);
   std::vector<double> reals;
 
-  for (double i = 1.0; i <= iterations; i++) {
+  for (double i = 0.0; i <= iterations; i++) {
     ompl_state_space_->interpolate(from(), to(), i / iterations, s());
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
@@ -125,7 +125,7 @@ AnalyticMotionHybrid::getAnalyticPath(const StateHybrid& start,
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
     path.emplace_back(reals[0], reals[1],
-                      state_space_->getClosestAngularBin(reals[2]));
+                      state_space_->getAngularBin(reals[2]));
   }
 
   return path;

@@ -19,12 +19,11 @@ class StateSampler {
   virtual ~StateSampler() = default;
 
   /**
-   * @brief Generates new index for search tree expansion
-   * @param target_index Index of target node of the search tree
-   * @return unsigned int
+   * @brief Generates new state for search tree expansion
+   * @param target_state State of target node of the search tree
+   * @return double
    */
-  virtual unsigned int generateTreeExpansionIndex(
-      unsigned int target_index) = 0;
+  virtual StateT generateTreeExpansionState(StateT target_state) = 0;
 
  protected:
   StateSampler() = default;

@@ -37,8 +37,8 @@ class TreeConnector {
    */
   virtual NodeT* tryConnectTrees(
       const NodeT* node,
-      const rrt_planner::planner_core::planner_entities::SearchTree<NodeT>*
-          tree) = 0;
+      const rrt_planner::planner_core::planner_entities::SearchTree<
+          StateT>* const tree) = 0;
 
  protected:
   TreeConnector() = default;

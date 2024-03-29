@@ -85,22 +85,12 @@ bool RRTPlugin2D::makePlan(const geometry_msgs::PoseStamped& start,
 
   plan.clear();
 
-  unsigned int start_mx, start_my;
-  unsigned int goal_mx, goal_my;
-
   if (collision_checker_->poseInCollision(start)) {
     ROS_WARN(
         "Start pose: (%.3f, %.3f, %.3f) in collision, returning planning "
         "failure!",
         start.pose.position.x, start.pose.position.y,
         tf2::getYaw(start.pose.orientation));
-    return false;
-  }
-
-  if (!collision_checker_->worldToMap(
-          start.pose.position.x, start.pose.position.y, start_mx, start_my)) {
-    ROS_WARN(
-        "Unable to set start pose for planning, returning planning failure!");
     return false;
   }
 
@@ -113,21 +103,16 @@ bool RRTPlugin2D::makePlan(const geometry_msgs::PoseStamped& start,
     return false;
   }
 
-  if (!collision_checker_->worldToMap(goal.pose.position.x,
-                                      goal.pose.position.y, goal_mx, goal_my)) {
-    ROS_WARN(
-        "Unable to set goal pose for planning, returning planning failure!");
-    return false;
-  }
-
   ROS_INFO("Planning from start pose: (%f, %f, %f) to goal pose: (%f, %f, %f).",
            start.pose.position.x, start.pose.position.y,
            tf2::getYaw(start.pose.orientation), goal.pose.position.x,
            goal.pose.position.y, tf2::getYaw(goal.pose.orientation));
 
-  auto plan_2d = create2DPlan(
-      State2D{static_cast<double>(start_mx), static_cast<double>(start_my)},
-      State2D{static_cast<double>(goal_mx), static_cast<double>(goal_my)});
+  State2D start_state, goal_state;
+  poseToState2D(start.pose, start_state);
+  poseToState2D(goal.pose, goal_state);
+
+  auto plan_2d = create2DPlan(start_state, goal_state);
 
   bool plan_found = plan_2d.has_value();
 
@@ -217,9 +202,14 @@ void RRTPlugin2D::updateVisualization(
 
 void RRTPlugin2D::state2DToPose(const State2D& state_2d,
                                 geometry_msgs::Pose& pose) {
-  pose.position.x =
-      map_info_.origin.x + map_info_.resolution * (state_2d.x + 0.5);
-  pose.position.y =
-      map_info_.origin.y + map_info_.resolution * (state_2d.y + 0.5);
+  pose.position.x = map_info_.origin.x + map_info_.resolution * state_2d.x;
+  pose.position.y = map_info_.origin.y + map_info_.resolution * state_2d.y;
 }
+
+void RRTPlugin2D::poseToState2D(const geometry_msgs::Pose& pose,
+                                State2D& state_2d) {
+  state_2d.x = (pose.position.x - map_info_.origin.x) / map_info_.resolution;
+  state_2d.y = (pose.position.y - map_info_.origin.y) / map_info_.resolution;
+}
+
 }  // namespace rrt_planner::planner_plugin

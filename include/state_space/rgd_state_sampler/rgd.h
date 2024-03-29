@@ -30,39 +30,36 @@ class RGD {
   ~RGD() = default;
 
   /**
-   * @brief Gradient descent towards target index
-   * @param random_index Randomly generated index in state space
-   * @param target_index Index of target node
+   * @brief Gradient descent towards target state
+   * @param random_state Randomly generated state in state space
+   * @param target_state State of target node
    * @param state_space State space pointer
    * @param collision_checker Collision checker pointer
-   * @return unsigned int
+   * @return StateT
    */
-  unsigned int operator()(
-      unsigned int random_index, unsigned int target_index,
+  StateT operator()(
+      StateT random_state, StateT target_state,
       const state_space::StateSpace<StateT>* const state_space,
       const nav_utils::CollisionChecker* const collision_checker) {
     if (rgd_params_.iterations <= 0) {
-      return random_index;
+      return random_state;
     }
-
-    StateT rand_state = state_space->getState(random_index);
-    StateT target_state = state_space->getState(target_index);
 
     StateT mid_state;
 
     for (int i = 0; i < rgd_params_.iterations; i++) {
-      if (state_space->getStateCost(rand_state, collision_checker) >
+      if (state_space->getStateCost(random_state, collision_checker) >
           rgd_params_.stop_cost) {
         break;
       }
 
-      mid_state = target_state - rand_state;
+      mid_state = target_state - random_state;
       mid_state.operator*(rgd_params_.increment_step / mid_state.l2norm());
-      rand_state = rand_state + mid_state;
-      state_space->normalizeState(rand_state);
+      random_state = random_state + mid_state;
+      state_space->normalizeState(random_state);
     }
 
-    return state_space->getIndex(rand_state);
+    return random_state;
   }
 
  private:

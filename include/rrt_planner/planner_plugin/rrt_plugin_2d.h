@@ -99,6 +99,13 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
    */
   void state2DToPose(const State2D& state_2d, geometry_msgs::Pose& pose);
 
+  /**
+   * @brief 
+   * @param pose 
+   * @param state_2d 
+   */
+  void poseToState2D(const geometry_msgs::Pose& pose, State2D& state_2d);
+
   // Whether planner has already been initialized
   bool initialized_{false};
   // Private node handle

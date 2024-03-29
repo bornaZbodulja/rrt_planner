@@ -1,7 +1,7 @@
 /**
  * @file state_space.h
  * @author Borna Zbodulja (borna.zbodulja@gmail.com)
- * @brief Basic state space definition
+ * @brief State space interface
  * @version 0.1
  * @date 2023-09-16
  *
@@ -14,6 +14,8 @@
 
 #include <nav_utils/collision_checker.h>
 
+#include "state_space/state_space/space.h"
+
 namespace state_space {
 /**
  * @brief State space interface
@@ -23,20 +25,6 @@ template <typename StateT>
 class StateSpace {
  public:
   virtual ~StateSpace() = default;
-
-  /**
-   * @brief Computes index of given state in state space
-   * @param state
-   * @return unsigned int
-   */
-  virtual unsigned int getIndex(const StateT& state) const = 0;
-
-  /**
-   * @brief Generates state for given index
-   * @param index
-   * @return StateT
-   */
-  virtual StateT getState(unsigned int index) const = 0;
 
   /**
    * @brief Normalizes given state
@@ -54,12 +42,6 @@ class StateSpace {
                                   const StateT& goal_state) const = 0;
 
   /**
-   * @brief Computes size of state space
-   * @return unsigned int
-   */
-  virtual unsigned int getStateSpaceSize() const = 0;
-
-  /**
    * @brief Computes cost of given state
    * @param state
    * @return double
@@ -67,6 +49,12 @@ class StateSpace {
   virtual double getStateCost(
       const StateT& state,
       const nav_utils::CollisionChecker* const collision_checker) const = 0;
+
+  /**
+   * @brief Gets space associated with state space
+   * @return const Space& 
+   */
+  virtual const Space& getSpace() const = 0;
 };
 
 }  // namespace state_space

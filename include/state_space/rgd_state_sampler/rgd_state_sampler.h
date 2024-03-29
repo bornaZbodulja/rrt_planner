@@ -22,6 +22,7 @@
 #include "state_space/rgd_state_sampler/rgd_params.h"
 #include "state_space/state_sampler/state_sampler.h"
 #include "state_space/state_space/state_space.h"
+#include "state_space/state_space/space.h"
 
 namespace state_space::rgd_state_sampler {
 /**
@@ -36,6 +37,7 @@ class RGDStateSampler
    * @brief RGD state sampler constructor
    * @param sampler_params Basic state sampler parameters
    * @param rgd_params RGD parameters
+   * @param space Space reference
    * @param state_space State space pointer
    * @param collision_checker Collision checker pointer
    */
@@ -43,10 +45,11 @@ class RGDStateSampler
       state_space::basic_state_sampler::BasicStateSamplerParams&&
           basic_state_sampler_params,
       RGDParams&& rgd_params,
+      const state_space::Space& space,
       const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
       const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker)
       : state_space::basic_state_sampler::BasicStateSampler<StateT>(
-            std::move(basic_state_sampler_params)),
+            std::move(basic_state_sampler_params), space),
         rgd_(std::make_unique<RGD<StateT>>(std::move(rgd_params))),
         state_space_(state_space),
         collision_checker_(collision_checker) {}
@@ -54,20 +57,19 @@ class RGDStateSampler
   ~RGDStateSampler() override = default;
 
   /**
-   * @brief Generates new index for search tree expansion
-   * @param target_index Index of target node of the search tree
-   * @return unsigned int
+   * @brief Generates new state for search tree expansion
+   * @param target_state State of target node of the search tree
+   * @return StateT
    */
-  unsigned int generateTreeExpansionIndex(unsigned int target_index) override {
-    unsigned int new_index =
-        state_space::basic_state_sampler::BasicStateSampler<
-            StateT>::generateTreeExpansionIndex(target_index);
+  StateT generateTreeExpansionState(StateT target_state) override {
+    StateT new_state = state_space::basic_state_sampler::BasicStateSampler<
+        StateT>::generateTreeExpansionState(target_state);
 
-    if (new_index == target_index) {
-      return new_index;
+    if (new_state == target_state) {
+      return target_state;
     }
 
-    return (*rgd_)(new_index, target_index, state_space_.get(),
+    return (*rgd_)(new_state, target_state, state_space_.get(),
                    collision_checker_.get());
   }
 

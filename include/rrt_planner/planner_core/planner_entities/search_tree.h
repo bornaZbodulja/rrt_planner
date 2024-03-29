@@ -17,19 +17,22 @@
 #include <utility>
 #include <vector>
 
+#include "rrt_planner/planner_core/planner_entities/node.h"
+
 namespace rrt_planner::planner_core::planner_entities {
 /**
  * @brief Holder for expanded nodes of tree
- * @tparam NodeT
+ * @tparam StateT State template
  */
-template <typename NodeT>
+template <typename StateT>
 class SearchTree {
  public:
+  using NodeT = Node<StateT>;
   /**
-   * @brief Computes distance between states in state space associated with
-   * given indexes
+   * @brief Computes distance between nodes in state space associated with
+   * given states
    */
-  using DistanceGetter = std::function<double(unsigned int, unsigned int)>;
+  using DistanceGetter = std::function<double(const StateT&, const StateT&)>;
 
   SearchTree(DistanceGetter&& distance_getter)
       : distance_getter_(std::move(distance_getter)) {}
@@ -58,30 +61,29 @@ class SearchTree {
   void setTargetNode(NodeT* const node) { target_node_ = node; }
 
   /**
-   * @brief Returns closest node to state associated with given index
-   * @param index Given index
+   * @brief Returns closest node to given state
+   * @param state Given state
    * @return NodeT* Pointer to closest node
    */
-  NodeT* getClosestNode(unsigned int index) const {
+  NodeT* getClosestNode(const StateT& state) const {
     if (tree_.empty()) {
       return nullptr;
     }
 
     return *std::min_element(
         tree_.cbegin(), tree_.cend(),
-        [this, index](const NodeT* node1, const NodeT* node2) {
-          return distance_getter_(node1->getIndex(), index) <
-                 distance_getter_(node2->getIndex(), index);
+        [this, &state](const NodeT* node1, const NodeT* node2) {
+          return distance_getter_(node1->getState(), state) <
+                 distance_getter_(node2->getState(), state);
         });
   }
 
   /**
-   * @brief Returns vector of nodes in neighborhood of state associated with
-   * given index
-   * @param index Given index
+   * @brief Returns vector of nodes in neighborhood of given state
+   * @param state Given state
    * @param near_distance Defines neighborhood of nodes
    */
-  std::vector<NodeT*> getNearNodes(unsigned int index,
+  std::vector<NodeT*> getNearNodes(const StateT& state,
                                    double near_distance) const {
     std::vector<NodeT*> near_nodes{};
 
@@ -90,8 +92,8 @@ class SearchTree {
     }
 
     std::copy_if(tree_.cbegin(), tree_.cend(), std::back_inserter(near_nodes),
-                 [&](const NodeT* node) {
-                   return distance_getter_(node->getIndex(), index) <=
+                 [this, &state, &near_distance](const NodeT* node) {
+                   return distance_getter_(node->getState(), state) <=
                           near_distance;
                  });
 
@@ -99,17 +101,17 @@ class SearchTree {
   }
 
   /**
-   * @brief Returns search tree as vector of pairs of indexes where each pair
+   * @brief Returns search tree as vector of pairs of states where each pair
    * represents parent-child relation in search tree
    * @return TreeT
    */
-  std::vector<std::pair<unsigned int, unsigned int>> getTreeEdges() const {
-    std::vector<std::pair<unsigned int, unsigned int>> edges;
+  std::vector<std::pair<StateT, StateT>> getTreeEdges() const {
+    std::vector<std::pair<StateT, StateT>> edges;
     edges.reserve(tree_.size());
 
     std::for_each(tree_.cbegin(), tree_.cend(), [&](const NodeT* node) {
       if (node != nullptr && node->parent != nullptr) {
-        edges.emplace_back(node->parent->getIndex(), node->getIndex());
+        edges.emplace_back(node->parent->getState(), node->getState());
       }
     });
 

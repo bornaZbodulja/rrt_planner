@@ -36,12 +36,11 @@ createStateSampler(
     const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker) {
   state_space::basic_state_sampler::BasicStateSamplerParams
       basic_sampler_params = param_loader::loadBasicSamplerParams(nh);
-  basic_sampler_params.state_space_size = state_space->getStateSpaceSize();
 
   switch (sampling_policy) {
     case state_space::state_sampler::SamplingPolicy::BASIC_SAMPLING:
       return state_space::state_sampler_factory::createBasicStateSampler<
-          StateT>(std::move(basic_sampler_params));
+          StateT>(std::move(basic_sampler_params), state_space->getSpace());
     case state_space::state_sampler::SamplingPolicy::RGD_SAMPLING: {
       state_space::rgd_state_sampler::RGDParams rgd_params =
           param_loader::loadRGDParams(nh);

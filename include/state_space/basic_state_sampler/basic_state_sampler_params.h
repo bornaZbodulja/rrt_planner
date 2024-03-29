@@ -24,8 +24,6 @@ struct BasicStateSamplerParams {
   // Defines bias towards target of the search tree when generating random node
   // (between 0.0 and 1.0)
   double target_bias{0.0};
-  // State space size
-  unsigned int state_space_size{0};
 };
 }  // namespace state_space::basic_state_sampler
 

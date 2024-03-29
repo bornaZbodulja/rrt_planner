@@ -30,20 +30,15 @@ namespace rrt_planner::planner_core::planner_utilities {
  * @return Unique pointer to search tree
  */
 template <typename StateT>
-std::unique_ptr<rrt_planner::planner_core::planner_entities::SearchTree<
-    rrt_planner::planner_core::planner_entities::Node<StateT>>>
+std::unique_ptr<rrt_planner::planner_core::planner_entities::SearchTree<StateT>>
 createSearchTree(const state_space::StateSpace<StateT>* const state_space) {
-  std::function<double(unsigned int, unsigned int)> distance_getter =
-      [state_space](unsigned int idx1, unsigned int idx2) {
-        return state_space
-            ->getStateDistance(state_space->getState(idx1),
-                               state_space->getState(idx2))
-            .squaredL2norm();
+  std::function<double(const StateT&, const StateT&)> distance_getter =
+      [state_space](const StateT& state_a, const StateT& state_b) {
+        return state_space->getStateDistance(state_a, state_b).squaredL2norm();
       };
 
   return std::make_unique<
-      rrt_planner::planner_core::planner_entities::SearchTree<
-          rrt_planner::planner_core::planner_entities::Node<StateT>>>(
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>>(
       std::move(distance_getter));
 }
 
@@ -57,23 +52,19 @@ createSearchTree(const state_space::StateSpace<StateT>* const state_space) {
  */
 template <typename StateT>
 std::vector<std::vector<StateT>> transformSearchTree(
-    const rrt_planner::planner_core::planner_entities::SearchTree<
-        rrt_planner::planner_core::planner_entities::Node<StateT>>* const tree,
+    const rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const
+        tree,
     const state_space::StateSpace<StateT>* const state_space,
     const state_space::state_connector::StateConnector<StateT>* const
         state_connector) {
   std::vector<std::vector<StateT>> transformed_tree;
-  std::vector<std::pair<unsigned int, unsigned int>> edges =
-      tree->getTreeEdges();
+  std::vector<std::pair<StateT, StateT>> edges = tree->getTreeEdges();
   transformed_tree.reserve(edges.size());
 
   std::transform(
       edges.cbegin(), edges.cend(), std::back_inserter(transformed_tree),
-      [state_space,
-       state_connector](const std::pair<unsigned int, unsigned int>& edge) {
-        return state_connector->connectStates(
-            state_space->getState(edge.first),
-            state_space->getState(edge.second));
+      [state_space, state_connector](const std::pair<StateT, StateT>& edge) {
+        return state_connector->connectStates(edge.first, edge.second);
       });
   return transformed_tree;
 }

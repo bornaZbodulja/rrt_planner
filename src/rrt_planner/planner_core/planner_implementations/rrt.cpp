@@ -19,18 +19,18 @@
 namespace rrt_planner::planner_core::planner_implementations {
 template <typename StateT>
 std::optional<std::vector<StateT>> RRT<StateT>::createPath() {
-  unsigned int expansion_index;
+  StateT expansion_state;
   NodeT* new_node{nullptr};
 
   RRTCore<StateT>::setPlanningStartTime();
 
   while (!RRTCore<StateT>::planningExpired()) {
-    // 1. Get new index for tree expansion
-    expansion_index = state_sampler_->generateTreeExpansionIndex(goal_index_);
+    // 1. Get new state for tree expansion
+    expansion_state = state_sampler_->generateTreeExpansionState(goal_state_);
 
-    // 2. Extend search tree with new index
+    // 2. Extend search tree with new state
     new_node =
-        expander_->expandTree(expansion_index, start_tree_.get(), graph_.get());
+        expander_->expandTree(expansion_state, start_tree_.get(), graph_.get());
 
     // 3. If expansion was successful, check if new node is target
     if (new_node != nullptr && isGoal(new_node)) {

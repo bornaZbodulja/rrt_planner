@@ -13,7 +13,6 @@
 #define RRT_PLANNER__PLANNER_CORE__PLANNER_IMPLEMENTATIONS__RRT_H_
 
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -36,7 +35,7 @@ class RRT : public RRTCore<StateT> {
  public:
   using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
   using SearchTreeT =
-      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>;
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>;
 
   RRT(rrt_planner::planner_core::planner_implementations::SearchPolicy
           search_policy,
@@ -56,7 +55,7 @@ class RRT : public RRTCore<StateT> {
         expander_(std::move(expander)),
         state_sampler_(std::move(state_sampler)),
         graph_(std::make_unique<rrt_planner::planner_core::planner_entities::
-                                    SearchGraph<NodeT>>()),
+                                    SearchGraph<StateT>>()),
         start_tree_(
             rrt_planner::planner_core::planner_utilities::createSearchTree<
                 StateT>(state_space_.get())) {
@@ -70,24 +69,21 @@ class RRT : public RRTCore<StateT> {
     RRTCore<StateT>::initializeSearch();
     graph_->clear();
     start_tree_->clear();
-    goal_index_ = std::numeric_limits<unsigned int>::max();
   }
 
   void setStart(const StateT& start_state) override {
-    NodeT* start = graph_->getNode(state_space_->getIndex(start_state));
-    start->state = start_state;
+    NodeT* start = graph_->getNode(start_state);
     start->setAccumulatedCost(0.0);
     start->visited();
     start_tree_->setRootNode(start);
   }
 
   void setGoal(const StateT& goal_state) override {
-    NodeT* goal = graph_->getNode(state_space_->getIndex(goal_state));
-    goal->state = goal_state;
+    NodeT* goal = graph_->getNode(goal_state);
     goal->setAccumulatedCost(0.0);
     goal->visited();
     start_tree_->setTargetNode(goal);
-    goal_index_ = goal->getIndex();
+    goal_state_ = goal->getState();
   }
 
   std::optional<std::vector<StateT>> createPath() override;
@@ -99,12 +95,12 @@ class RRT : public RRTCore<StateT> {
 
  private:
   /**
-   * @brief Checks whether given node has same state index as goal node
+   * @brief Checks whether given node has same state as goal node
    * @param node Given node
-   * @return True if node has same state index as goal node, false otherwise
+   * @return True if node has same state as goal node, false otherwise
    */
   bool isGoal(const NodeT* node) const {
-    return node->getIndex() == goal_index_;
+    return node->getState() == goal_state_;
   }
 
   // State space pointer
@@ -120,12 +116,12 @@ class RRT : public RRTCore<StateT> {
       state_sampler_;
   // Search graph pointer
   std::unique_ptr<
-      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>>
+      rrt_planner::planner_core::planner_entities::SearchGraph<StateT>>
       graph_;
   // Start search tree pointer
   std::unique_ptr<SearchTreeT> start_tree_;
-  // Goal index
-  unsigned int goal_index_{std::numeric_limits<unsigned int>::max()};
+  // Goal state
+  StateT goal_state_;
 };
 }  // namespace rrt_planner::planner_core::planner_implementations
 

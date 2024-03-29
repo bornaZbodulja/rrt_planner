@@ -62,19 +62,19 @@ class NearestNeighborStarExpander
 
   /**
    * @brief
-   * @param expansion_index Given expansion index
+   * @param expansion_state Given expansion state
    * @param tree Search tree pointer
    * @param graph Search graph pointer
    * @return NodeT*
    */
   NodeT* expandTree(
-      unsigned int expansion_index,
-      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>* tree,
-      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>* graph)
+      const StateT& expansion_state,
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* tree,
+      rrt_planner::planner_core::planner_entities::SearchGraph<StateT>* graph)
       override {
     // Get new node for expansion
     NodeT* new_node =
-        NearestNeighborExpanderT::expandTree(expansion_index, tree, graph);
+        NearestNeighborExpanderT::expandTree(expansion_state, tree, graph);
 
     if (new_node == nullptr) {
       return nullptr;
@@ -82,7 +82,7 @@ class NearestNeighborStarExpander
 
     // Get near nodes for new node and select parent node for new node among
     // them
-    std::vector<NodeT*> near_nodes = getNearNodes(new_node->getIndex(), tree);
+    std::vector<NodeT*> near_nodes = getNearNodes(new_node->getState(), tree);
     NodeT* parent_node = selectBestParent(new_node, near_nodes);
 
     // If new parent node was found among near nodes, update parent and
@@ -120,18 +120,18 @@ class NearestNeighborStarExpander
     double new_approach_cost{std::numeric_limits<double>::max()};
     double current_cost{child_node->getAccumulatedCost()};
 
-    std::for_each(potential_parents.begin(), potential_parents.end(),
-                  [&](NodeT* potential_parent) {
-                    new_approach_cost =
-                        NearestNeighborExpanderT::computeAccumulatedCost(
-                            potential_parent, child_node);
-                    if (new_approach_cost < current_cost &&
-                        this->state_connector_->tryConnectStates(
-                            potential_parent->state, child_node->state)) {
-                      current_cost = new_approach_cost;
-                      best_parent = potential_parent;
-                    }
-                  });
+    std::for_each(
+        potential_parents.begin(), potential_parents.end(),
+        [&](NodeT* potential_parent) {
+          new_approach_cost = NearestNeighborExpanderT::computeAccumulatedCost(
+              potential_parent, child_node);
+          if (new_approach_cost < current_cost &&
+              this->state_connector_->tryConnectStates(
+                  potential_parent->getState(), child_node->getState())) {
+            current_cost = new_approach_cost;
+            best_parent = potential_parent;
+          }
+        });
 
     return best_parent;
   }
@@ -159,7 +159,7 @@ class NearestNeighborStarExpander
               potential_parent, potential_child);
           if (new_approach_cost < potential_child->getAccumulatedCost() &&
               this->state_connector_->tryConnectStates(
-                  potential_parent->state, potential_child->state)) {
+                  potential_parent->getState(), potential_child->getState())) {
             potential_child->parent = potential_parent;
             potential_child->setAccumulatedCost(new_approach_cost);
           }
@@ -167,18 +167,18 @@ class NearestNeighborStarExpander
   }
 
   /**
-   * @brief Gets nodes in neighborhood of given index(state) in given search
+   * @brief Gets nodes in neighborhood of given state in given search
    * tree
-   * @param index Index(state) for which near nodes are to be found
+   * @param state State for which near nodes are to be found
    * @param tree Search tree pointer
-   * @return std::vector<NodeT> Vector of near nodes for given index in given
+   * @return std::vector<NodeT> Vector of near nodes for given state in given
    * search tree
    */
   std::vector<NodeT*> getNearNodes(
-      unsigned int index,
+      const StateT& state,
       const rrt_planner::planner_core::planner_entities::SearchTree<
-          NodeT>* const tree) const {
-    return tree->getNearNodes(index, star_expander_params_.near_distance);
+          StateT>* const tree) const {
+    return tree->getNearNodes(state, star_expander_params_.near_distance);
   }
 
   // Expander parameters

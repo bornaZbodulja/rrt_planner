@@ -26,6 +26,10 @@ class StateHybrid : public State<StateHybrid> {
   explicit StateHybrid(double x_in, double y_in, double theta_in)
       : x(x_in), y(y_in), theta(theta_in) {}
 
+  bool operator==(const StateHybrid& rhs) const {
+    return x == rhs.x && y == rhs.y && theta == rhs.theta;
+  }
+
   void operator*(double k) {
     x *= k;
     y *= k;
@@ -48,9 +52,15 @@ class StateHybrid : public State<StateHybrid> {
     }
   }
 
+  StateHybrid& operator=(const std::vector<double>& state) {
+    x = state[0];
+    y = state[1];
+    theta = state[2];
+    return *this;
+  }
+
   double x{0.0}, y{0.0}, theta{0.0};
 };
-
 }  // namespace state_space::state_space_hybrid
 
-#endif
+#endif  // STATE_SPACE__STATE_SPACE_HYBRID__STATE_HYBRID_H_

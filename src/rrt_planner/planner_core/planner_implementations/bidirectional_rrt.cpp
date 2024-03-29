@@ -17,7 +17,7 @@
 namespace rrt_planner::planner_core::planner_implementations {
 template <typename StateT>
 std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
-  unsigned int expansion_index;
+  StateT expansion_state;
   bool expanding_start_tree{true};
   NodeT* new_node{nullptr};
   NodeT* closest_node{nullptr};
@@ -25,17 +25,17 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
   RRTCore<StateT>::setPlanningStartTime();
 
   while (!RRTCore<StateT>::planningExpired()) {
-    // 1. Get new index for tree expansion
-    expansion_index =
+    // 1. Get new state for tree expansion
+    expansion_state =
         expanding_start_tree
-            ? state_sampler_->generateTreeExpansionIndex(goal_index_)
-            : state_sampler_->generateTreeExpansionIndex(start_index_);
+            ? state_sampler_->generateTreeExpansionState(goal_state_)
+            : state_sampler_->generateTreeExpansionState(start_state_);
 
-    // 2. Extend search tree with new index
+    // 2. Extend search tree with new state
     new_node = expanding_start_tree
-                   ? expander_->expandTree(expansion_index, start_tree_.get(),
+                   ? expander_->expandTree(expansion_state, start_tree_.get(),
                                            graph_.get())
-                   : expander_->expandTree(expansion_index, goal_tree_.get(),
+                   : expander_->expandTree(expansion_state, goal_tree_.get(),
                                            graph_.get());
 
     // 3. If expansion was successful, check if new node can be connected to the
@@ -80,7 +80,7 @@ std::vector<StateT> BidirectionalRRT<StateT>::preparePath(NodeT* node_a,
 
   // Connection between trees
   current_segment =
-      state_connector_->connectStates(node_a->state, node_b->state);
+      state_connector_->connectStates(node_a->getState(), node_b->getState());
   std::move(current_segment.begin(), current_segment.end(),
             std::back_inserter(full_path));
 

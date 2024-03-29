@@ -24,30 +24,17 @@ namespace state_space::state_space_2d {
 class StateSpace2D : public state_space::StateSpace<State2D> {
  public:
   StateSpace2D(Space2D&& space_in) : space_(std::move(space_in)) {}
-  StateSpace2D(unsigned int size_x_in, unsigned int size_y_in)
+  StateSpace2D(double size_x_in, double size_y_in)
       : space_{size_x_in, size_y_in} {}
 
-  unsigned int getIndex(const State2D& state) const override {
-    return static_cast<unsigned int>(state.y) * space_.size_x +
-           static_cast<unsigned int>(state.x);
-  }
-
-  State2D getState(unsigned int index) const override {
-    return State2D(index % space_.size_x, index / space_.size_x);
-  }
-
   void normalizeState(State2D& state) const override {
-    state.x = std::fmod(state.x, static_cast<double>(space_.size_x));
-    state.y = std::fmod(state.y, static_cast<double>(space_.size_y));
+    state.x = std::fmod(state.x, space_.size_x);
+    state.y = std::fmod(state.y, space_.size_y);
   }
 
   State2D getStateDistance(const State2D& start_state,
                            const State2D& goal_state) const override {
     return (goal_state - start_state);
-  }
-
-  unsigned int getStateSpaceSize() const override {
-    return space_.size_x * space_.size_y;
   }
 
   double getStateCost(
@@ -56,6 +43,8 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
     return collision_checker->getCost(static_cast<unsigned int>(state.x),
                                       static_cast<unsigned int>(state.y));
   }
+
+  const Space2D& getSpace() const override { return space_; }
 
  private:
   Space2D space_;

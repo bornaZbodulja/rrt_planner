@@ -38,16 +38,15 @@ class NearestNeighborTreeConnector
 
   ~NearestNeighborTreeConnector() override = default;
 
-  NodeT* tryConnectTrees(
-      const NodeT* node,
-      const rrt_planner::planner_core::planner_entities::SearchTree<NodeT>*
-          tree) override {
+  NodeT* tryConnectTrees(const NodeT* node,
+                         const rrt_planner::planner_core::planner_entities::
+                             SearchTree<StateT>* const tree) override {
     if (node == nullptr) {
       return nullptr;
     }
 
     // Find closest node in the second tree
-    NodeT* closest_node = tree->getClosestNode(node->getIndex());
+    NodeT* closest_node = tree->getClosestNode(node->getState());
 
     if (closest_node == nullptr) {
       return nullptr;
@@ -55,14 +54,15 @@ class NearestNeighborTreeConnector
 
     // If distance between nodes(states) greater than max connection length,
     // return
-    if (this->state_connector_->getStatesDistance(node->state,
-                                                  closest_node->state) >
+    if (this->state_connector_->getStatesDistance(node->getState(),
+                                                  closest_node->getState()) >
         tree_connector_params_.tree_connection_max_length) {
       return nullptr;
     }
 
     // Check if connection is valid
-    if (!state_connector_->tryConnectStates(node->state, closest_node->state)) {
+    if (!state_connector_->tryConnectStates(node->getState(),
+                                            closest_node->getState())) {
       return nullptr;
     }
 

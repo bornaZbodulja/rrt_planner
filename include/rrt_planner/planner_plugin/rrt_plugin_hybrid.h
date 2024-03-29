@@ -95,6 +95,14 @@ class RRTPluginHybrid : public nav_core::BaseGlobalPlanner {
   void stateHybridToPose(const StateHybrid& state_hybrid,
                          geometry_msgs::Pose& pose);
 
+  /**
+   * @brief 
+   * @param pose 
+   * @param state_hybrid 
+   */
+  void poseToStateHybrid(const geometry_msgs::Pose& pose,
+                         StateHybrid& state_hybrid);
+
   // Whether planner has already been initialized
   bool initialized_{false};
   // Private node handle

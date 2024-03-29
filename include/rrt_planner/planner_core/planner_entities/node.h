@@ -23,15 +23,15 @@ namespace rrt_planner::planner_core::planner_entities {
 template <typename StateT>
 class Node {
  public:
-  Node(unsigned int index)
+  explicit Node(const StateT& state)
       : parent(nullptr),
-        index_(index),
+        state_(state),
         visited_(false),
         accumulated_cost_(std::numeric_limits<double>::max()) {}
 
   ~Node() { parent = nullptr; }
 
-  unsigned int getIndex() const { return index_; }
+  const StateT& getState() const { return state_; }
 
   bool isVisited() const { return visited_; }
 
@@ -47,7 +47,9 @@ class Node {
     accumulated_cost_ = std::numeric_limits<double>::max();
   }
 
-  bool operator==(const Node& rhs) const { return index_ == rhs.getIndex(); }
+  bool operator==(const Node& rhs) const {
+    return this->state_ == rhs.getState();
+  }
 
   void rewireNode(const Node* new_parent, double accumulated_cost) {
     parent = new_parent;
@@ -63,7 +65,7 @@ class Node {
     Node* current_node = this;
 
     while (current_node != nullptr) {
-      path.push_back(current_node->state);
+      path.push_back(current_node->getState());
       current_node = current_node->parent;
     }
 
@@ -72,12 +74,10 @@ class Node {
 
   // Parent node
   Node* parent{nullptr};
-  // State
-  StateT state;
 
  private:
-  // Index of node in state space
-  unsigned int index_;
+  // State
+  StateT state_;
   // Whether node was initialized
   bool visited_;
   // Accumulated cost of node

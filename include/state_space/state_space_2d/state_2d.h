@@ -13,6 +13,7 @@
 #define STATE_SPACE__STATE_SPACE_2D__STATE_2D_H_
 
 #include <cmath>
+#include <vector>
 
 #include "state_space/state_space/state.h"
 
@@ -25,6 +26,8 @@ class State2D : public State<State2D> {
   State2D() = default;
   explicit State2D(double x_in, double y_in) : x(x_in), y(y_in) {}
 
+  bool operator==(const State2D& rhs) const { return x == rhs.x && y == rhs.y; }
+
   void operator*(double k) {
     x *= k;
     y *= k;
@@ -36,9 +39,14 @@ class State2D : public State<State2D> {
 
   double squaredL2norm() const { return std::pow(x, 2) + std::pow(y, 2); }
 
+  State2D& operator=(const std::vector<double>& state) {
+    x = state[0];
+    y = state[1];
+    return *this;
+  }
+
   double x{0.0}, y{0.0};
 };
-
 }  // namespace state_space::state_space_2d
 
-#endif
+#endif  // STATE_SPACE__STATE_SPACE_2D__STATE_2D_H_

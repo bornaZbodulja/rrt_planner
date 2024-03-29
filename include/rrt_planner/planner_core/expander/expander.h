@@ -32,15 +32,15 @@ class Expander {
 
   /**
    * @brief
-   * @param expansion_index
+   * @param expansion_state
    * @param tree
    * @param graph
    * @return Node
    */
   virtual NodeT* expandTree(
-      unsigned int expansion_index,
-      rrt_planner::planner_core::planner_entities::SearchTree<NodeT>* tree,
-      rrt_planner::planner_core::planner_entities::SearchGraph<NodeT>*
+      const StateT& expansion_state,
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* tree,
+      rrt_planner::planner_core::planner_entities::SearchGraph<StateT>*
           graph) = 0;
 
  protected:
