@@ -25,6 +25,10 @@ class State2D : public State<State2D> {
  public:
   State2D() = default;
   explicit State2D(double x_in, double y_in) : x(x_in), y(y_in) {}
+  explicit State2D(const std::vector<double>& state) {
+    x = state.at(0);
+    y = state.at(1);
+  }
 
   bool operator==(const State2D& rhs) const { return x == rhs.x && y == rhs.y; }
 
@@ -38,12 +42,6 @@ class State2D : public State<State2D> {
   }
 
   double squaredL2norm() const { return std::pow(x, 2) + std::pow(y, 2); }
-
-  State2D& operator=(const std::vector<double>& state) {
-    x = state[0];
-    y = state[1];
-    return *this;
-  }
 
   double x{0.0}, y{0.0};
 };

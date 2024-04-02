@@ -60,9 +60,7 @@ class BasicStateSampler
                    std::back_inserter(state_vector), [this](double bound) {
                      return generateRandomDouble(0.0, bound);
                    });
-    StateT state;
-    state = state_vector;
-    return state;
+    return StateT{state_vector};
   }
 
   double generateRandomDouble(double lower_bound, double upper_bound) {

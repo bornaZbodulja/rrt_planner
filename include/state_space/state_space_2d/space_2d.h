@@ -40,6 +40,7 @@ class Space2D : public state_space::Space {
    */
   std::vector<double> getBounds() const override { return {size_x, size_y}; }
 
+ private:
   double size_x{0}, size_y{0};
 };
 

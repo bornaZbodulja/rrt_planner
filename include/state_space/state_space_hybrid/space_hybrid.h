@@ -25,9 +25,7 @@ class SpaceHybrid : public state_space::Space {
  public:
   SpaceHybrid() = default;
   explicit SpaceHybrid(double size_x_in, double size_y_in, double dim_3_in)
-      : size_x(size_x_in), size_y(size_y_in), dim_3(dim_3_in) {
-    angle_bin = 2 * M_PI / dim_3;
-  }
+      : size_x(size_x_in), size_y(size_y_in), dim_3(dim_3_in) {}
 
   ~SpaceHybrid() override = default;
 
@@ -45,8 +43,8 @@ class SpaceHybrid : public state_space::Space {
     return {size_x, size_y, dim_3};
   }
 
+ private:
   double size_x{0}, size_y{0}, dim_3{0};
-  double angle_bin{0.0};
 };
 
 }  // namespace state_space::state_space_hybrid

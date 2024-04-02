@@ -28,8 +28,10 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
       : space_{size_x_in, size_y_in} {}
 
   void normalizeState(State2D& state) const override {
-    state.x = std::fmod(state.x, space_.size_x);
-    state.y = std::fmod(state.y, space_.size_y);
+    static double size_x = space_.getBounds().at(0);
+    static double size_y = space_.getBounds().at(1); 
+    state.x = std::fmod(state.x, size_x);
+    state.y = std::fmod(state.y, size_y);
   }
 
   State2D getStateDistance(const State2D& start_state,

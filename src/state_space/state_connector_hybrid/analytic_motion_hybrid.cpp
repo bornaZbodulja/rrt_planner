@@ -120,7 +120,7 @@ AnalyticMotionHybrid::getAnalyticPath(const StateHybrid& start,
   path.reserve(intervals + 1);
   std::vector<double> reals;
 
-  for (double i = 1.0; i <= intervals; i++) {
+  for (double i = 0.0; i <= intervals; i++) {
     ompl_state_space_->interpolate(from(), to(), i / intervals, s());
     reals = s.reals();
     nav_utils::normalizeAngle(reals[2]);
