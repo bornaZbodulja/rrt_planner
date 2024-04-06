@@ -23,19 +23,19 @@
 namespace state_space::state_space_2d {
 class StateSpace2D : public state_space::StateSpace<State2D> {
  public:
-  StateSpace2D(Space2D&& space_in) : space_(std::move(space_in)) {}
-  StateSpace2D(double size_x_in, double size_y_in)
+  explicit StateSpace2D(Space2D&& space_in) : space_(std::move(space_in)) {}
+  explicit StateSpace2D(double size_x_in, double size_y_in)
       : space_{size_x_in, size_y_in} {}
 
   void normalizeState(State2D& state) const override {
-    static double size_x = space_.getBounds().at(0);
-    static double size_y = space_.getBounds().at(1); 
+    static const double size_x = space_.getBounds().at(0);
+    static const double size_y = space_.getBounds().at(1);
     state.x = std::fmod(state.x, size_x);
     state.y = std::fmod(state.y, size_y);
   }
 
-  State2D getStateDistance(const State2D& start_state,
-                           const State2D& goal_state) const override {
+  State2D getStatesDifference(const State2D& start_state,
+                              const State2D& goal_state) const override {
     return (goal_state - start_state);
   }
 

@@ -54,8 +54,9 @@ void RRTPlugin2D::initialize(std::string name,
   state_space::state_space_2d::Space2D space_2d =
       state_space::state_space_2d::Space2D(map_info_.size.x, map_info_.size.y);
 
-  state_space_ = std::make_shared<state_space::state_space_2d::StateSpace2D>(
-      std::move(space_2d));
+  std::shared_ptr<state_space::state_space_2d::StateSpace2D> state_space =
+      std::make_shared<state_space::state_space_2d::StateSpace2D>(
+          std::move(space_2d));
 
   rrt_planner::planner_core::planner_implementations::SearchPolicy
       search_policy = rrt_planner::param_loader::loadSearchPolicy(&nh_);
@@ -66,7 +67,7 @@ void RRTPlugin2D::initialize(std::string name,
           &nh_, collision_checker_);
 
   planner_ = rrt_planner::ros_factory::createPlanner<State2D>(
-      &nh_, search_policy, sampling_policy, state_space_, state_connector,
+      &nh_, search_policy, sampling_policy, state_space, state_connector,
       collision_checker_);
 
   visualization_ = rrt_planner::visualization_factory::createVisualization(

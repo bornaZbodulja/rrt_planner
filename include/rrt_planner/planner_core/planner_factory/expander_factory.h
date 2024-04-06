@@ -20,7 +20,6 @@
 #include "rrt_planner/planner_core/nearest_neighbor_star_expander/nearest_neighbor_star_expander.h"
 #include "rrt_planner/planner_core/nearest_neighbor_star_expander/nearest_neighbor_star_expander_params.h"
 #include "state_space/state_connector/state_connector.h"
-#include "state_space/state_space/state_space.h"
 
 namespace rrt_planner::planner_core::planner_factory {
 
@@ -29,12 +28,11 @@ std::unique_ptr<rrt_planner::planner_core::expander::Expander<StateT>>
 createNearestNeighborExpander(
     std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<
         StateT>>&& cost_scorer,
-    const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
     const std::shared_ptr<state_space::state_connector::StateConnector<StateT>>&
         state_connector) {
   return std::make_unique<rrt_planner::planner_core::nearest_neighbor_expander::
                               NearestNeighborExpander<StateT>>(
-      std::move(cost_scorer), state_space, state_connector);
+      std::move(cost_scorer), state_connector);
 }
 
 template <typename StateT>
@@ -45,14 +43,12 @@ createNearestNeighborStarExpander(
     std::unique_ptr<
         rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>&&
         cost_scorer,
-    const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
     const std::shared_ptr<state_space::state_connector::StateConnector<StateT>>&
         state_connector) {
   return std::make_unique<
       rrt_planner::planner_core::nearest_neighbor_star_expander::
-          NearestNeighborStarExpander<StateT>>(std::move(star_expander_params),
-                                               std::move(cost_scorer),
-                                               state_space, state_connector);
+          NearestNeighborStarExpander<StateT>>(
+      std::move(star_expander_params), std::move(cost_scorer), state_connector);
 }
 }  // namespace rrt_planner::planner_core::planner_factory
 

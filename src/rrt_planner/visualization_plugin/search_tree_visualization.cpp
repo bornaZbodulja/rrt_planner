@@ -11,16 +11,19 @@
 
 #include "rrt_planner/visualization_plugin/search_tree_visualization.h"
 
-#include "nav_utils/message_utils.h"
+#include <nav_utils/message_utils.h>
+
+#include <string>
 
 namespace rrt_planner::visualization {
 
 SearchTreeVisualization::SearchTreeVisualization(
-    ros::NodeHandle* nh, const std::string& tree_identifier,
+    ros::NodeHandle* nh, TreeId tree_identifier,
     const std_msgs::ColorRGBA& tree_color)
     : tree_id_(tree_identifier),
       tree_pub_(nh->advertise<visualization_msgs::MarkerArray>(
-          "search_tree/" + tree_identifier, 1, false)),
+          "search_tree/" + std::string(treeIdToString(tree_identifier)), 1,
+          false)),
       tree_color_(tree_color) {}
 
 void SearchTreeVisualization::setTree(
@@ -38,9 +41,10 @@ void SearchTreeVisualization::setTree(
 
 visualization_msgs::Marker SearchTreeVisualization::edgeToMarker(
     const std::string& edge_id, const std::vector<geometry_msgs::Pose>& edge) {
+  static const std::string tree_id_str = treeIdToString(tree_id_);
   visualization_msgs::Marker edge_marker;
   edge_marker.header = nav_utils::prepareHeader("map");
-  edge_marker.ns = tree_id_ + "/" + edge_id;
+  edge_marker.ns = tree_id_str + "/" + edge_id;
   edge_marker.type = visualization_msgs::Marker::LINE_STRIP;
   edge_marker.action = visualization_msgs::Marker::ADD;
   edge_marker.pose.orientation.w = 1.0;

@@ -26,10 +26,6 @@
 namespace rrt_planner::visualization {
 class Visualization {
  public:
-  Visualization(ros::NodeHandle* nh)
-      : tree_vis_(std::make_unique<SearchTreeVisualizationCollection>()),
-        path_vis_(std::make_unique<PathVisualization>(nh)) {}
-
   virtual ~Visualization() = default;
 
   void updatePathVisualization(
@@ -45,19 +41,15 @@ class Visualization {
       const std::vector<std::vector<std::vector<geometry_msgs::Pose>>>&
           trees) = 0;
 
-  void publishVisualization() const {
+  virtual void publishVisualization() const {
     path_vis_->publishVisualization();
-    tree_vis_->publishVisualization();
   }
 
-  void clearVisualization() {
-    path_vis_->clearVisualization();
-    tree_vis_->clearVisualization();
-  }
+  virtual void clearVisualization() { path_vis_->clearVisualization(); }
 
  protected:
-  // Search tree visualization utility
-  std::unique_ptr<SearchTreeVisualizationCollection> tree_vis_;
+  explicit Visualization(ros::NodeHandle* nh)
+      : path_vis_(std::make_unique<PathVisualization>(nh)) {}
 
  private:
   // Path visualization utility

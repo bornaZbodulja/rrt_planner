@@ -33,13 +33,13 @@ class StateSpace {
   virtual void normalizeState(StateT& state) const = 0;
 
   /**
-   * @brief Computes distance between two given states
+   * @brief Computes difference between two given states
    * @param start_state
    * @param goal_state
    * @return double
    */
-  virtual StateT getStateDistance(const StateT& start_state,
-                                  const StateT& goal_state) const = 0;
+  virtual StateT getStatesDifference(const StateT& start_state,
+                                     const StateT& goal_state) const = 0;
 
   /**
    * @brief Computes cost of given state
@@ -52,7 +52,7 @@ class StateSpace {
 
   /**
    * @brief Gets space associated with state space
-   * @return const Space& 
+   * @return const Space&
    */
   virtual const Space& getSpace() const = 0;
 };

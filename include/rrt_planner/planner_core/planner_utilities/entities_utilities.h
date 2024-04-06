@@ -34,7 +34,8 @@ std::unique_ptr<rrt_planner::planner_core::planner_entities::SearchTree<StateT>>
 createSearchTree(const state_space::StateSpace<StateT>* const state_space) {
   std::function<double(const StateT&, const StateT&)> distance_getter =
       [state_space](const StateT& state_a, const StateT& state_b) {
-        return state_space->getStateDistance(state_a, state_b).squaredL2norm();
+        return state_space->getStatesDifference(state_a, state_b)
+            .squaredL2norm();
       };
 
   return std::make_unique<

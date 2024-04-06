@@ -49,7 +49,7 @@ createStateSampler(
           collision_checker);
     }
     default:
-      return nullptr;
+      __builtin_unreachable();
   }
 }
 }  // namespace rrt_planner::ros_factory

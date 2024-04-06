@@ -22,7 +22,6 @@
 #include "rrt_planner/planner_core/planner_entities/search_graph.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
 #include "state_space/state_connector/state_connector.h"
-#include "state_space/state_space/state_space.h"
 
 namespace rrt_planner::planner_core::nearest_neighbor_star_expander {
 /**
@@ -42,7 +41,6 @@ class NearestNeighborStarExpander
    * @brief Star expander constructor
    * @param star_expander_params Expander parameters
    * @param cost_scorer Cost scorer pointer
-   * @param state_space State space pointer
    * @param state_connector State connector pointer
    */
   explicit NearestNeighborStarExpander(
@@ -50,12 +48,10 @@ class NearestNeighborStarExpander
       std::unique_ptr<
           rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>&&
           cost_scorer,
-      const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
       const std::shared_ptr<
           state_space::state_connector::StateConnector<StateT>>&
           state_connector)
-      : NearestNeighborExpanderT(std::move(cost_scorer), state_space,
-                                 state_connector),
+      : NearestNeighborExpanderT(std::move(cost_scorer), state_connector),
         star_expander_params_(std::move(star_expander_params)) {}
 
   ~NearestNeighborStarExpander() override = default;

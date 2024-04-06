@@ -23,6 +23,8 @@
 #include <utility>
 #include <vector>
 
+#include "rrt_planner/visualization_plugin/tree_id.h"
+
 namespace rrt_planner::visualization {
 class SearchTreeVisualization {
  public:
@@ -32,7 +34,7 @@ class SearchTreeVisualization {
    * @param tree_identifier
    */
   SearchTreeVisualization(ros::NodeHandle* nh,
-                          const std::string& tree_identifier,
+                          TreeId tree_identifier,
                           const std_msgs::ColorRGBA& tree_color);
 
   ~SearchTreeVisualization() = default;
@@ -59,7 +61,7 @@ class SearchTreeVisualization {
   }
 
   // Tree id
-  std::string tree_id_;
+  TreeId tree_id_;
   // Search tree visualization publisher
   ros::Publisher tree_pub_;
   // Visualization of search tree

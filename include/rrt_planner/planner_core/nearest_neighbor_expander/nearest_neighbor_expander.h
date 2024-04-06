@@ -20,7 +20,6 @@
 #include "rrt_planner/planner_core/planner_entities/search_graph.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
 #include "state_space/state_connector/state_connector.h"
-#include "state_space/state_space/state_space.h"
 
 namespace rrt_planner::planner_core::nearest_neighbor_expander {
 /**
@@ -36,19 +35,16 @@ class NearestNeighborExpander
   /**
    * @brief Regular expander constructor
    * @param cost_scorer Cost scorer pointer
-   * @param state_space State space pointer
    * @param state_connector State connector pointer
    */
   explicit NearestNeighborExpander(
       std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<
           StateT>>&& cost_scorer,
-      const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
       const std::shared_ptr<
           state_space::state_connector::StateConnector<StateT>>&
           state_connector)
       : rrt_planner::planner_core::expander::Expander<StateT>(),
         cost_scorer_(std::move(cost_scorer)),
-        state_space_(state_space),
         state_connector_(state_connector) {}
 
   ~NearestNeighborExpander() override = default;
@@ -180,8 +176,6 @@ class NearestNeighborExpander
   // Cost scorer pointer
   std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>
       cost_scorer_;
-  // State space pointer
-  std::shared_ptr<state_space::StateSpace<StateT>> state_space_;
   // State connector pointer
   std::shared_ptr<state_space::state_connector::StateConnector<StateT>>
       state_connector_;

@@ -16,22 +16,24 @@
 #include <ros/console.h>
 #include <std_msgs/ColorRGBA.h>
 
+#include <memory>
 #include <vector>
 
+#include "rrt_planner/visualization_plugin/search_tree_visualization_collection.h"
+#include "rrt_planner/visualization_plugin/tree_id.h"
 #include "rrt_planner/visualization_plugin/visualization.h"
 #include "rrt_planner/visualization_plugin/visualization_utilities.h"
 
 namespace rrt_planner::visualization {
 class BidirectionalRRTVisualization : public Visualization {
  public:
-  enum class TreeId { ROOT_TREE = 0, TARGET_TREE = 1 };
-
-  BidirectionalRRTVisualization(ros::NodeHandle* nh) : Visualization(nh) {
-    this->tree_vis_->addTreeVisualization(nh, treeIdToString(TreeId::ROOT_TREE),
-                                          treeColorMapper(TreeId::ROOT_TREE));
-    this->tree_vis_->addTreeVisualization(nh,
-                                          treeIdToString(TreeId::TARGET_TREE),
-                                          treeColorMapper(TreeId::TARGET_TREE));
+  BidirectionalRRTVisualization(ros::NodeHandle* nh)
+      : Visualization(nh),
+        tree_vis_(std::make_unique<SearchTreeVisualizationCollection>()) {
+    tree_vis_->addTreeVisualization(nh, TreeId::ROOT_TREE,
+                                    treeColorMapper(TreeId::ROOT_TREE));
+    tree_vis_->addTreeVisualization(nh, TreeId::TARGET_TREE,
+                                    treeColorMapper(TreeId::TARGET_TREE));
   }
 
   ~BidirectionalRRTVisualization() override = default;
@@ -47,24 +49,21 @@ class BidirectionalRRTVisualization : public Visualization {
       return;
     }
 
-    this->tree_vis_->setTreeVisualization(treeIdToString(TreeId::ROOT_TREE),
-                                          trees[0]);
-    this->tree_vis_->setTreeVisualization(treeIdToString(TreeId::TARGET_TREE),
-                                          trees[1]);
+    tree_vis_->setTreeVisualization(TreeId::ROOT_TREE, trees[0]);
+    tree_vis_->setTreeVisualization(TreeId::TARGET_TREE, trees[1]);
+  }
+
+  void publishVisualization() const override {
+    tree_vis_->publishVisualization();
+    Visualization::publishVisualization();
+  }
+
+  void clearVisualization() override {
+    tree_vis_->clearVisualization();
+    Visualization::clearVisualization();
   }
 
  private:
-  std::string treeIdToString(TreeId id) {
-    switch (id) {
-      case TreeId::ROOT_TREE:
-        return "root_tree";
-      case TreeId::TARGET_TREE:
-        return "target_tree";
-    }
-
-    __builtin_unreachable();
-  }
-
   std_msgs::ColorRGBA treeColorMapper(TreeId id) {
     switch (id) {
       case TreeId::ROOT_TREE:
@@ -75,6 +74,9 @@ class BidirectionalRRTVisualization : public Visualization {
 
     __builtin_unreachable();
   }
+
+  // Search tree visualization utility
+  std::unique_ptr<SearchTreeVisualizationCollection> tree_vis_;
 };
 }  // namespace rrt_planner::visualization
 

@@ -53,7 +53,7 @@ createRRTPlanner(
       expander = createNearestNeighborExpander<StateT>(
           createCostScorer<StateT>(std::move(cost_scorer_params), state_space,
                                    state_connector, collision_checker),
-          state_space, state_connector);
+          state_connector);
   return std::make_unique<
       rrt_planner::planner_core::planner_implementations::RRT<StateT>>(
       rrt_planner::planner_core::planner_implementations::SearchPolicy::RRT,
@@ -81,7 +81,7 @@ createRRTStarPlanner(
           std::move(star_expander_params),
           createCostScorer<StateT>(std::move(cost_scorer_params), state_space,
                                    state_connector, collision_checker),
-          state_space, state_connector);
+          state_connector);
   return std::make_unique<
       rrt_planner::planner_core::planner_implementations::RRT<StateT>>(
       rrt_planner::planner_core::planner_implementations::SearchPolicy::
@@ -109,7 +109,7 @@ createBidirectionalRRTPlanner(
       expander = createNearestNeighborExpander<StateT>(
           createCostScorer<StateT>(std::move(cost_scorer_params), state_space,
                                    state_connector, collision_checker),
-          state_space, state_connector);
+          state_connector);
   std::unique_ptr<
       rrt_planner::planner_core::tree_connector::TreeConnector<StateT>>
       tree_connector = createNearestNeighborTreeConnector<StateT>(
@@ -144,7 +144,7 @@ createBidirectionalRRTStarPlanner(
           std::move(star_expander_params),
           createCostScorer<StateT>(std::move(cost_scorer_params), state_space,
                                    state_connector, collision_checker),
-          state_space, state_connector);
+          state_connector);
   std::unique_ptr<
       rrt_planner::planner_core::tree_connector::TreeConnector<StateT>>
       tree_connector = createNearestNeighborTreeConnector<StateT>(

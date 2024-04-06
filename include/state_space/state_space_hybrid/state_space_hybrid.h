@@ -29,16 +29,17 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
       : space_{size_x_in, size_y_in, dim_3_in} {}
 
   void normalizeState(StateHybrid& state) const override {
-    static double size_x = space_.getBounds().at(0);
-    static double size_y = space_.getBounds().at(1);
-    static double dim_3 = space_.getBounds().at(2);
+    static const double size_x = space_.getBounds().at(0);
+    static const double size_y = space_.getBounds().at(1);
+    static const double dim_3 = space_.getBounds().at(2);
     state.x = std::fmod(state.x, size_x);
     state.y = std::fmod(state.y, size_y);
     state.theta = std::fmod(state.theta, dim_3);
   }
 
-  StateHybrid getStateDistance(const StateHybrid& start_state,
-                               const StateHybrid& goal_state) const override {
+  StateHybrid getStatesDifference(
+      const StateHybrid& start_state,
+      const StateHybrid& goal_state) const override {
     return (goal_state - start_state);
   }
 
@@ -57,7 +58,7 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
    * @return double Angular bin
    */
   double getAngularBin(double theta) const {
-    static double angle_bin = 2 * M_PI / space_.getBounds().at(2);
+    static const double angle_bin = 2 * M_PI / space_.getBounds().at(2);
     return theta / angle_bin;
   }
 
@@ -67,7 +68,7 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
    * @return double
    */
   double getAngleFromBin(double bin_idx) const {
-    static double angle_bin = 2 * M_PI / space_.getBounds().at(2);
+    static const double angle_bin = 2 * M_PI / space_.getBounds().at(2);
     return bin_idx * angle_bin;
   }
 

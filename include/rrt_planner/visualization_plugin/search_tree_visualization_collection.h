@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "rrt_planner/visualization_plugin/search_tree_visualization.h"
+#include "rrt_planner/visualization_plugin/tree_id.h"
 
 namespace rrt_planner::visualization {
 class SearchTreeVisualizationCollection {
@@ -34,14 +35,14 @@ class SearchTreeVisualizationCollection {
    * @param tree_id
    * @param tree_color
    */
-  void addTreeVisualization(ros::NodeHandle* nh, const std::string& tree_id,
+  void addTreeVisualization(ros::NodeHandle* nh, TreeId tree_id,
                             const std_msgs::ColorRGBA& tree_color) {
     collection_.try_emplace(tree_id, std::make_unique<SearchTreeVisualization>(
                                          nh, tree_id, tree_color));
   }
 
   void setTreeVisualization(
-      const std::string& tree_id,
+      TreeId tree_id,
       const std::vector<std::vector<geometry_msgs::Pose>>& search_tree) {
     auto it = collection_.find(tree_id);
     if (it == collection_.end()) {
@@ -63,7 +64,7 @@ class SearchTreeVisualizationCollection {
   }
 
  private:
-  std::map<std::string, std::unique_ptr<SearchTreeVisualization>> collection_{};
+  std::map<TreeId, std::unique_ptr<SearchTreeVisualization>> collection_{};
 };
 }  // namespace rrt_planner::visualization
 

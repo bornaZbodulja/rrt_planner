@@ -115,8 +115,6 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
   // RRT planner pointer
   std::unique_ptr<rrt_planner::planner_core::planner::Planner<State2D>>
       planner_;
-  // 2D state space pointer
-  std::shared_ptr<state_space::state_space_2d::StateSpace2D> state_space_;
   // Collision checker pointer
   std::shared_ptr<nav_utils::CollisionChecker> collision_checker_;
   // Map info
