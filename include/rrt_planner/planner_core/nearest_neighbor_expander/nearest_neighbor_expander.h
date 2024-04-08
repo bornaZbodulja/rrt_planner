@@ -166,19 +166,19 @@ class NearestNeighborExpander
     return (*cost_scorer_)(parent_state, child_state);
   }
 
- protected:
-  double computeAccumulatedCost(const NodeT* parent_node,
-                                const NodeT* child_node) const {
-    return parent_node->getAccumulatedCost() +
-           getTraversingCost(parent_node->getState(), child_node->getState());
-  }
-
   // Cost scorer pointer
   std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>
       cost_scorer_;
   // State connector pointer
   std::shared_ptr<state_space::state_connector::StateConnector<StateT>>
       state_connector_;
+
+ protected:
+  double computeAccumulatedCost(const NodeT* parent_node,
+                                const NodeT* child_node) const {
+    return parent_node->getAccumulatedCost() +
+           getTraversingCost(parent_node->getState(), child_node->getState());
+  }
 };
 }  // namespace rrt_planner::planner_core::nearest_neighbor_expander
 

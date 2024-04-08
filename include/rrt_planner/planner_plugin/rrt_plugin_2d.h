@@ -100,9 +100,9 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
   void state2DToPose(const State2D& state_2d, geometry_msgs::Pose& pose);
 
   /**
-   * @brief 
-   * @param pose 
-   * @param state_2d 
+   * @brief
+   * @param pose
+   * @param state_2d
    */
   void poseToState2D(const geometry_msgs::Pose& pose, State2D& state_2d);
 
@@ -122,4 +122,4 @@ class RRTPlugin2D : public nav_core::BaseGlobalPlanner {
 };
 }  // namespace rrt_planner::planner_plugin
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_PLUGIN__RRT_PLUGIN_2D_H_

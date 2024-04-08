@@ -83,7 +83,6 @@ class Node {
   // Accumulated cost of node
   double accumulated_cost_;
 };
-
 }  // namespace rrt_planner::planner_core::planner_entities
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__NODE_H_

@@ -39,9 +39,7 @@ class SearchTree {
 
   ~SearchTree() = default;
 
-  void clear() {
-    tree_.clear();
-  }
+  void clear() { tree_.clear(); }
 
   void reserve(std::size_t size) { tree_.reserve(size); }
 
@@ -115,7 +113,6 @@ class SearchTree {
   // Distance getter
   DistanceGetter distance_getter_;
 };
-
 }  // namespace rrt_planner::planner_core::planner_entities
 
-#endif
+#endif  // RRT_PLANNER__PLANNER_CORE__PLANNER_ENTITIES__SEARCH_TREE_H_

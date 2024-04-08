@@ -52,7 +52,8 @@ class NearestNeighborStarExpander
           state_space::state_connector::StateConnector<StateT>>&
           state_connector)
       : NearestNeighborExpanderT(std::move(cost_scorer), state_connector),
-        star_expander_params_(std::move(star_expander_params)) {}
+        star_expander_params_(std::move(star_expander_params)),
+        state_connector_(state_connector) {}
 
   ~NearestNeighborStarExpander() override = default;
 
@@ -90,6 +91,7 @@ class NearestNeighborStarExpander
                                                            new_node));
     }
 
+    // If rewire_tree flag is set, rewire nodes in near nodes vector
     if (star_expander_params_.rewire_tree) {
       rewireNodes(new_node, near_nodes);
     }
@@ -122,8 +124,8 @@ class NearestNeighborStarExpander
           new_approach_cost = NearestNeighborExpanderT::computeAccumulatedCost(
               potential_parent, child_node);
           if (new_approach_cost < current_cost &&
-              this->state_connector_->tryConnectStates(
-                  potential_parent->getState(), child_node->getState())) {
+              state_connector_->tryConnectStates(potential_parent->getState(),
+                                                 child_node->getState())) {
             current_cost = new_approach_cost;
             best_parent = potential_parent;
           }
@@ -154,8 +156,8 @@ class NearestNeighborStarExpander
           new_approach_cost = NearestNeighborExpanderT::computeAccumulatedCost(
               potential_parent, potential_child);
           if (new_approach_cost < potential_child->getAccumulatedCost() &&
-              this->state_connector_->tryConnectStates(
-                  potential_parent->getState(), potential_child->getState())) {
+              state_connector_->tryConnectStates(potential_parent->getState(),
+                                                 potential_child->getState())) {
             potential_child->parent = potential_parent;
             potential_child->setAccumulatedCost(new_approach_cost);
           }
@@ -179,6 +181,9 @@ class NearestNeighborStarExpander
 
   // Expander parameters
   NearestNeighborStarExpanderParams star_expander_params_;
+  // State connector pointer
+  std::shared_ptr<state_space::state_connector::StateConnector<StateT>>
+      state_connector_;
 };
 }  // namespace rrt_planner::planner_core::nearest_neighbor_star_expander
 
