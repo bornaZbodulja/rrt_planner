@@ -86,8 +86,7 @@ class BidirectionalRRT : public RRTCore<StateT> {
     NodeT* start = graph_->getNode(start_state);
     start->setAccumulatedCost(0.0);
     start->visited();
-    start_tree_->setRootNode(start);
-    goal_tree_->setTargetNode(start);
+    start_tree_->addVertex(start);
     start_state_ = start->getState();
   }
 
@@ -95,8 +94,7 @@ class BidirectionalRRT : public RRTCore<StateT> {
     NodeT* goal = graph_->getNode(goal_state);
     goal->setAccumulatedCost(0.0);
     goal->visited();
-    start_tree_->setTargetNode(goal);
-    goal_tree_->setRootNode(goal);
+    goal_tree_->addVertex(goal);
     goal_state_ = goal->getState();
   }
 

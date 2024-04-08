@@ -40,8 +40,6 @@ class SearchTree {
   ~SearchTree() = default;
 
   void clear() {
-    root_node_ = nullptr;
-    target_node_ = nullptr;
     tree_.clear();
   }
 
@@ -52,13 +50,6 @@ class SearchTree {
   bool isNodeInTree(const NodeT* node) {
     return std::find(tree_.begin(), tree_.end(), node) != tree_.end();
   }
-
-  void setRootNode(NodeT* const node) {
-    root_node_ = node;
-    addVertex(node);
-  }
-
-  void setTargetNode(NodeT* const node) { target_node_ = node; }
 
   /**
    * @brief Returns closest node to given state
@@ -119,10 +110,6 @@ class SearchTree {
   }
 
  private:
-  // Root node pointer
-  NodeT* root_node_{nullptr};
-  // Target node pointer
-  NodeT* target_node_{nullptr};
   // Holder for nodes in tree
   std::vector<NodeT*> tree_;
   // Distance getter

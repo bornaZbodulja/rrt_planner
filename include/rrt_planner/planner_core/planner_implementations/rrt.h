@@ -75,14 +75,13 @@ class RRT : public RRTCore<StateT> {
     NodeT* start = graph_->getNode(start_state);
     start->setAccumulatedCost(0.0);
     start->visited();
-    start_tree_->setRootNode(start);
+    start_tree_->addVertex(start);
   }
 
   void setGoal(const StateT& goal_state) override {
     NodeT* goal = graph_->getNode(goal_state);
     goal->setAccumulatedCost(0.0);
     goal->visited();
-    start_tree_->setTargetNode(goal);
     goal_state_ = goal->getState();
   }
 
