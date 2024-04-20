@@ -56,7 +56,6 @@ class StateSpace {
    */
   virtual const Space& getSpace() const = 0;
 };
-
 }  // namespace state_space
 
 #endif

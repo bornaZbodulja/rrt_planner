@@ -14,12 +14,11 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Path.h>
+#include <nav_utils/message_utils.h>
 #include <ros/node_handle.h>
 #include <ros/publisher.h>
 
 #include <vector>
-
-#include "nav_utils/message_utils.h"
 
 namespace rrt_planner::visualization {
 class PathVisualization {

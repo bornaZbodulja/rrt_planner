@@ -54,13 +54,13 @@ class BidirectionalRRTVisualization : public Visualization {
   }
 
   void publishVisualization() const override {
-    tree_vis_->publishVisualization();
     Visualization::publishVisualization();
+    tree_vis_->publishVisualization();
   }
 
   void clearVisualization() override {
-    tree_vis_->clearVisualization();
     Visualization::clearVisualization();
+    tree_vis_->clearVisualization();
   }
 
  private:
