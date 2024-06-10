@@ -11,6 +11,8 @@
 
 #include "rrt_planner/planner_core/planner_implementations/bidirectional_rrt.h"
 
+#include <limits>
+
 #include "state_space/state_space_2d/state_2d.h"
 #include "state_space/state_space_hybrid/state_hybrid.h"
 
@@ -22,7 +24,14 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
   NodeT* new_node{nullptr};
   NodeT* closest_node{nullptr};
 
+  double current_path_cost{std::numeric_limits<double>::max()};
+  std::vector<StateT> path{};
+  bool path_found{false};
+
   RRTCore<StateT>::setPlanningStartTime();
+
+  ROS_INFO("Start state: (%.3f, %.3f), goal state: (%.3f, %.3f).",
+           start_state_.x, start_state_.y, goal_state_.x, goal_state_.y);
 
   while (!RRTCore<StateT>::planningExpired()) {
     // 1. Get new state for tree expansion
@@ -33,10 +42,8 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
 
     // 2. Extend search tree with new state
     new_node = expanding_start_tree
-                   ? expander_->expandTree(expansion_state, start_tree_.get(),
-                                           graph_.get())
-                   : expander_->expandTree(expansion_state, goal_tree_.get(),
-                                           graph_.get());
+                   ? expander_->expandTree(expansion_state, start_tree_.get())
+                   : expander_->expandTree(expansion_state, goal_tree_.get());
 
     // 3. If expansion was successful, check if new node can be connected to the
     // other tree
@@ -46,15 +53,19 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
               ? tree_connector_->tryConnectTrees(new_node, goal_tree_.get())
               : tree_connector_->tryConnectTrees(new_node, start_tree_.get());
 
+      // Path was found, compare cost with current best path
       if (closest_node != nullptr) {
-        std::vector<StateT> path = preparePath(new_node, closest_node);
+        double path_cost =
+            new_node->getAccumulatedCost() + closest_node->getAccumulatedCost();
 
-        if (!expanding_start_tree) {
-          std::reverse(path.begin(), path.end());
+        if (current_path_cost > path_cost) {
+          current_path_cost = path_cost;
+          path = preparePath(new_node, closest_node);
+          if (!expanding_start_tree) {
+            std::reverse(path.begin(), path.end());
+          }
+          path_found = true;
         }
-
-        RRTCore<StateT>::logSuccessfulPathCreation();
-        return std::make_optional<std::vector<StateT>>(path);
       }
     }
 
@@ -62,8 +73,13 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
     expanding_start_tree = !expanding_start_tree;
   }
 
-  RRTCore<StateT>::logUnsuccessfulPathCreation();
-  return std::nullopt;
+  if (path_found) {
+    RRTCore<StateT>::logSuccessfulPathCreation();
+    return std::make_optional<std::vector<StateT>>(path);
+  } else {
+    RRTCore<StateT>::logUnsuccessfulPathCreation();
+    return std::nullopt;
+  }
 }
 
 template <typename StateT>

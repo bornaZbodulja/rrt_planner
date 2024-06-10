@@ -15,7 +15,6 @@
 #include <memory>
 
 #include "rrt_planner/planner_core/planner_entities/node.h"
-#include "rrt_planner/planner_core/planner_entities/search_graph.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
 
 namespace rrt_planner::planner_core::expander {
@@ -34,14 +33,12 @@ class Expander {
    * @brief
    * @param expansion_state
    * @param tree
-   * @param graph
    * @return Node
    */
   virtual NodeT* expandTree(
       const StateT& expansion_state,
-      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* tree,
-      rrt_planner::planner_core::planner_entities::SearchGraph<StateT>*
-          graph) = 0;
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const
+          tree) = 0;
 
  protected:
   Expander() = default;

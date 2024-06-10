@@ -17,7 +17,6 @@
 #include "rrt_planner/planner_core/cost_scorer/cost_scorer.h"
 #include "rrt_planner/planner_core/expander/expander.h"
 #include "rrt_planner/planner_core/planner_entities/node.h"
-#include "rrt_planner/planner_core/planner_entities/search_graph.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
 #include "state_space/state_connector/state_connector.h"
 
@@ -54,29 +53,22 @@ class NearestNeighborExpander
    * @param expansion_state Expansion state used for generating new node for
    * expansion
    * @param tree Search tree pointer
-   * @param graph Search graph pointer
    * @return NodeT*
    */
   NodeT* expandTree(
       const StateT& expansion_state,
-      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* tree,
-      rrt_planner::planner_core::planner_entities::SearchGraph<StateT>* graph)
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const tree)
       override {
-    // Get closest node(state) to expansion state in state space
+    // Get closest node(state) to expansion state in search tree
     NodeT* closest_node = tree->getClosestNode(expansion_state);
     // Get new node for expansion
-    NodeT* new_node = getNewNode(expansion_state, closest_node, graph);
+    NodeT* new_node = getNewNode(expansion_state, closest_node, tree);
 
     if (new_node == nullptr) {
       return nullptr;
     }
 
-    // If node is visited and not in tree, target is reached
-    if (new_node->isVisited() && !tree->isNodeInTree(new_node)) {
-      return new_node;
-    }
-
-    updateNode(new_node, closest_node, tree);
+    updateNode(new_node, closest_node);
 
     return new_node;
   }
@@ -86,13 +78,13 @@ class NearestNeighborExpander
    * @brief Generates new node for expansion based on expansion state
    * @param expansion_state Given expansion state
    * @param closest_node Closest node pointer
-   * @param graph Search graph pointer
+   * @param tree Search tree pointer
    * @return NodeT
    */
   NodeT* getNewNode(
       const StateT& expansion_state, const NodeT* closest_node,
-      rrt_planner::planner_core::planner_entities::SearchGraph<StateT>* const
-          graph) {
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const
+          tree) {
     if (closest_node == nullptr) {
       return nullptr;
     }
@@ -106,7 +98,7 @@ class NearestNeighborExpander
     }
 
     // Return node which corresponds to new state
-    NodeT* new_node = graph->getNode(new_state.value());
+    NodeT* new_node = tree->getNode(new_state.value());
     return new_node;
   }
 
@@ -116,11 +108,8 @@ class NearestNeighborExpander
    * and updates new node info accordingly
    * @param new_node New node to be updated
    * @param parent_node Parent node of new node
-   * @param tree Search tree pointer
    */
-  void updateNode(
-      NodeT* new_node, NodeT* parent_node,
-      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* tree) {
+  void updateNode(NodeT* new_node, NodeT* parent_node) {
     // Backtrack through closest node ancestors
     parent_node = backTracking(new_node, parent_node);
 
@@ -133,7 +122,6 @@ class NearestNeighborExpander
       new_node->setAccumulatedCost(accumulated_cost);
       if (!new_node_visited) {
         new_node->visited();
-        tree->addVertex(new_node);
       }
     }
   }

@@ -38,9 +38,10 @@ class NearestNeighborTreeConnector
 
   ~NearestNeighborTreeConnector() override = default;
 
-  NodeT* tryConnectTrees(const NodeT* node,
-                         const rrt_planner::planner_core::planner_entities::
-                             SearchTree<StateT>* const tree) override {
+  NodeT* tryConnectTrees(
+      const NodeT* node,
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const
+          tree) override {
     if (node == nullptr) {
       return nullptr;
     }

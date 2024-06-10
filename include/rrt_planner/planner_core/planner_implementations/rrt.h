@@ -19,7 +19,6 @@
 
 #include "rrt_planner/planner_core/expander/expander.h"
 #include "rrt_planner/planner_core/planner_entities/node.h"
-#include "rrt_planner/planner_core/planner_entities/search_graph.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
 #include "rrt_planner/planner_core/planner_implementations/rrt_core.h"
 #include "rrt_planner/planner_core/planner_implementations/search_params.h"
@@ -54,12 +53,9 @@ class RRT : public RRTCore<StateT> {
         state_connector_(state_connector),
         expander_(std::move(expander)),
         state_sampler_(std::move(state_sampler)),
-        graph_(std::make_unique<rrt_planner::planner_core::planner_entities::
-                                    SearchGraph<StateT>>()),
         start_tree_(
             rrt_planner::planner_core::planner_utilities::createSearchTree<
                 StateT>(state_space_.get())) {
-    graph_->reserve(this->search_params_.max_expansion_iterations);
     start_tree_->reserve(this->search_params_.max_expansion_iterations);
   }
 
@@ -67,22 +63,17 @@ class RRT : public RRTCore<StateT> {
 
   void initializeSearch() override {
     RRTCore<StateT>::initializeSearch();
-    graph_->clear();
     start_tree_->clear();
   }
 
   void setStart(const StateT& start_state) override {
-    NodeT* start = graph_->getNode(start_state);
+    NodeT* start = start_tree_->getNode(start_state);
     start->setAccumulatedCost(0.0);
     start->visited();
-    start_tree_->addVertex(start);
   }
 
   void setGoal(const StateT& goal_state) override {
-    NodeT* goal = graph_->getNode(goal_state);
-    goal->setAccumulatedCost(0.0);
-    goal->visited();
-    goal_state_ = goal->getState();
+    goal_state_ = goal_state;
   }
 
   std::optional<std::vector<StateT>> createPath() override;
@@ -113,10 +104,6 @@ class RRT : public RRTCore<StateT> {
   // State sampler pointer
   std::unique_ptr<state_space::state_sampler::StateSampler<StateT>>
       state_sampler_;
-  // Search graph pointer
-  std::unique_ptr<
-      rrt_planner::planner_core::planner_entities::SearchGraph<StateT>>
-      graph_;
   // Start search tree pointer
   std::unique_ptr<SearchTreeT> start_tree_;
   // Goal state

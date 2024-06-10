@@ -39,14 +39,31 @@ class SearchTree {
 
   ~SearchTree() = default;
 
-  void clear() { tree_.clear(); }
+  void clear() {
+    // Resetting all nodes before deleting them!!!
+    std::for_each(tree_.begin(), tree_.end(),
+                  [&](NodeT& node) { node.reset(); });
+    tree_.clear();
+  }
 
   void reserve(std::size_t size) { tree_.reserve(size); }
 
-  void addVertex(NodeT* node) { tree_.push_back(node); }
+  /**
+   * @brief Gets node from tree at given state
+   * @param state Given state
+   * @return NodeT* Pointer to node at given state
+   */
+  NodeT* getNode(const StateT& state) {
+    auto it = std::find_if(
+        tree_.begin(), tree_.end(),
+        [&state](const NodeT& node) { return node.getState() == state; });
 
-  bool isNodeInTree(const NodeT* node) {
-    return std::find(tree_.begin(), tree_.end(), node) != tree_.end();
+    if (it == tree_.end()) {
+      // if node with given state doesn't exist in tree, create it
+      return &(tree_.emplace_back(state));
+    }
+
+    return &(*it);
   }
 
   /**
@@ -54,17 +71,16 @@ class SearchTree {
    * @param state Given state
    * @return NodeT* Pointer to closest node
    */
-  NodeT* getClosestNode(const StateT& state) const {
+  NodeT* getClosestNode(const StateT& state) {
     if (tree_.empty()) {
       return nullptr;
     }
 
-    return *std::min_element(
-        tree_.cbegin(), tree_.cend(),
-        [this, &state](const NodeT* node1, const NodeT* node2) {
-          return distance_getter_(node1->getState(), state) <
-                 distance_getter_(node2->getState(), state);
-        });
+    return &(*std::min_element(
+        tree_.begin(), tree_.end(), [this, &state](NodeT& node1, NodeT& node2) {
+          return distance_getter_(node1.getState(), state) <
+                 distance_getter_(node2.getState(), state);
+        }));
   }
 
   /**
@@ -72,19 +88,20 @@ class SearchTree {
    * @param state Given state
    * @param near_distance Defines neighborhood of nodes
    */
-  std::vector<NodeT*> getNearNodes(const StateT& state,
-                                   double near_distance) const {
+  std::vector<NodeT*> getNearNodes(const StateT& state, double near_distance) {
     std::vector<NodeT*> near_nodes{};
 
     if (tree_.empty()) {
       return {};
     }
 
-    std::copy_if(tree_.cbegin(), tree_.cend(), std::back_inserter(near_nodes),
-                 [this, &state, &near_distance](const NodeT* node) {
-                   return distance_getter_(node->getState(), state) <=
-                          near_distance;
-                 });
+    std::for_each(
+        tree_.begin(), tree_.end(),
+        [this, &near_nodes, &state, &near_distance](NodeT& node) {
+          if (distance_getter_(node.getState(), state) <= near_distance) {
+            near_nodes.emplace_back(&node);
+          }
+        });
 
     return near_nodes;
   }
@@ -98,18 +115,19 @@ class SearchTree {
     std::vector<std::pair<StateT, StateT>> edges;
     edges.reserve(tree_.size());
 
-    std::for_each(tree_.cbegin(), tree_.cend(), [&](const NodeT* node) {
-      if (node != nullptr && node->parent != nullptr) {
-        edges.emplace_back(node->parent->getState(), node->getState());
-      }
-    });
+    std::for_each(
+        tree_.cbegin(), tree_.cend(), [&edges = edges](const NodeT& node) {
+          if (node.parent != nullptr) {
+            edges.emplace_back(node.parent->getState(), node.getState());
+          }
+        });
 
     return edges;
   }
 
  private:
   // Holder for nodes in tree
-  std::vector<NodeT*> tree_;
+  std::vector<NodeT> tree_;
   // Distance getter
   DistanceGetter distance_getter_;
 };

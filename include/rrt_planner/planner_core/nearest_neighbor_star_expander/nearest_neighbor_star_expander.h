@@ -19,7 +19,6 @@
 #include "rrt_planner/planner_core/nearest_neighbor_expander/nearest_neighbor_expander.h"
 #include "rrt_planner/planner_core/nearest_neighbor_star_expander/nearest_neighbor_star_expander_params.h"
 #include "rrt_planner/planner_core/planner_entities/node.h"
-#include "rrt_planner/planner_core/planner_entities/search_graph.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
 #include "state_space/state_connector/state_connector.h"
 
@@ -61,17 +60,15 @@ class NearestNeighborStarExpander
    * @brief
    * @param expansion_state Given expansion state
    * @param tree Search tree pointer
-   * @param graph Search graph pointer
    * @return NodeT*
    */
   NodeT* expandTree(
       const StateT& expansion_state,
-      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* tree,
-      rrt_planner::planner_core::planner_entities::SearchGraph<StateT>* graph)
-      override {
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const
+          tree) override {
     // Get new node for expansion
     NodeT* new_node =
-        NearestNeighborExpanderT::expandTree(expansion_state, tree, graph);
+        NearestNeighborExpanderT::expandTree(expansion_state, tree);
 
     if (new_node == nullptr) {
       return nullptr;
@@ -174,8 +171,8 @@ class NearestNeighborStarExpander
    */
   std::vector<NodeT*> getNearNodes(
       const StateT& state,
-      const rrt_planner::planner_core::planner_entities::SearchTree<
-          StateT>* const tree) const {
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const
+          tree) const {
     return tree->getNearNodes(state, star_expander_params_.near_distance);
   }
 
