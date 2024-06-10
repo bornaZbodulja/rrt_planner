@@ -15,6 +15,8 @@
 #include <nav_utils/collision_checker.h>
 
 #include <memory>
+#include <numeric>
+#include <vector>
 
 #include "rrt_planner/planner_core/cost_scorer/cost_scorer_params.h"
 #include "state_space/state_connector/state_connector.h"
@@ -40,14 +42,21 @@ class CostScorer {
 
   double operator()(const StateT& parent_state,
                     const StateT& child_state) const {
-    return computeStateCost(child_state) +
+    return computeStateCost(parent_state, child_state) +
            computeTraversalCost(parent_state, child_state);
   }
 
  private:
-  double computeStateCost(const StateT& state) const {
+  double computeStateCost(const StateT& parent_state,
+                          const StateT& child_state) const {
+    std::vector<StateT> path =
+        state_connector_->connectStates(parent_state, child_state);
     return params_.cost_penalty *
-           state_space_->getStateCost(state, collision_checker_.get());
+           std::accumulate(path.cbegin(), path.cend(), 0.0,
+                           [&](double cost, const StateT& state) {
+                             return cost + state_space_->getStateCost(
+                                               state, collision_checker_.get());
+                           });
   }
 
   double computeTraversalCost(const StateT& parent_state,
