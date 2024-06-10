@@ -29,6 +29,17 @@ class Node {
         visited_(false),
         accumulated_cost_(std::numeric_limits<double>::max()) {}
 
+  Node(Node&& node)
+      : parent(std::move(node.parent)),
+        state_(std::move(node.state_)),
+        visited_(std::move(node.visited_)),
+        accumulated_cost_(std::move(node.accumulated_cost_)) {
+    node.parent = nullptr;
+  }
+  Node(const Node& node) = delete;
+  Node& operator=(const Node& node) = delete;
+  Node& operator=(Node&& node) = delete;
+
   ~Node() { parent = nullptr; }
 
   const StateT& getState() const { return state_; }
