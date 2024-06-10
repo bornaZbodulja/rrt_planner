@@ -35,17 +35,17 @@ class StateHybrid : public State<StateHybrid> {
     return x == rhs.x && y == rhs.y && theta == rhs.theta;
   }
 
-  void operator*(double k) {
+  void operator*(double k) override {
     x *= k;
     y *= k;
     theta *= k;
   }
 
-  StateHybrid operator+(const StateHybrid& rhs) const {
+  StateHybrid operator+(const StateHybrid& rhs) const override {
     return StateHybrid{x + rhs.x, y + rhs.y, theta + rhs.theta};
   }
 
-  double squaredL2norm() const {
+  double squaredL2norm() const override {
     double d = std::pow(x, 2) + std::pow(y, 2);
     constexpr double kSwitchThreshold = 1.0;
 

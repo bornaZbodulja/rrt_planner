@@ -22,11 +22,11 @@ namespace state_space {
 template <typename T>
 class State {
  public:
-  void operator*(double k) { derived_cast()->operator*(k); }
+  virtual void operator*(double k) = 0;
 
-  T operator+(const T& rhs) const { return derived_cast()->operator+(rhs); }
+  virtual T operator+(const T& rhs) const = 0;
 
-  double squaredL2norm() const { return derived_cast()->squaredL2norm(); }
+  virtual double squaredL2norm() const = 0;
 
   double l2norm() { return std::sqrt(squaredL2norm()); }
 
@@ -38,11 +38,6 @@ class State {
     res = this->operator+(res);
     return res;
   }
-
- private:
-  T* derived_cast() { return (static_cast<T*>(this)); }
-
-  const T* derived_cast() const { return (static_cast<const T*>(this)); }
 };
 
 }  // namespace state_space

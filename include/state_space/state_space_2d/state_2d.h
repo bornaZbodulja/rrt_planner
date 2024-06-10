@@ -32,16 +32,18 @@ class State2D : public State<State2D> {
 
   bool operator==(const State2D& rhs) const { return x == rhs.x && y == rhs.y; }
 
-  void operator*(double k) {
+  void operator*(double k) override {
     x *= k;
     y *= k;
   }
 
-  State2D operator+(const State2D& rhs) const {
+  State2D operator+(const State2D& rhs) const override {
     return State2D{x + rhs.x, y + rhs.y};
   }
 
-  double squaredL2norm() const { return std::pow(x, 2) + std::pow(y, 2); }
+  double squaredL2norm() const override {
+    return std::pow(x, 2) + std::pow(y, 2);
+  }
 
   double x{0.0}, y{0.0};
 };
