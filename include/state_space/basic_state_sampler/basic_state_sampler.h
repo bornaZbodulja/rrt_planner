@@ -28,10 +28,10 @@ class BasicStateSampler
  public:
   explicit BasicStateSampler(
       BasicStateSamplerParams&& basic_state_sampler_params,
-      const state_space::Space& space)
+      const std::vector<double>& space_bounds)
       : state_space::state_sampler::StateSampler<StateT>(),
         basic_state_sampler_params_(std::move(basic_state_sampler_params)),
-        space_bounds_(space.getBounds()),
+        space_bounds_(space_bounds),
         gen_(std::minstd_rand(std::random_device{}())),
         dist_(std::uniform_real_distribution<double>(0.0, 1.0)) {}
 

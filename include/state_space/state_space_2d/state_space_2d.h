@@ -46,7 +46,7 @@ class StateSpace2D : public state_space::StateSpace<State2D> {
                                       static_cast<unsigned int>(state.y));
   }
 
-  const Space2D& getSpace() const override { return space_; }
+  std::vector<double> getBounds() const override { return space_.getBounds(); }
 
  private:
   Space2D space_;

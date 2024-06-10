@@ -40,7 +40,7 @@ createStateSampler(
   switch (sampling_policy) {
     case state_space::state_sampler::SamplingPolicy::BASIC_SAMPLING:
       return state_space::state_sampler_factory::createBasicStateSampler<
-          StateT>(std::move(basic_sampler_params), state_space->getSpace());
+          StateT>(std::move(basic_sampler_params), state_space);
     case state_space::state_sampler::SamplingPolicy::RGD_SAMPLING: {
       state_space::rgd_state_sampler::RGDParams rgd_params =
           param_loader::loadRGDParams(nh);

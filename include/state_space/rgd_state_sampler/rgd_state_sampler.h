@@ -21,8 +21,8 @@
 #include "state_space/rgd_state_sampler/rgd.h"
 #include "state_space/rgd_state_sampler/rgd_params.h"
 #include "state_space/state_sampler/state_sampler.h"
-#include "state_space/state_space/state_space.h"
 #include "state_space/state_space/space.h"
+#include "state_space/state_space/state_space.h"
 
 namespace state_space::rgd_state_sampler {
 /**
@@ -45,12 +45,11 @@ class RGDStateSampler
       state_space::basic_state_sampler::BasicStateSamplerParams&&
           basic_state_sampler_params,
       RGDParams&& rgd_params,
-      const state_space::Space& space,
       const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
       const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker)
       : state_space::basic_state_sampler::BasicStateSampler<StateT>(
-            std::move(basic_state_sampler_params), space),
-        rgd_(std::make_unique<RGD<StateT>>(std::move(rgd_params))),
+            std::move(basic_state_sampler_params), state_space->getBounds()),
+        rgd_{std::move(rgd_params)},
         state_space_(state_space),
         collision_checker_(collision_checker) {}
 
@@ -69,13 +68,13 @@ class RGDStateSampler
       return target_state;
     }
 
-    return (*rgd_)(new_state, target_state, state_space_.get(),
-                   collision_checker_.get());
+    return (rgd_)(new_state, target_state, state_space_.get(),
+                  collision_checker_.get());
   }
 
  private:
   // Random gradient descent
-  std::unique_ptr<RGD<StateT>> rgd_;
+  RGD<StateT> rgd_;
   // State space pointer
   std::shared_ptr<state_space::StateSpace<StateT>> state_space_;
   // Collision checker pointer

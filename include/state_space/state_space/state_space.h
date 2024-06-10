@@ -51,10 +51,10 @@ class StateSpace {
       const nav_utils::CollisionChecker* const collision_checker) const = 0;
 
   /**
-   * @brief Gets space associated with state space
+   * @brief Gets space bounds with state space
    * @return const Space&
    */
-  virtual const Space& getSpace() const = 0;
+  virtual std::vector<double> getBounds() const = 0;
 };
 }  // namespace state_space
 

@@ -50,7 +50,7 @@ class StateSpaceHybrid : public state_space::StateSpace<StateHybrid> {
                                       static_cast<unsigned int>(state.y));
   }
 
-  const SpaceHybrid& getSpace() const override { return space_; }
+  std::vector<double> getBounds() const override { return space_.getBounds(); }
 
   /**
    * @brief Gets angular bin from raw orientation
