@@ -13,9 +13,12 @@
 #define RRT_PLANNER__PLANNER_CORE__NEAREST_NEIGHBOR_STAR_EXPANDER__NEAREST_NEIGHBOR_STAR_EXPANDER_H_
 
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "rrt_planner/planner_core/cost_scorer/cost_scorer.h"
+#include "rrt_planner/planner_core/expander/expander.h"
+#include "rrt_planner/planner_core/expander_utilities/cost_scorer_utilities.h"
 #include "rrt_planner/planner_core/nearest_neighbor_expander/nearest_neighbor_expander.h"
 #include "rrt_planner/planner_core/nearest_neighbor_star_expander/nearest_neighbor_star_expander_params.h"
 #include "rrt_planner/planner_core/planner_entities/node.h"
@@ -29,12 +32,9 @@ namespace rrt_planner::planner_core::nearest_neighbor_star_expander {
  */
 template <typename StateT>
 class NearestNeighborStarExpander
-    : public rrt_planner::planner_core::nearest_neighbor_expander::
-          NearestNeighborExpander<StateT> {
+    : public rrt_planner::planner_core::expander::Expander<StateT> {
  public:
   using NodeT = rrt_planner::planner_core::planner_entities::Node<StateT>;
-  using NearestNeighborExpanderT = rrt_planner::planner_core::
-      nearest_neighbor_expander::NearestNeighborExpander<StateT>;
 
   /**
    * @brief Star expander constructor
@@ -50,9 +50,19 @@ class NearestNeighborStarExpander
       const std::shared_ptr<
           state_space::state_connector::StateConnector<StateT>>&
           state_connector)
-      : NearestNeighborExpanderT(std::move(cost_scorer), state_connector),
-        star_expander_params_(std::move(star_expander_params)),
-        state_connector_(state_connector) {}
+      : cost_scorer_{std::move(cost_scorer)},
+        star_expander_params_{std::move(star_expander_params)},
+        state_connector_(state_connector) {
+    // Create deep copy of cost scorer
+    std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>
+        cost_scorer_copy{
+            new rrt_planner::planner_core::cost_scorer::CostScorer<StateT>{
+                *cost_scorer_}};
+    nearest_neighbor_expander_ =
+        std::make_unique<rrt_planner::planner_core::nearest_neighbor_expander::
+                             NearestNeighborExpander<StateT>>(
+            std::move(cost_scorer_copy), state_connector_);
+  }
 
   ~NearestNeighborStarExpander() override = default;
 
@@ -68,7 +78,7 @@ class NearestNeighborStarExpander
           tree) override {
     // Get new node for expansion
     NodeT* new_node =
-        NearestNeighborExpanderT::expandTree(expansion_state, tree);
+        nearest_neighbor_expander_->expandTree(expansion_state, tree);
 
     if (new_node == nullptr) {
       return nullptr;
@@ -84,8 +94,9 @@ class NearestNeighborStarExpander
     if (parent_node != nullptr) {
       new_node->parent = parent_node;
       new_node->setAccumulatedCost(
-          NearestNeighborExpanderT::computeAccumulatedCost(parent_node,
-                                                           new_node));
+          rrt_planner::planner_core::expander_utilities::
+              computeAccumulatedCostCost(parent_node, new_node,
+                                         cost_scorer_.get()));
     }
 
     // If rewire_tree flag is set, rewire nodes in near nodes vector
@@ -118,8 +129,9 @@ class NearestNeighborStarExpander
     std::for_each(
         potential_parents.begin(), potential_parents.end(),
         [&](NodeT* potential_parent) {
-          new_approach_cost = NearestNeighborExpanderT::computeAccumulatedCost(
-              potential_parent, child_node);
+          new_approach_cost = rrt_planner::planner_core::expander_utilities::
+              computeAccumulatedCostCost(potential_parent, child_node,
+                                         cost_scorer_.get());
           if (new_approach_cost < current_cost &&
               state_connector_->tryConnectStates(potential_parent->getState(),
                                                  child_node->getState())) {
@@ -150,8 +162,9 @@ class NearestNeighborStarExpander
     std::for_each(
         potential_children.begin(), potential_children.end(),
         [&](NodeT*& potential_child) {
-          new_approach_cost = NearestNeighborExpanderT::computeAccumulatedCost(
-              potential_parent, potential_child);
+          new_approach_cost = rrt_planner::planner_core::expander_utilities::
+              computeAccumulatedCostCost(potential_parent, potential_child,
+                                         cost_scorer_.get());
           if (new_approach_cost < potential_child->getAccumulatedCost() &&
               state_connector_->tryConnectStates(potential_parent->getState(),
                                                  potential_child->getState())) {
@@ -176,11 +189,18 @@ class NearestNeighborStarExpander
     return tree->getNearNodes(state, star_expander_params_.near_distance);
   }
 
+  // Cost scorer pointer
+  std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>
+      cost_scorer_;
   // Expander parameters
   NearestNeighborStarExpanderParams star_expander_params_;
   // State connector pointer
   std::shared_ptr<state_space::state_connector::StateConnector<StateT>>
       state_connector_;
+  // Nearest neighbor expander
+  std::unique_ptr<rrt_planner::planner_core::nearest_neighbor_expander::
+                      NearestNeighborExpander<StateT>>
+      nearest_neighbor_expander_;
 };
 }  // namespace rrt_planner::planner_core::nearest_neighbor_star_expander
 

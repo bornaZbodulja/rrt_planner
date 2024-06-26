@@ -16,6 +16,7 @@
 
 #include "rrt_planner/planner_core/cost_scorer/cost_scorer.h"
 #include "rrt_planner/planner_core/expander/expander.h"
+#include "rrt_planner/planner_core/expander_utilities/cost_scorer_utilities.h"
 #include "rrt_planner/planner_core/planner_entities/node.h"
 #include "rrt_planner/planner_core/planner_entities/search_tree.h"
 #include "state_space/state_connector/state_connector.h"
@@ -57,8 +58,8 @@ class NearestNeighborExpander
    */
   NodeT* expandTree(
       const StateT& expansion_state,
-      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const tree)
-      override {
+      rrt_planner::planner_core::planner_entities::SearchTree<StateT>* const
+          tree) override {
     // Get closest node(state) to expansion state in search tree
     NodeT* closest_node = tree->getClosestNode(expansion_state);
     // Get new node for expansion
@@ -113,7 +114,8 @@ class NearestNeighborExpander
     // Backtrack through closest node ancestors
     parent_node = backTracking(new_node, parent_node);
 
-    double accumulated_cost = computeAccumulatedCost(parent_node, new_node);
+    double accumulated_cost = rrt_planner::planner_core::expander_utilities::
+        computeAccumulatedCostCost(parent_node, new_node, cost_scorer_.get());
     bool new_node_visited = new_node->isVisited();
     bool should_update_node = accumulated_cost < new_node->getAccumulatedCost();
 
@@ -149,24 +151,12 @@ class NearestNeighborExpander
     return current_anc;
   }
 
-  double getTraversingCost(const StateT& parent_state,
-                           const StateT& child_state) const {
-    return (*cost_scorer_)(parent_state, child_state);
-  }
-
   // Cost scorer pointer
   std::unique_ptr<rrt_planner::planner_core::cost_scorer::CostScorer<StateT>>
       cost_scorer_;
   // State connector pointer
   std::shared_ptr<state_space::state_connector::StateConnector<StateT>>
       state_connector_;
-
- protected:
-  double computeAccumulatedCost(const NodeT* parent_node,
-                                const NodeT* child_node) const {
-    return parent_node->getAccumulatedCost() +
-           getTraversingCost(parent_node->getState(), child_node->getState());
-  }
 };
 }  // namespace rrt_planner::planner_core::nearest_neighbor_expander
 

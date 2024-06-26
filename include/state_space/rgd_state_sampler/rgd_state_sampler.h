@@ -31,7 +31,7 @@ namespace state_space::rgd_state_sampler {
  */
 template <typename StateT>
 class RGDStateSampler
-    : public state_space::basic_state_sampler::BasicStateSampler<StateT> {
+    : public state_space::state_sampler::StateSampler<StateT> {
  public:
   /**
    * @brief RGD state sampler constructor
@@ -47,8 +47,9 @@ class RGDStateSampler
       RGDParams&& rgd_params,
       const std::shared_ptr<state_space::StateSpace<StateT>>& state_space,
       const std::shared_ptr<nav_utils::CollisionChecker>& collision_checker)
-      : state_space::basic_state_sampler::BasicStateSampler<StateT>(
-            std::move(basic_state_sampler_params), state_space->getBounds()),
+      : basic_state_sampler_{std::make_unique<
+            state_space::basic_state_sampler::BasicStateSampler<StateT>>(
+            std::move(basic_state_sampler_params), state_space->getBounds())},
         rgd_{std::move(rgd_params)},
         state_space_(state_space),
         collision_checker_(collision_checker) {}
@@ -61,8 +62,8 @@ class RGDStateSampler
    * @return StateT
    */
   StateT generateTreeExpansionState(StateT target_state) override {
-    StateT new_state = state_space::basic_state_sampler::BasicStateSampler<
-        StateT>::generateTreeExpansionState(target_state);
+    StateT new_state =
+        basic_state_sampler_->generateTreeExpansionState(target_state);
 
     if (new_state == target_state) {
       return target_state;
@@ -73,6 +74,9 @@ class RGDStateSampler
   }
 
  private:
+  // Basic state sampler
+  std::unique_ptr<state_space::basic_state_sampler::BasicStateSampler<StateT>>
+      basic_state_sampler_;
   // Random gradient descent
   RGD<StateT> rgd_;
   // State space pointer
