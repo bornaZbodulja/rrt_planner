@@ -30,9 +30,6 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
 
   RRTCore<StateT>::setPlanningStartTime();
 
-  ROS_INFO("Start state: (%.3f, %.3f), goal state: (%.3f, %.3f).",
-           start_state_.x, start_state_.y, goal_state_.x, goal_state_.y);
-
   while (!RRTCore<StateT>::planningExpired()) {
     // 1. Get new state for tree expansion
     expansion_state =
