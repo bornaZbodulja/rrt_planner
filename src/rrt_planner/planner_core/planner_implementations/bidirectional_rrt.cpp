@@ -73,10 +73,10 @@ std::optional<std::vector<StateT>> BidirectionalRRT<StateT>::createPath() {
   if (path_found) {
     RRTCore<StateT>::logSuccessfulPathCreation();
     return std::make_optional<std::vector<StateT>>(path);
-  } else {
-    RRTCore<StateT>::logUnsuccessfulPathCreation();
-    return std::nullopt;
   }
+
+  RRTCore<StateT>::logUnsuccessfulPathCreation();
+  return std::nullopt;
 }
 
 template <typename StateT>

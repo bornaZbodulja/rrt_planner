@@ -11,7 +11,7 @@
 
 #include "rrt_planner/planner_core/planner_implementations/rrt.h"
 
-#include <functional>
+#include <limits>
 
 #include "state_space/state_space_2d/state_2d.h"
 #include "state_space/state_space_hybrid/state_hybrid.h"
@@ -21,6 +21,10 @@ template <typename StateT>
 std::optional<std::vector<StateT>> RRT<StateT>::createPath() {
   StateT expansion_state;
   NodeT* new_node{nullptr};
+
+  double current_path_cost{std::numeric_limits<double>::max()};
+  std::vector<StateT> path{};
+  bool path_found{false};
 
   RRTCore<StateT>::setPlanningStartTime();
 
@@ -33,11 +37,20 @@ std::optional<std::vector<StateT>> RRT<StateT>::createPath() {
 
     // 3. If expansion was successful, check if new node is target
     if (new_node != nullptr && isGoal(new_node)) {
-      RRTCore<StateT>::logSuccessfulPathCreation();
-      return std::make_optional<std::vector<StateT>>(
-          rrt_planner::planner_core::planner_utilities::
-              backtrackPathFromNodeToRoot(new_node, state_connector_.get()));
+      double path_cost = new_node->getAccumulatedCost();
+
+      if (current_path_cost > path_cost) {
+        current_path_cost = path_cost;
+        path = rrt_planner::planner_core::planner_utilities::
+            backtrackPathFromNodeToRoot(new_node, state_connector_.get());
+        path_found = true;
+      }
     }
+  }
+
+  if (path_found) {
+    RRTCore<StateT>::logSuccessfulPathCreation();
+    return std::make_optional<std::vector<StateT>>(path);
   }
 
   RRTCore<StateT>::logUnsuccessfulPathCreation();
