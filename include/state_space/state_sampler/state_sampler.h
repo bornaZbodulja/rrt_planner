@@ -23,7 +23,7 @@ class StateSampler {
    * @param target_state State of target node of the search tree
    * @return double
    */
-  virtual StateT generateTreeExpansionState(StateT target_state) = 0;
+  virtual StateT generateTreeExpansionState(const StateT& target_state) = 0;
 
  protected:
   StateSampler() = default;

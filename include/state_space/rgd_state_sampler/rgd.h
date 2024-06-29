@@ -38,7 +38,7 @@ class RGD {
    * @return StateT
    */
   StateT operator()(
-      StateT random_state, StateT target_state,
+      StateT random_state, const StateT& target_state,
       const state_space::StateSpace<StateT>* const state_space,
       const nav_utils::CollisionChecker* const collision_checker) {
     if (rgd_params_.iterations <= 0) {
@@ -69,4 +69,4 @@ class RGD {
 
 }  // namespace state_space::rgd_state_sampler
 
-#endif
+#endif  // STATE_SPACE__RGD_STATE_SAMPLER__RGD_H_

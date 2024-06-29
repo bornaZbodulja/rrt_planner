@@ -61,7 +61,7 @@ class RGDStateSampler
    * @param target_state State of target node of the search tree
    * @return StateT
    */
-  StateT generateTreeExpansionState(StateT target_state) override {
+  StateT generateTreeExpansionState(const StateT& target_state) override {
     static StateT new_state;
     new_state = basic_state_sampler_->generateTreeExpansionState(target_state);
 

@@ -37,7 +37,7 @@ class BasicStateSampler
 
   ~BasicStateSampler() override = default;
 
-  StateT generateTreeExpansionState(StateT target_state) override {
+  StateT generateTreeExpansionState(const StateT& target_state) override {
     static constexpr double kLowerBound = 0.0;
     static constexpr double kUpperBound = 1.0;
     double r = generateRandomDouble(kLowerBound, kUpperBound);
