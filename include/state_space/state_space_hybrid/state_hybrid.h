@@ -48,7 +48,7 @@ class StateHybrid : public State<StateHybrid> {
 
   double squaredL2norm() const override {
     double d = std::pow(x, 2) + std::pow(y, 2);
-    constexpr double kSwitchThreshold = 1.0;
+    constexpr double kSwitchThreshold = 50.0;
 
     // TODO: Implement this to be continuous function
     if (d > kSwitchThreshold) {
