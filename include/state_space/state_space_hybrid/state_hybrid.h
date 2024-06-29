@@ -13,6 +13,7 @@
 #define STATE_SPACE__STATE_SPACE_HYBRID__STATE_HYBRID_H_
 
 #include <cmath>
+#include <vector>
 
 #include "state_space/state_space/state.h"
 
