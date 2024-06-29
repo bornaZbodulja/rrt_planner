@@ -62,8 +62,8 @@ class RGDStateSampler
    * @return StateT
    */
   StateT generateTreeExpansionState(StateT target_state) override {
-    StateT new_state =
-        basic_state_sampler_->generateTreeExpansionState(target_state);
+    static StateT new_state;
+    new_state = basic_state_sampler_->generateTreeExpansionState(target_state);
 
     if (new_state == target_state) {
       return target_state;
@@ -87,4 +87,4 @@ class RGDStateSampler
 
 }  // namespace state_space::rgd_state_sampler
 
-#endif
+#endif  // STATE_SPACE__RGD_STATE_SAMPLER__RGD_STATE_SAMPLER_H_

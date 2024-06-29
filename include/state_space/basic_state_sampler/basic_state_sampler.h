@@ -38,7 +38,9 @@ class BasicStateSampler
   ~BasicStateSampler() override = default;
 
   StateT generateTreeExpansionState(StateT target_state) override {
-    double r = generateRandomDouble(0.0, 1.0);
+    static constexpr double kLowerBound = 0.0;
+    static constexpr double kUpperBound = 1.0;
+    double r = generateRandomDouble(kLowerBound, kUpperBound);
 
     if (r <= basic_state_sampler_params_.target_bias) {
       return target_state;
@@ -49,8 +51,8 @@ class BasicStateSampler
 
  private:
   /**
-   * @brief
-   * @return double
+   * @brief Generates random state in state space
+   * @return StateT Random state in state space
    */
   StateT generateRandomStateInStateSpace() {
     std::vector<double> state_vector;
@@ -63,6 +65,12 @@ class BasicStateSampler
     return StateT{state_vector};
   }
 
+  /**
+   * @brief Generates random double in given range
+   * @param lower_bound Given lower bound
+   * @param upper_bound Given upper bound
+   * @return double
+   */
   double generateRandomDouble(double lower_bound, double upper_bound) {
     return lower_bound + dist_(gen_) * (upper_bound - lower_bound);
   }

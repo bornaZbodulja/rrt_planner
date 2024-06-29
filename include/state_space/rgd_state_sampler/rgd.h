@@ -45,7 +45,7 @@ class RGD {
       return random_state;
     }
 
-    StateT mid_state;
+    static StateT mid_state;
 
     for (int i = 0; i < rgd_params_.iterations; i++) {
       if (state_space->getStateCost(random_state, collision_checker) >
